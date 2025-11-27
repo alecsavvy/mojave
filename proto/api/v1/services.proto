@@ -7,6 +7,9 @@ option go_package = "github.com/sonata-labs/sonata/gen/api/v1";
 message PingRequest {}
 message PingResponse {}
 
+message ShutdownRequest {}
+message ShutdownResponse {}
+
 service Core {
   rpc Ping(PingRequest) returns (PingResponse) {}
 }
