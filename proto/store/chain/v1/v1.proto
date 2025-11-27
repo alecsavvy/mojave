@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+package store.chain.v1;
+
+option go_package = "github.com/sonata-labs/sonata/gen/store/chain/v1";
