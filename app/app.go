@@ -108,17 +108,17 @@ func NewApp(config *config.Config) *App {
 
 func (app *App) Run(ctx context.Context) error {
 	eg, ctx := errgroup.WithContext(ctx)
+	defer func() {
+		log.Printf("shutdown complete\n")
+	}()
 
 	eg.Go(func() error {
-		if err := app.runHTTP(ctx); err != nil {
-			return err
-		}
-		return nil
+		return app.runHTTP(ctx)
 	})
 
 	eg.Go(func() error {
 		<-ctx.Done()
-		log.Printf("shutting down...")
+		log.Printf("shutting down...\n")
 		return app.Shutdown()
 	})
 
