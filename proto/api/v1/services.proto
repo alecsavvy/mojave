@@ -42,7 +42,7 @@ service Validator {
   rpc Ping(PingRequest) returns (PingResponse) {}
 }
 
-service AppStore {
+service ChainStore {
   rpc Ping(PingRequest) returns (PingResponse) {}
 }
 

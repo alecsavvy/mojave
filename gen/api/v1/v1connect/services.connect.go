@@ -37,8 +37,8 @@ const (
 	AccountName = "api.v1.Account"
 	// ValidatorName is the fully-qualified name of the Validator service.
 	ValidatorName = "api.v1.Validator"
-	// AppStoreName is the fully-qualified name of the AppStore service.
-	AppStoreName = "api.v1.AppStore"
+	// ChainStoreName is the fully-qualified name of the ChainStore service.
+	ChainStoreName = "api.v1.ChainStore"
 	// LocalStoreName is the fully-qualified name of the LocalStore service.
 	LocalStoreName = "api.v1.LocalStore"
 )
@@ -67,8 +67,8 @@ const (
 	AccountPingProcedure = "/api.v1.Account/Ping"
 	// ValidatorPingProcedure is the fully-qualified name of the Validator's Ping RPC.
 	ValidatorPingProcedure = "/api.v1.Validator/Ping"
-	// AppStorePingProcedure is the fully-qualified name of the AppStore's Ping RPC.
-	AppStorePingProcedure = "/api.v1.AppStore/Ping"
+	// ChainStorePingProcedure is the fully-qualified name of the ChainStore's Ping RPC.
+	ChainStorePingProcedure = "/api.v1.ChainStore/Ping"
 	// LocalStorePingProcedure is the fully-qualified name of the LocalStore's Ping RPC.
 	LocalStorePingProcedure = "/api.v1.LocalStore/Ping"
 )
@@ -633,74 +633,74 @@ func (UnimplementedValidatorHandler) Ping(context.Context, *connect.Request[v1.P
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.Validator.Ping is not implemented"))
 }
 
-// AppStoreClient is a client for the api.v1.AppStore service.
-type AppStoreClient interface {
+// ChainStoreClient is a client for the api.v1.ChainStore service.
+type ChainStoreClient interface {
 	Ping(context.Context, *connect.Request[v1.PingRequest]) (*connect.Response[v1.PingResponse], error)
 }
 
-// NewAppStoreClient constructs a client for the api.v1.AppStore service. By default, it uses the
-// Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and sends
+// NewChainStoreClient constructs a client for the api.v1.ChainStore service. By default, it uses
+// the Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and sends
 // uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or
 // connect.WithGRPCWeb() options.
 //
 // The URL supplied here should be the base URL for the Connect or gRPC server (for example,
 // http://api.acme.com or https://acme.com/grpc).
-func NewAppStoreClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) AppStoreClient {
+func NewChainStoreClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ChainStoreClient {
 	baseURL = strings.TrimRight(baseURL, "/")
-	appStoreMethods := v1.File_api_v1_services_proto.Services().ByName("AppStore").Methods()
-	return &appStoreClient{
+	chainStoreMethods := v1.File_api_v1_services_proto.Services().ByName("ChainStore").Methods()
+	return &chainStoreClient{
 		ping: connect.NewClient[v1.PingRequest, v1.PingResponse](
 			httpClient,
-			baseURL+AppStorePingProcedure,
-			connect.WithSchema(appStoreMethods.ByName("Ping")),
+			baseURL+ChainStorePingProcedure,
+			connect.WithSchema(chainStoreMethods.ByName("Ping")),
 			connect.WithClientOptions(opts...),
 		),
 	}
 }
 
-// appStoreClient implements AppStoreClient.
-type appStoreClient struct {
+// chainStoreClient implements ChainStoreClient.
+type chainStoreClient struct {
 	ping *connect.Client[v1.PingRequest, v1.PingResponse]
 }
 
-// Ping calls api.v1.AppStore.Ping.
-func (c *appStoreClient) Ping(ctx context.Context, req *connect.Request[v1.PingRequest]) (*connect.Response[v1.PingResponse], error) {
+// Ping calls api.v1.ChainStore.Ping.
+func (c *chainStoreClient) Ping(ctx context.Context, req *connect.Request[v1.PingRequest]) (*connect.Response[v1.PingResponse], error) {
 	return c.ping.CallUnary(ctx, req)
 }
 
-// AppStoreHandler is an implementation of the api.v1.AppStore service.
-type AppStoreHandler interface {
+// ChainStoreHandler is an implementation of the api.v1.ChainStore service.
+type ChainStoreHandler interface {
 	Ping(context.Context, *connect.Request[v1.PingRequest]) (*connect.Response[v1.PingResponse], error)
 }
 
-// NewAppStoreHandler builds an HTTP handler from the service implementation. It returns the path on
-// which to mount the handler and the handler itself.
+// NewChainStoreHandler builds an HTTP handler from the service implementation. It returns the path
+// on which to mount the handler and the handler itself.
 //
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
-func NewAppStoreHandler(svc AppStoreHandler, opts ...connect.HandlerOption) (string, http.Handler) {
-	appStoreMethods := v1.File_api_v1_services_proto.Services().ByName("AppStore").Methods()
-	appStorePingHandler := connect.NewUnaryHandler(
-		AppStorePingProcedure,
+func NewChainStoreHandler(svc ChainStoreHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	chainStoreMethods := v1.File_api_v1_services_proto.Services().ByName("ChainStore").Methods()
+	chainStorePingHandler := connect.NewUnaryHandler(
+		ChainStorePingProcedure,
 		svc.Ping,
-		connect.WithSchema(appStoreMethods.ByName("Ping")),
+		connect.WithSchema(chainStoreMethods.ByName("Ping")),
 		connect.WithHandlerOptions(opts...),
 	)
-	return "/api.v1.AppStore/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return "/api.v1.ChainStore/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case AppStorePingProcedure:
-			appStorePingHandler.ServeHTTP(w, r)
+		case ChainStorePingProcedure:
+			chainStorePingHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
 	})
 }
 
-// UnimplementedAppStoreHandler returns CodeUnimplemented from all methods.
-type UnimplementedAppStoreHandler struct{}
+// UnimplementedChainStoreHandler returns CodeUnimplemented from all methods.
+type UnimplementedChainStoreHandler struct{}
 
-func (UnimplementedAppStoreHandler) Ping(context.Context, *connect.Request[v1.PingRequest]) (*connect.Response[v1.PingResponse], error) {
-	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.AppStore.Ping is not implemented"))
+func (UnimplementedChainStoreHandler) Ping(context.Context, *connect.Request[v1.PingRequest]) (*connect.Response[v1.PingResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("api.v1.ChainStore.Ping is not implemented"))
 }
 
 // LocalStoreClient is a client for the api.v1.LocalStore service.

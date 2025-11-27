@@ -9,18 +9,18 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/sonata-labs/sonata/account"
-	"github.com/sonata-labs/sonata/composition"
 	"github.com/sonata-labs/sonata/config"
-	"github.com/sonata-labs/sonata/core"
-	"github.com/sonata-labs/sonata/ddex"
 	"github.com/sonata-labs/sonata/gen/api/v1/v1connect"
-	"github.com/sonata-labs/sonata/p2p"
-	"github.com/sonata-labs/sonata/storage"
-	"github.com/sonata-labs/sonata/store/appstore"
+	"github.com/sonata-labs/sonata/store/chainstore"
 	"github.com/sonata-labs/sonata/store/localstore"
-	"github.com/sonata-labs/sonata/system"
-	"github.com/sonata-labs/sonata/validator"
+	"github.com/sonata-labs/sonata/x/account"
+	"github.com/sonata-labs/sonata/x/composition"
+	"github.com/sonata-labs/sonata/x/core"
+	"github.com/sonata-labs/sonata/x/ddex"
+	"github.com/sonata-labs/sonata/x/p2p"
+	"github.com/sonata-labs/sonata/x/storage"
+	"github.com/sonata-labs/sonata/x/system"
+	"github.com/sonata-labs/sonata/x/validator"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -38,7 +38,7 @@ type App struct {
 	account     v1connect.AccountHandler
 	validator   v1connect.ValidatorHandler
 
-	appstore   v1connect.AppStoreHandler
+	chainstore v1connect.ChainStoreHandler
 	localstore v1connect.LocalStoreHandler
 }
 
@@ -52,7 +52,7 @@ func NewApp(config *config.Config) *App {
 	account := account.NewAccountService(config)
 	validator := validator.NewValidatorService(config)
 
-	appstore := appstore.NewAppStoreService(config)
+	chainstore := chainstore.NewChainStoreService(config)
 	localstore := localstore.NewLocalStoreService(config)
 
 	httpServer := echo.New()
@@ -101,7 +101,7 @@ func NewApp(config *config.Config) *App {
 		composition: composition,
 		account:     account,
 		validator:   validator,
-		appstore:    appstore,
+		chainstore:  chainstore,
 		localstore:  localstore,
 	}
 }
