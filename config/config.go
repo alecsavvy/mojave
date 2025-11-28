@@ -3,6 +3,8 @@ package config
 import (
 	"os"
 	"path/filepath"
+
+	"github.com/cometbft/cometbft/config"
 )
 
 const (
@@ -22,6 +24,7 @@ type Config struct {
 	Socket     *SocketConfig
 	ChainStore *ChainStoreConfig
 	LocalStore *LocalStoreConfig
+	CometBFT   *config.Config
 }
 
 func DefaultConfig() *Config {
@@ -30,6 +33,7 @@ func DefaultConfig() *Config {
 		Socket:     DefaultSocketConfig(),
 		ChainStore: DefaultChainStoreConfig(),
 		LocalStore: DefaultLocalStoreConfig(),
+		CometBFT:   config.DefaultConfig(),
 	}
 }
 
