@@ -7,11 +7,13 @@ import (
 	"github.com/sonata-labs/sonata/config"
 	v1 "github.com/sonata-labs/sonata/gen/api/v1"
 	"github.com/sonata-labs/sonata/gen/api/v1/v1connect"
+	"github.com/sonata-labs/sonata/types/module"
 )
 
 var _ v1connect.ChainHandler = (*ChainService)(nil)
 
 type ChainService struct {
+	*module.BaseModule
 	config *config.Config
 }
 

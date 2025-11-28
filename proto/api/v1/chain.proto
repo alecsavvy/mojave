@@ -2,6 +2,9 @@ syntax = "proto3";
 
 package api.v1;
 
+import "cometbft/types/v1beta1/block.proto";
+import "cometbft/types/v1beta1/types.proto";
+
 option go_package = "github.com/sonata-labs/sonata/gen/api/v1";
 
 service Chain {
@@ -10,15 +13,24 @@ service Chain {
   rpc SendTransaction(SendTransactionRequest) returns (SendTransactionResponse) {}
 }
 
-message GetBlockRequest {}
+message GetBlockRequest {
+  int64 height = 1;
+}
 
-message GetBlockResponse {}
+message GetBlockResponse {
+  cometbft.types.v1beta1.Block block = 1;
+}
 
-message GetTransactionRequest {}
+message GetTransactionRequest {
+  bytes tx_hash = 1;
+  bool prove = 2;
+}
 
-message GetTransactionResponse {}
+message GetTransactionResponse {
+  bytes tx = 1;
+  cometbft.types.v1beta1.TxProof proof = 2;
+}
 
 message SendTransactionRequest {}
 
 message SendTransactionResponse {}
-

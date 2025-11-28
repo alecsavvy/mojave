@@ -7,9 +7,11 @@ import (
 	"github.com/sonata-labs/sonata/config"
 	v1 "github.com/sonata-labs/sonata/gen/api/v1"
 	"github.com/sonata-labs/sonata/gen/api/v1/v1connect"
+	"github.com/sonata-labs/sonata/types/module"
 )
 
 type CompositionService struct {
+	*module.BaseModule
 	config *config.Config
 }
 

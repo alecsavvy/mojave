@@ -15,11 +15,18 @@ type Core struct {
 	node    *node.Node
 }
 
-func NewCore(config *config.Config, modules ...module.Module) *Core {
-	return &Core{
+func NewCore(config *config.Config, init func(c *Core) (*node.Node, error), modules ...module.Module) (*Core, *node.Node, error) {
+	c := &Core{
 		config:  config,
 		modules: modules,
 	}
+
+	node, err := init(c)
+	if err != nil {
+		return nil, nil, err
+	}
+	c.node = node
+	return c, node, nil
 }
 
 var _ module.Module = (*Core)(nil)
@@ -29,20 +36,11 @@ func (c *Core) Name() string {
 }
 
 func (c *Core) Start() error {
-	// TODO: pull stuff from built-in-go tutorial
-
-	node, err := node.NewNode(context.Background(), c.config.CometBFT, nil, nil, nil, nil, nil, nil, nil)
-	if err != nil {
+	if err := c.node.Start(); err != nil {
 		return err
 	}
 
-	c.node = node
-
-	if err := node.Start(); err != nil {
-		return err
-	}
-
-	node.Wait()
+	c.node.Wait()
 
 	return nil
 }
