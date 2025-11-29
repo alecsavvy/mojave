@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -50,14 +51,17 @@ func (s *Server) Start() error {
 	s.registerRoutes()
 
 	address := fmt.Sprintf("%s:%d", s.config.Sonata.HTTP.Host, s.config.Sonata.HTTP.Port)
-	return s.httpServer.Start(address)
+	if err := s.httpServer.Start(address); err != nil && err != http.ErrServerClosed {
+		return fmt.Errorf("starting http server: %w", err)
+	}
+	return nil
 }
 
 func (s *Server) Stop() error {
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer shutdownCancel()
 
-	if err := s.httpServer.Shutdown(shutdownCtx); err != nil {
+	if err := s.httpServer.Shutdown(shutdownCtx); err != nil && err != http.ErrServerClosed {
 		return err
 	}
 

@@ -109,9 +109,11 @@ func NewApp(config *config.Config) (*App, error) {
 	// TODO: wire up dependencies
 
 	return &App{
-		core:        core,
-		config:      config,
-		node:        node,
+		core:   core,
+		config: config,
+		node:   node,
+
+		chain:       chain,
 		server:      server,
 		storage:     storage,
 		system:      system,
@@ -120,16 +122,14 @@ func NewApp(config *config.Config) (*App, error) {
 		composition: composition,
 		account:     account,
 		validator:   validator,
-		chainStore:  chainStore,
-		localStore:  localStore,
+
+		chainStore: chainStore,
+		localStore: localStore,
 	}, nil
 }
 
 func (app *App) Run(ctx context.Context) error {
 	eg, ctx := errgroup.WithContext(ctx)
-	defer func() {
-		log.Printf("shutdown complete\n")
-	}()
 
 	// start up all modules
 	eg.Go(app.server.Start)
