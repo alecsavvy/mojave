@@ -10,6 +10,7 @@ import (
 	"github.com/sonata-labs/sonata/config"
 	"github.com/sonata-labs/sonata/gen/api/v1/v1connect"
 	"github.com/sonata-labs/sonata/types/module"
+	"go.uber.org/zap"
 )
 
 type Server struct {
@@ -28,12 +29,16 @@ type Server struct {
 	validator   v1connect.ValidatorHandler
 }
 
+func (s *Server) Name() string {
+	return "server"
+}
+
 var _ module.Module = (*Server)(nil)
 
-func NewServer(config *config.Config, chain v1connect.ChainHandler, storage v1connect.StorageHandler, system v1connect.SystemHandler, p2p v1connect.P2PHandler, ddex v1connect.DDEXHandler, composition v1connect.CompositionHandler, account v1connect.AccountHandler, validator v1connect.ValidatorHandler) (*Server, error) {
+func NewServer(config *config.Config, logger *zap.Logger, chain v1connect.ChainHandler, storage v1connect.StorageHandler, system v1connect.SystemHandler, p2p v1connect.P2PHandler, ddex v1connect.DDEXHandler, composition v1connect.CompositionHandler, account v1connect.AccountHandler, validator v1connect.ValidatorHandler) (*Server, error) {
 	httpServer := echo.New()
 
-	return &Server{
+	svc := &Server{
 		config:      config,
 		httpServer:  httpServer,
 		chain:       chain,
@@ -44,10 +49,16 @@ func NewServer(config *config.Config, chain v1connect.ChainHandler, storage v1co
 		composition: composition,
 		account:     account,
 		validator:   validator,
-	}, nil
+	}
+	svc.BaseModule = module.NewBaseModule(logger.Named(svc.Name()))
+	return svc, nil
 }
 
 func (s *Server) Start() error {
+	if err := s.BaseModule.Start(); err != nil {
+		return err
+	}
+
 	s.registerRoutes()
 
 	address := fmt.Sprintf("%s:%d", s.config.Sonata.HTTP.Host, s.config.Sonata.HTTP.Port)

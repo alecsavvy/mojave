@@ -8,6 +8,7 @@ import (
 	v1 "github.com/sonata-labs/sonata/gen/api/v1"
 	"github.com/sonata-labs/sonata/gen/api/v1/v1connect"
 	"github.com/sonata-labs/sonata/types/module"
+	"go.uber.org/zap"
 )
 
 var _ v1connect.ChainHandler = (*ChainService)(nil)
@@ -15,6 +16,10 @@ var _ v1connect.ChainHandler = (*ChainService)(nil)
 type ChainService struct {
 	*module.BaseModule
 	config *config.Config
+}
+
+func (c *ChainService) Name() string {
+	return "chain"
 }
 
 func (c *ChainService) GetBlock(context.Context, *connect.Request[v1.GetBlockRequest]) (*connect.Response[v1.GetBlockResponse], error) {
@@ -29,8 +34,8 @@ func (c *ChainService) SendTransaction(context.Context, *connect.Request[v1.Send
 	panic("unimplemented")
 }
 
-func NewChainService(config *config.Config) *ChainService {
-	return &ChainService{
-		config: config,
-	}
+func NewChainService(config *config.Config, logger *zap.Logger) *ChainService {
+	svc := &ChainService{config: config}
+	svc.BaseModule = module.NewBaseModule(logger.Named(svc.Name()))
+	return svc
 }

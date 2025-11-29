@@ -8,11 +8,16 @@ import (
 	v1 "github.com/sonata-labs/sonata/gen/api/v1"
 	"github.com/sonata-labs/sonata/gen/api/v1/v1connect"
 	"github.com/sonata-labs/sonata/types/module"
+	"go.uber.org/zap"
 )
 
 type SystemService struct {
 	*module.BaseModule
 	config *config.Config
+}
+
+func (s *SystemService) Name() string {
+	return "system"
 }
 
 func (s *SystemService) GetHealth(context.Context, *connect.Request[v1.GetHealthRequest]) (*connect.Response[v1.GetHealthResponse], error) {
@@ -33,8 +38,8 @@ func (s *SystemService) GetStatus(context.Context, *connect.Request[v1.GetStatus
 
 var _ v1connect.SystemHandler = (*SystemService)(nil)
 
-func NewSystemService(config *config.Config) *SystemService {
-	return &SystemService{
-		config: config,
-	}
+func NewSystemService(config *config.Config, logger *zap.Logger) *SystemService {
+	svc := &SystemService{config: config}
+	svc.BaseModule = module.NewBaseModule(logger.Named(svc.Name()))
+	return svc
 }

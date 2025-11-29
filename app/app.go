@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"log"
 	"os"
 
 	cmtconfig "github.com/cometbft/cometbft/config"
@@ -27,6 +26,7 @@ import (
 	"github.com/sonata-labs/sonata/x/storage"
 	"github.com/sonata-labs/sonata/x/system"
 	"github.com/sonata-labs/sonata/x/validator"
+	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -34,6 +34,7 @@ type App struct {
 	config *config.Config
 	node   *cmtnm.Node
 	core   *core.Core
+	logger *zap.SugaredLogger
 
 	server *server.Server
 
@@ -51,27 +52,29 @@ type App struct {
 }
 
 // Creates and initializes all modules and the app
-func NewApp(config *config.Config) (*App, error) {
-	chain := chain.NewChainService(config)
-	storage := storage.NewStorageService(config)
-	system := system.NewSystemService(config)
-	p2p := p2p.NewP2PService(config)
-	ddex := ddex.NewDDEXService(config)
-	composition := composition.NewCompositionService(config)
-	account := account.NewAccountService(config)
-	validator := validator.NewValidatorService(config)
+func NewApp(cfg *config.Config, zapLogger *zap.Logger) (*App, error) {
+	appLogger := zapLogger.Named("app").Sugar()
 
-	chainStore, err := pebble_chainstore.NewPebbleChainStore(config.Sonata.ChainStore.Path)
+	chainSvc := chain.NewChainService(cfg, zapLogger)
+	storageSvc := storage.NewStorageService(cfg, zapLogger)
+	systemSvc := system.NewSystemService(cfg, zapLogger)
+	p2pSvc := p2p.NewP2PService(cfg, zapLogger)
+	ddexSvc := ddex.NewDDEXService(cfg, zapLogger)
+	compositionSvc := composition.NewCompositionService(cfg, zapLogger)
+	accountSvc := account.NewAccountService(cfg, zapLogger)
+	validatorSvc := validator.NewValidatorService(cfg, zapLogger)
+
+	chainStore, err := pebble_chainstore.NewPebbleChainStore(cfg.Sonata.ChainStore.Path)
 	if err != nil {
 		return nil, err
 	}
 
-	localStore, err := pebble_localstore.NewPebbleLocalStore(config.Sonata.LocalStore.Path)
+	localStore, err := pebble_localstore.NewPebbleLocalStore(cfg.Sonata.LocalStore.Path)
 	if err != nil {
 		return nil, err
 	}
 
-	cmtConfig := config.CometBFT
+	cmtConfig := cfg.CometBFT
 
 	pv := privval.LoadFilePV(
 		cmtConfig.PrivValidatorKeyFile(),
@@ -80,11 +83,11 @@ func NewApp(config *config.Config) (*App, error) {
 
 	nodeKey, err := cmtp2p.LoadNodeKey(cmtConfig.NodeKeyFile())
 	if err != nil {
-		log.Fatalf("failed to load node's key: %v", err)
+		appLogger.Fatalf("failed to load node's key: %v", err)
 	}
 
-	logger := cmtlog.NewTMLogger(cmtlog.NewSyncWriter(os.Stdout))
-	logger, err = cmtflags.ParseLogLevel(cmtConfig.LogLevel, logger, cmtconfig.DefaultLogLevel)
+	cmtLogger := cmtlog.NewTMLogger(cmtlog.NewSyncWriter(os.Stdout))
+	cmtLogger, err = cmtflags.ParseLogLevel(cmtConfig.LogLevel, cmtLogger, cmtconfig.DefaultLogLevel)
 	if err != nil {
 		return nil, err
 	}
@@ -93,35 +96,34 @@ func NewApp(config *config.Config) (*App, error) {
 		return cmtnm.NewNode(context.Background(), cmtConfig, pv, nodeKey, proxy.NewLocalClientCreator(c),
 			cmtnm.DefaultGenesisDocProviderFunc(cmtConfig),
 			cmtconfig.DefaultDBProvider,
-			cmtnm.DefaultMetricsProvider(cmtConfig.Instrumentation), logger)
+			cmtnm.DefaultMetricsProvider(cmtConfig.Instrumentation), cmtLogger)
 	}
 
-	core, node, err := core.NewCore(config, createNode, chain, storage, system, p2p, ddex, composition, account, validator)
+	coreSvc, node, err := core.NewCore(cfg, zapLogger, createNode, chainSvc, storageSvc, systemSvc, p2pSvc, ddexSvc, compositionSvc, accountSvc, validatorSvc)
 	if err != nil {
 		return nil, err
 	}
 
-	server, err := server.NewServer(config, chain, storage, system, p2p, ddex, composition, account, validator)
+	serverSvc, err := server.NewServer(cfg, zapLogger, chainSvc, storageSvc, systemSvc, p2pSvc, ddexSvc, compositionSvc, accountSvc, validatorSvc)
 	if err != nil {
 		return nil, err
 	}
-
-	// TODO: wire up dependencies
 
 	return &App{
-		core:   core,
-		config: config,
+		core:   coreSvc,
+		config: cfg,
 		node:   node,
+		logger: appLogger,
 
-		chain:       chain,
-		server:      server,
-		storage:     storage,
-		system:      system,
-		p2p:         p2p,
-		ddex:        ddex,
-		composition: composition,
-		account:     account,
-		validator:   validator,
+		chain:       chainSvc,
+		server:      serverSvc,
+		storage:     storageSvc,
+		system:      systemSvc,
+		p2p:         p2pSvc,
+		ddex:        ddexSvc,
+		composition: compositionSvc,
+		account:     accountSvc,
+		validator:   validatorSvc,
 
 		chainStore: chainStore,
 		localStore: localStore,
@@ -145,7 +147,7 @@ func (app *App) Run(ctx context.Context) error {
 
 	eg.Go(func() error {
 		<-ctx.Done()
-		log.Printf("shutting down...\n")
+		app.logger.Info("shutting down...")
 		return app.Shutdown()
 	})
 
@@ -156,7 +158,7 @@ func (app *App) Shutdown() error {
 
 	eg, _ := errgroup.WithContext(context.Background())
 	defer func() {
-		log.Printf("shutdown complete\n")
+		app.logger.Info("shutdown complete")
 	}()
 
 	// shutdown all modules

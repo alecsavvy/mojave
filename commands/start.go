@@ -8,6 +8,7 @@ import (
 	"github.com/sonata-labs/sonata/app"
 	"github.com/sonata-labs/sonata/config"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 func NewStartCommand() *cobra.Command {
@@ -15,6 +16,9 @@ func NewStartCommand() *cobra.Command {
 		Use:   "run",
 		Short: "Run the Sonata node",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			logger, _ := zap.NewDevelopment()
+			defer logger.Sync()
+
 			home, err := cmd.Flags().GetString("home")
 			if err != nil {
 				return err
@@ -25,7 +29,7 @@ func NewStartCommand() *cobra.Command {
 				return err
 			}
 
-			app, err := app.NewApp(config)
+			app, err := app.NewApp(config, logger)
 			if err != nil {
 				return err
 			}

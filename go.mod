@@ -12,6 +12,7 @@ require (
 	github.com/sonata-labs/ddex-proto v0.1.0
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.19.0
+	go.uber.org/zap v1.27.1
 	golang.org/x/sync v0.14.0
 	google.golang.org/protobuf v1.36.10
 )

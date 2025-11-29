@@ -8,11 +8,16 @@ import (
 	v1 "github.com/sonata-labs/sonata/gen/api/v1"
 	"github.com/sonata-labs/sonata/gen/api/v1/v1connect"
 	"github.com/sonata-labs/sonata/types/module"
+	"go.uber.org/zap"
 )
 
 type P2PService struct {
 	*module.BaseModule
 	config *config.Config
+}
+
+func (p *P2PService) Name() string {
+	return "p2p"
 }
 
 var _ v1connect.P2PHandler = (*P2PService)(nil)
@@ -21,8 +26,8 @@ func (p *P2PService) Stream(context.Context, *connect.BidiStream[v1.StreamReques
 	panic("unimplemented")
 }
 
-func NewP2PService(config *config.Config) *P2PService {
-	return &P2PService{
-		config: config,
-	}
+func NewP2PService(config *config.Config, logger *zap.Logger) *P2PService {
+	svc := &P2PService{config: config}
+	svc.BaseModule = module.NewBaseModule(logger.Named(svc.Name()))
+	return svc
 }

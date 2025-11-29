@@ -7,18 +7,21 @@ import (
 	"github.com/cometbft/cometbft/node"
 	"github.com/sonata-labs/sonata/config"
 	"github.com/sonata-labs/sonata/types/module"
+	"go.uber.org/zap"
 )
 
 type Core struct {
 	config  *config.Config
 	modules []module.Module
 	node    *node.Node
+	logger  *zap.SugaredLogger
 }
 
-func NewCore(config *config.Config, init func(c *Core) (*node.Node, error), modules ...module.Module) (*Core, *node.Node, error) {
+func NewCore(config *config.Config, logger *zap.Logger, init func(c *Core) (*node.Node, error), modules ...module.Module) (*Core, *node.Node, error) {
 	c := &Core{
 		config:  config,
 		modules: modules,
+		logger:  logger.Named("core").Sugar(),
 	}
 
 	node, err := init(c)

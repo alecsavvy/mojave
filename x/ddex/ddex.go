@@ -8,11 +8,16 @@ import (
 	v1 "github.com/sonata-labs/sonata/gen/api/v1"
 	"github.com/sonata-labs/sonata/gen/api/v1/v1connect"
 	"github.com/sonata-labs/sonata/types/module"
+	"go.uber.org/zap"
 )
 
 type DDEXService struct {
 	*module.BaseModule
 	config *config.Config
+}
+
+func (d *DDEXService) Name() string {
+	return "ddex"
 }
 
 var _ module.Module = (*DDEXService)(nil)
@@ -43,8 +48,8 @@ func (d *DDEXService) GetPurgeReleaseMessage(context.Context, *connect.Request[v
 
 var _ v1connect.DDEXHandler = (*DDEXService)(nil)
 
-func NewDDEXService(config *config.Config) *DDEXService {
-	return &DDEXService{
-		config: config,
-	}
+func NewDDEXService(config *config.Config, logger *zap.Logger) *DDEXService {
+	svc := &DDEXService{config: config}
+	svc.BaseModule = module.NewBaseModule(logger.Named(svc.Name()))
+	return svc
 }

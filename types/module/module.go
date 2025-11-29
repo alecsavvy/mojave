@@ -4,6 +4,7 @@ import (
 	"context"
 
 	abcitypes "github.com/cometbft/cometbft/abci/types"
+	"go.uber.org/zap"
 )
 
 type Module interface {
@@ -21,24 +22,26 @@ type Module interface {
 var _ Module = (*BaseModule)(nil)
 
 type BaseModule struct {
-	name string
+	Logger *zap.SugaredLogger
 }
 
-func NewBaseModule(name string) *BaseModule {
+func NewBaseModule(logger *zap.Logger) *BaseModule {
 	return &BaseModule{
-		name: name,
+		Logger: logger.Sugar(),
 	}
 }
 
 func (m *BaseModule) Name() string {
-	return m.name
+	return ""
 }
 
 func (m *BaseModule) Start() error {
+	m.Logger.Info("starting")
 	return nil
 }
 
 func (m *BaseModule) Stop() error {
+	m.Logger.Info("stopping")
 	return nil
 }
 
