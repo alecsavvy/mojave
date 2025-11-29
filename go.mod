@@ -8,6 +8,7 @@ require (
 	github.com/cometbft/cometbft v1.0.1
 	github.com/cometbft/cometbft/api v1.0.0
 	github.com/labstack/echo/v4 v4.13.4
+	github.com/pelletier/go-toml/v2 v2.2.2
 	github.com/sonata-labs/ddex-proto v0.1.0
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.19.0
@@ -62,7 +63,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/oasisprotocol/curve25519-voi v0.0.0-20220708102147-0a8a51822cae // indirect
-	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/petermattis/goid v0.0.0-20240813172612-4fcff4a6cae7 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
