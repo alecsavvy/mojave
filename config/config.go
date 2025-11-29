@@ -42,50 +42,58 @@ func (c *Config) ValidateBasic() error {
 }
 
 func (c *Config) SetRoot(root string) {
-	// c.HTTP.SetRoot(root)
-	// c.Socket.SetRoot(root)
-	// c.ChainStore.SetRoot(root)
-	// c.LocalStore.SetRoot(root)
+	c.HTTP.Root = root
+	c.Socket.Root = root
+	c.ChainStore.Root = root
+	c.LocalStore.Root = root
 }
 
 type HTTPConfig struct {
+	Root string
 	Host string
 	Port int
 }
 
 func DefaultHTTPConfig() *HTTPConfig {
 	return &HTTPConfig{
+		Root: DefaultHomeDirPath(),
 		Host: "0.0.0.0",
 		Port: 8080,
 	}
 }
 
 type SocketConfig struct {
+	Root string
 	Path string
 }
 
 func DefaultSocketConfig() *SocketConfig {
 	return &SocketConfig{
+		Root: DefaultHomeDirPath(),
 		Path: "unix:///tmp/sonata.sock",
 	}
 }
 
 type ChainStoreConfig struct {
+	Root string
 	Path string
 }
 
 func DefaultChainStoreConfig() *ChainStoreConfig {
 	return &ChainStoreConfig{
+		Root: DefaultHomeDirPath(),
 		Path: filepath.Join(DefaultHomeDirPath(), "chainstore"),
 	}
 }
 
 type LocalStoreConfig struct {
+	Root string
 	Path string
 }
 
 func DefaultLocalStoreConfig() *LocalStoreConfig {
 	return &LocalStoreConfig{
+		Root: DefaultHomeDirPath(),
 		Path: filepath.Join(DefaultHomeDirPath(), "localstore"),
 	}
 }
