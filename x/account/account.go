@@ -82,6 +82,7 @@ func (a *AccountService) FinalizeBlock(ctx context.Context, req *abcitypes.Final
 			if err != nil {
 				return nil, err
 			}
+			a.Logger.Info("created account", "address", account.Account.Address)
 		}
 	}
 

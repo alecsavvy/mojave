@@ -47,13 +47,14 @@ type Core struct {
 	batch      *chainstore.ChainStore
 }
 
-func NewCore(config *config.Config, logger *zap.Logger, init func(c *Core) (*node.Node, error)) (*Core, *node.Node, error) {
+func NewCore(config *config.Config, logger *zap.Logger, init func(c *Core) (*node.Node, error), chainStore *chainstore.ChainStore) (*Core, *node.Node, error) {
 	c := &Core{
-		config:  config,
-		modules: make(map[Callback][]module.Module),
-		logger:  logger.Named("core").Sugar(),
-		ready:   make(chan struct{}),
-		stopped: make(chan struct{}),
+		config:     config,
+		modules:    make(map[Callback][]module.Module),
+		logger:     logger.Named("core").Sugar(),
+		ready:      make(chan struct{}),
+		stopped:    make(chan struct{}),
+		chainStore: chainStore,
 	}
 
 	node, err := init(c)
@@ -251,22 +252,40 @@ func (c *Core) ProcessProposal(ctx context.Context, req *abcitypes.ProcessPropos
 }
 
 func (c *Core) FinalizeBlock(ctx context.Context, req *abcitypes.FinalizeBlockRequest) (*abcitypes.FinalizeBlockResponse, error) {
-	var txResults []*abcitypes.ExecTxResult
 	var validators []abcitypes.ValidatorUpdate
 	var events []abcitypes.Event
 	var appHash []byte
 	c.batch = c.chainStore.Batch()
+
+	// Initialize tx results - one per transaction in the block
+	txResults := make([]*abcitypes.ExecTxResult, len(req.Txs))
+	for i := range txResults {
+		txResults[i] = &abcitypes.ExecTxResult{Code: 0}
+	}
 
 	for _, mod := range c.modules[FinalizeBlock] {
 		// set module chain store to the core controlled batch
 		mod.SetChainStoreBatch(c.batch)
 		resp, err := mod.FinalizeBlock(ctx, req)
 		if err != nil {
-			return nil, err
+			// Convert module error to failed tx results instead of failing consensus
+			c.logger.Errorw("module error during FinalizeBlock", "module", mod.Name(), "error", err)
+			for i := range txResults {
+				if txResults[i].Code == 0 {
+					txResults[i] = &abcitypes.ExecTxResult{
+						Code: 1,
+						Log:  err.Error(),
+					}
+				}
+			}
+			continue
 		}
 		if resp != nil {
-			if len(resp.TxResults) > 0 {
-				txResults = resp.TxResults
+			// Merge tx results from modules (if they provide any)
+			for i, result := range resp.TxResults {
+				if i < len(txResults) && result != nil {
+					txResults[i] = result
+				}
 			}
 			if len(resp.ValidatorUpdates) > 0 {
 				validators = resp.ValidatorUpdates
@@ -333,6 +352,8 @@ func (c *Core) Commit(ctx context.Context, req *abcitypes.CommitRequest) (*abcit
 		if resp != nil && resp.RetainHeight > retainHeight {
 			retainHeight = resp.RetainHeight
 		}
+		// once the commit is complete, set the chain store batch to nil
+		mod.SetChainStoreBatch(nil)
 	}
 
 	// commit the batch from all modules

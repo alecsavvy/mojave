@@ -90,7 +90,7 @@ func NewApp(cfg *config.Config, zapLogger *zap.Logger) (*App, error) {
 			cmtnm.DefaultMetricsProvider(cmtConfig.Instrumentation), cmtLogger)
 	}
 
-	coreSvc, node, err := core.NewCore(cfg, zapLogger, createNode)
+	coreSvc, node, err := core.NewCore(cfg, zapLogger, createNode, chainStore)
 	if err != nil {
 		return nil, err
 	}
