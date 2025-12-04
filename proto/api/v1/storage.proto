@@ -11,19 +11,55 @@ service Storage {
   rpc DownloadFileChunk(DownloadFileChunkRequest) returns (stream DownloadFileChunkResponse) {}
 }
 
-message UploadRequest {}
+message FileMetadata {
+  string file_name = 1;
+  string mime_type = 2; // audio/flac, image/png, etc.
+  uint64 size = 3;
+}
 
-message UploadResponse {}
+message UploadRequest {
+  string cid = 1; // Expected CID (client-computed)
+  bytes data = 2; // File bytes (max 50MB)
+  FileMetadata metadata = 3;
+}
 
-message UploadChunkRequest {}
+message UploadResponse {
+  string original_cid = 1;
+  string transcoded_cid = 2;
+}
 
-message UploadChunkResponse {}
+message UploadChunkRequest {
+  string cid = 1; // Expected CID of full file
+  uint32 chunk_index = 2;
+  uint32 total_chunks = 3;
+  bytes data = 4; // Chunk bytes (max 10MB)
+  FileMetadata metadata = 5; // Only required on first chunk
+}
 
-message DownloadFileRequest {}
+message UploadChunkResponse {
+  bool complete = 1;
+  uint32 chunks_received = 2;
+  uint32 total_chunks = 3;
+  string original_cid = 4; // Set when complete
+  string transcoded_cid = 5; // Set when complete
+}
 
-message DownloadFileResponse {}
+message DownloadFileRequest {
+  string cid = 1;
+}
 
-message DownloadFileChunkRequest {}
+message DownloadFileResponse {
+  bytes data = 1;
+  FileMetadata metadata = 2;
+}
 
-message DownloadFileChunkResponse {}
+message DownloadFileChunkRequest {
+  string cid = 1;
+  uint32 chunk_size = 2; // Size of each chunk to stream
+}
 
+message DownloadFileChunkResponse {
+  bytes data = 1;
+  uint32 chunk_index = 2;
+  bool is_last = 3;
+}

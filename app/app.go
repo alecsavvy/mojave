@@ -96,7 +96,13 @@ func NewApp(cfg *config.Config, zapLogger *zap.Logger) (*App, error) {
 	}
 
 	chainSvc := chain.NewChainService(cfg, zapLogger, node)
-	storageSvc := storage.NewStorageService(cfg, zapLogger)
+	storageSvc, err := storage.NewStorageService(cfg, zapLogger, localStore, chainStore)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set dependencies
+	storageSvc.SetChain(chainSvc)
 	systemSvc := system.NewSystemService(cfg, zapLogger)
 	p2pSvc := p2p.NewP2PService(cfg, zapLogger)
 	ddexSvc := ddex.NewDDEXService(cfg, zapLogger)
