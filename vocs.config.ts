@@ -3,17 +3,64 @@ import { defineConfig } from 'vocs'
 export default defineConfig({
   title: 'Sonata',
   theme: {
-    accentColor: '#7c3aed',
+    accentColor: {
+      light: '#7a8f73', // sage/olive
+      dark: '#d9e2c7',  // light sage
+    },
+
     variables: {
-      content: {
-        width: '900px',
+      color: {
+        background: {
+          light: '#ffffff',
+          dark: '#2b2b2b'
+        },
+        background2: {
+          light: '#f7f7f7',
+          dark: '#1e1e1e'
+        },
+        background3: {
+          light: '#e9dcc5',   // soft beige
+          dark: '#3f4f3a'     // deep forest accent
+        },
+        border: {
+          light: '#e2e2e2',
+          dark: '#3f3f3f'
+        },
+        text: {
+          light: '#3f4f3a',   // readable forest green
+          dark: '#d9e2c7'
+        },
+        textAccent: {
+          light: '#7a8f73',   // muted olive
+          dark: '#d9e2c7'
+        },
+        backgroundAccent: {
+          light: '#d9e2c7',
+          dark: '#3f4f3a'
+        },
+        backgroundAccentHover: {
+          light: '#cbdab5',
+          dark: '#4d6046'
+        },
+        backgroundAccentText: {
+          light: '#3f4f3a',
+          dark: '#d9e2c7'
+        },
+        link: {
+          light: '#6d553e',   // soft brown
+          dark: '#e9dcc5'
+        },
+        linkHover: {
+          light: '#3f4f3a',
+          dark: '#d9e2c7'
+        },
+        heading: {
+          light: '#6d553e',   // warm brown headings
+          dark: '#e9dcc5'
+        },
       },
     },
   },
-  topNav: [
-    { text: 'Guide', link: '/mission/introduction' },
-    { text: 'GitHub', link: 'https://github.com/sonata' },
-  ],
   sidebar: [
     {
       text: 'Mission',
@@ -32,7 +79,6 @@ export default defineConfig({
         { text: 'Portable Wallets', link: '/value/portable-wallets' },
         { text: 'DDEX Native', link: '/value/ddex-native' },
         { text: 'Encrypted Files', link: '/value/encrypted-files' },
-        { text: 'Downloads & Streaming', link: '/value/downloads-and-streaming' },
         { text: 'Ownership & Portability', link: '/value/ownership-and-portability' },
         { text: 'Artist Benefits', link: '/value/artist-benefits' },
         { text: 'Listener Benefits', link: '/value/listener-benefits' },
