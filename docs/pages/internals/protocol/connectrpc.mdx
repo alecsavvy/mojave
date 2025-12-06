@@ -1,0 +1,87 @@
+# ConnectRPC
+
+Sonata uses ConnectRPC as its RPC framework, providing a modern alternative to gRPC with better browser support and simpler tooling.
+
+## Overview
+
+ConnectRPC is a slim library for building browser and gRPC-compatible HTTP APIs. It supports three protocols:
+
+1. **Connect Protocol** — Simple HTTP with JSON or binary
+2. **gRPC Protocol** — Full gRPC compatibility
+3. **gRPC-Web Protocol** — Browser-compatible gRPC
+
+## Why ConnectRPC?
+
+| Feature | gRPC | ConnectRPC |
+|---------|------|------------|
+| Browser support | Requires proxy | Native |
+| HTTP/JSON fallback | No | Yes |
+| Streaming | Yes | Yes |
+| Code generation | Yes | Yes |
+| Curl-friendly | No | Yes |
+
+## Generated Code
+
+The `buf.gen.yaml` configures ConnectRPC code generation:
+
+```yaml
+plugins:
+  - remote: buf.build/connectrpc/go:v1.18.1
+    out: gen
+    opt: paths=source_relative
+```
+
+This generates service handlers in `gen/api/v1/v1connect/`:
+
+```go
+// Generated interface
+type AccountServiceHandler interface {
+    GetAccount(context.Context, *connect.Request[v1.GetAccountRequest]) (
+        *connect.Response[v1.GetAccountResponse], error)
+}
+```
+
+## Server Implementation
+
+Services are implemented in `x/server/`:
+
+```go
+type AccountServer struct {
+    store *chainstore.ChainStore
+}
+
+func (s *AccountServer) GetAccount(
+    ctx context.Context,
+    req *connect.Request[apiv1.GetAccountRequest],
+) (*connect.Response[apiv1.GetAccountResponse], error) {
+    // Implementation
+}
+```
+
+## Client Usage
+
+Clients use the generated stubs:
+
+```go
+client := apiv1connect.NewAccountServiceClient(
+    http.DefaultClient,
+    "https://api.sonata.example",
+)
+
+resp, err := client.GetAccount(ctx, connect.NewRequest(&apiv1.GetAccountRequest{
+    Address: "...",
+}))
+```
+
+## HTTP/JSON Compatibility
+
+ConnectRPC services can be called with plain HTTP:
+
+```bash
+curl -X POST https://api.sonata.example/api.v1.AccountService/GetAccount \
+  -H "Content-Type: application/json" \
+  -d '{"address": "..."}'
+```
+
+This makes the API accessible without specialized clients.
+

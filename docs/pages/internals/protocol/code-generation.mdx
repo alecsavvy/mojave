@@ -1,0 +1,120 @@
+# Code Generation
+
+Sonata generates Go code from protobuf schemas, producing type-safe message types and RPC service stubs.
+
+## Overview
+
+The `gen/` directory contains all generated code. This code should never be edited manually—it's regenerated from `proto/` schemas using `buf generate`.
+
+## Generated Types
+
+### Message Types
+
+Each protobuf message becomes a Go struct:
+
+```protobuf
+// proto/account/v1/v1.proto
+message Account {
+  bytes address = 1;
+  string name = 2;
+  uint64 balance = 3;
+}
+```
+
+Generates:
+
+```go
+// gen/account/v1/v1.pb.go
+type Account struct {
+    Address []byte `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+    Name    string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+    Balance uint64 `protobuf:"varint,3,opt,name=balance,proto3" json:"balance,omitempty"`
+}
+```
+
+### Service Stubs
+
+Service definitions generate both client and handler interfaces:
+
+```protobuf
+// proto/api/v1/account.proto
+service AccountService {
+  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse);
+}
+```
+
+Generates client:
+
+```go
+// gen/api/v1/v1connect/account.connect.go
+type AccountServiceClient interface {
+    GetAccount(context.Context, *connect.Request[GetAccountRequest]) (
+        *connect.Response[GetAccountResponse], error)
+}
+```
+
+And handler:
+
+```go
+type AccountServiceHandler interface {
+    GetAccount(context.Context, *connect.Request[GetAccountRequest]) (
+        *connect.Response[GetAccountResponse], error)
+}
+```
+
+## Directory Structure
+
+```
+gen/
+├── account/v1/
+│   └── v1.pb.go              # Account messages
+├── api/v1/
+│   ├── account.pb.go         # API request/response types
+│   ├── chain.pb.go
+│   ├── storage.pb.go
+│   └── v1connect/
+│       ├── account.connect.go  # AccountService client/handler
+│       ├── chain.connect.go
+│       └── storage.connect.go
+├── chain/v1/
+│   ├── account.pb.go         # On-chain account types
+│   ├── tx.pb.go              # Transaction types
+│   └── ...
+└── store/
+    ├── chain/v1/v1.pb.go     # Chain store key types
+    └── local/v1/v1.pb.go     # Local store key types
+```
+
+## Usage in Code
+
+Import generated packages directly:
+
+```go
+import (
+    accountv1 "github.com/sonata/sonata/gen/account/v1"
+    apiv1 "github.com/sonata/sonata/gen/api/v1"
+    "github.com/sonata/sonata/gen/api/v1/v1connect"
+)
+
+// Create a message
+account := &accountv1.Account{
+    Address: []byte{...},
+    Name:    "artist",
+    Balance: 1000,
+}
+
+// Use the client
+client := v1connect.NewAccountServiceClient(httpClient, baseURL)
+```
+
+## Regenerating
+
+When schemas change:
+
+```bash
+# From project root
+buf generate
+```
+
+This updates all files in `gen/`. Always commit schema and generated code changes together to keep them in sync.
+

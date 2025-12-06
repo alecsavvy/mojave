@@ -141,6 +141,16 @@ export default defineConfig({
             { text: 'Decryption Events', link: '/internals/crypto/decryption-events' },
           ],
         },
+        {
+          text: 'Protocol',
+          items: [
+            { text: 'Overview', link: '/internals/protocol/overview' },
+            { text: 'Protobuf Schema', link: '/internals/protocol/protobuf-schema' },
+            { text: 'ConnectRPC', link: '/internals/protocol/connectrpc' },
+            { text: 'Buf Tooling', link: '/internals/protocol/buf-tooling' },
+            { text: 'Code Generation', link: '/internals/protocol/code-generation' },
+          ],
+        },
       ],
     },
     {

@@ -1,0 +1,68 @@
+# Protobuf Schema
+
+Sonata defines all its data structures using Protocol Buffers, providing type-safe, versioned schemas that generate code for multiple languages.
+
+## Overview
+
+The protobuf schemas in `proto/` define the contract between all Sonata components—the chain, storage layer, P2P network, and client SDK.
+
+## Schema Structure
+
+### API Services (`proto/api/v1/`)
+
+External-facing service definitions that clients interact with:
+
+```protobuf
+service AccountService {
+  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse);
+  rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse);
+}
+
+service StorageService {
+  rpc Upload(UploadRequest) returns (UploadResponse);
+  rpc Download(DownloadRequest) returns (DownloadResponse);
+}
+```
+
+### Chain Types (`proto/chain/v1/`)
+
+On-chain transaction types and state:
+
+```protobuf
+message Transaction {
+  bytes sender = 1;
+  oneof payload {
+    AccountTx account = 2;
+    StorageTx storage = 3;
+    DdexTx ddex = 4;
+  }
+}
+```
+
+### Domain Messages
+
+Each domain has its own message types:
+
+| Domain | Purpose |
+|--------|---------|
+| `account/v1` | User accounts, keys, permissions |
+| `storage/v1` | File uploads, CIDs, replication |
+| `ddex/v1` | Music metadata (DDEX-formatted) |
+| `composition/v1` | Tracks, albums, releases |
+| `validator/v1` | Validator registration and status |
+
+## Versioning
+
+All schemas use versioned packages (`v1`, `v2`, etc.) to enable:
+
+- Backward-compatible evolution
+- Clear migration paths
+- Parallel support for old and new clients
+
+## Best Practices
+
+1. **Use `optional` for nullable fields** — Explicit presence semantics
+2. **Reserve field numbers** — Never reuse deleted field numbers
+3. **Add to the end** — New fields always get new numbers
+4. **Document with comments** — Every message and field should have context
+
