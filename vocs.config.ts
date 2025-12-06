@@ -7,8 +7,10 @@ export default defineConfig({
       light: '#7a8f73', // sage/olive
       dark: '#d9e2c7',  // light sage
     },
-
     variables: {
+      content: {
+        width: 'clamp(900px, 50vw, 1200px)',
+      },
       color: {
         background: {
           light: '#ffffff',
