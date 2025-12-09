@@ -8,6 +8,9 @@ option go_package = "github.com/sonata-labs/sonata/gen/api/v1";
 
 service Account {
   rpc GetAccount(GetAccountRequest) returns (GetAccountResponse) {}
+
+  // utility rpc to create transaction bytes for a wallet to sign and send
+  rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse) {}
 }
 
 message GetAccountRequest {
@@ -16,4 +19,12 @@ message GetAccountRequest {
 
 message GetAccountResponse {
   account.v1.Account account = 1;
+}
+
+message CreateAccountRequest {
+  account.v1.Account account = 1;
+}
+
+message CreateAccountResponse {
+  bytes transaction = 1;
 }

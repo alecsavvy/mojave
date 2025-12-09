@@ -4,12 +4,17 @@ Sonata uses cryptographic wallet addresses as account identifiers, enabling perm
 
 ## Overview
 
-This page explains how accounts work in Sonata and how authentication is handled.
+Accounts in Sonata are simply an ED25519 public key and an address derived from the public key. They carry balances to pay for transactions and have a nonce to prevent replay attacks.
 
-## Future Content
+## Account Creation
 
-- Wallet-based identity
-- Account creation flow
-- Authentication mechanisms
-- Session management
+Accounts are created by the `CreateAccount` RPC. This RPC creates a transaction bytes that can be signed by a wallet and sent to the network. This particular RPC is a utility so before signing the bytes the client should validate the account address and public key.
+
+To increase adoption and also have seamless interop with solana and USDC, the embedded UI on a validator can be used to create an account with phantom connect. This allows users to create an account with their gmail or apple login. It also allows them to bring an existing phantom wallet with USDC for purchases if they'd rather do so. Developers of course can always generate an ED25519 keypair and use the `CreateAccount` RPC to create an account programmatically.
+
+Until there is a reason for multisig accounts, every transaction must be signed by an account with the correct nonce. A transaction is valid if it has a valid signature and the nonce is the next nonce for the account.
+
+## Grants
+
+To keep things initially simple, grants are blanket applied to another account when properly authorized. If someone wants to grant account 123 access to control another account 456, they can do so by signing a transaction with account 456 which authorizes account 123 to control it. Account 123 signatures are now just as effective as account 456 signatures for controlling the account outside of public key encryption.
 
