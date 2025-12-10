@@ -4,20 +4,20 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/sonata-labs/sonata/config"
+	"github.com/alecsavvy/mojave/config"
 	"github.com/spf13/cobra"
 )
 
 func NewRootCommand() *cobra.Command {
 	root := &cobra.Command{
-		Use:   "sonata",
-		Short: "Sonata is an open distribution platform for the music industry",
+		Use:   "mojave",
+		Short: "Mojave is an open distribution platform for the music industry",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println("Hello, World!")
 		},
 	}
 
-	root.PersistentFlags().String("home", config.DefaultHomeDirPath(), "home directory (default is $HOME/.sonata)")
+	root.PersistentFlags().String("home", config.DefaultHomeDirPath(), "home directory (default is $HOME/.mojave)")
 
 	root.AddCommand(NewInitCommand())
 	root.AddCommand(NewStartCommand())

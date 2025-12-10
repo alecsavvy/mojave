@@ -4,7 +4,7 @@ package chain.v1;
 
 import "storage/v1/v1.proto";
 
-option go_package = "github.com/sonata-labs/sonata/gen/chain/v1";
+option go_package = "github.com/alecsavvy/mojave/gen/chain/v1";
 
 message FileUploadTransaction {
   storage.v1.FileUploadMessage msg = 1;
@@ -18,4 +18,3 @@ message FileUploadEvent {
   string tx_hash = 5;
   uint64 block_height = 6;
 }
-

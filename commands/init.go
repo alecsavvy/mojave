@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/alecsavvy/mojave/config"
 	"github.com/cometbft/cometbft/crypto"
-	"github.com/sonata-labs/sonata/config"
 	"github.com/spf13/cobra"
 )
 

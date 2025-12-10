@@ -4,7 +4,7 @@ package chain.v1;
 
 import "ddex/v1/v1.proto";
 
-option go_package = "github.com/sonata-labs/sonata/gen/chain/v1";
+option go_package = "github.com/alecsavvy/mojave/gen/chain/v1";
 
 message NewReleaseTransaction {
   ddex.v1.NewReleaseMessage msg = 1;

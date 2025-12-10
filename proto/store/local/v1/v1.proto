@@ -2,4 +2,4 @@ syntax = "proto3";
 
 package store.local.v1;
 
-option go_package = "github.com/sonata-labs/sonata/gen/store/local/v1";
+option go_package = "github.com/alecsavvy/mojave/gen/store/local/v1";

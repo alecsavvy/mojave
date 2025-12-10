@@ -1,7 +1,7 @@
 package chainstore
 
 import (
-	storagev1 "github.com/sonata-labs/sonata/gen/storage/v1"
+	storagev1 "github.com/alecsavvy/mojave/gen/storage/v1"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -70,4 +70,3 @@ func (c *ChainStore) GetUploadByOriginalCID(originalCID string) (*storagev1.File
 	// Get the actual upload record
 	return c.GetUpload(string(transcodedCIDBytes))
 }
-

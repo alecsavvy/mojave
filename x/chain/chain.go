@@ -5,16 +5,16 @@ import (
 	"fmt"
 
 	"connectrpc.com/connect"
+	"github.com/alecsavvy/mojave/config"
+	v1 "github.com/alecsavvy/mojave/gen/api/v1"
+	"github.com/alecsavvy/mojave/gen/api/v1/v1connect"
+	chainv1 "github.com/alecsavvy/mojave/gen/chain/v1"
+	"github.com/alecsavvy/mojave/types/module"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/libs/bytes"
 	"github.com/cometbft/cometbft/node"
 	"github.com/cometbft/cometbft/rpc/client/local"
 	"github.com/cosmos/gogoproto/proto"
-	"github.com/sonata-labs/sonata/config"
-	v1 "github.com/sonata-labs/sonata/gen/api/v1"
-	"github.com/sonata-labs/sonata/gen/api/v1/v1connect"
-	chainv1 "github.com/sonata-labs/sonata/gen/chain/v1"
-	"github.com/sonata-labs/sonata/types/module"
 	"go.uber.org/zap"
 )
 

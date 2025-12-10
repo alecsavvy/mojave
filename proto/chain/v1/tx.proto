@@ -6,7 +6,7 @@ import "chain/v1/account.proto";
 import "chain/v1/ddex.proto";
 import "chain/v1/storage.proto";
 
-option go_package = "github.com/sonata-labs/sonata/gen/chain/v1";
+option go_package = "github.com/alecsavvy/mojave/gen/chain/v1";
 
 message SignedTransaction {
   Transaction transaction = 1;

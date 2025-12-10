@@ -1,4 +1,4 @@
-module github.com/sonata-labs/sonata
+module github.com/alecsavvy/mojave
 
 go 1.25.4
 

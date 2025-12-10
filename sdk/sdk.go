@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/sonata-labs/sonata/gen/api/v1/v1connect"
+	"github.com/alecsavvy/mojave/gen/api/v1/v1connect"
 )
 
 type SonataSDK struct {

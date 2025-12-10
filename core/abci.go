@@ -4,11 +4,11 @@ import (
 	"context"
 	"sync"
 
+	"github.com/alecsavvy/mojave/config"
+	"github.com/alecsavvy/mojave/store/chainstore"
+	"github.com/alecsavvy/mojave/types/module"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/node"
-	"github.com/sonata-labs/sonata/config"
-	"github.com/sonata-labs/sonata/store/chainstore"
-	"github.com/sonata-labs/sonata/types/module"
 	"go.uber.org/zap"
 )
 

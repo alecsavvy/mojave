@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
-	"github.com/sonata-labs/sonata/common/cid"
-	v1 "github.com/sonata-labs/sonata/gen/api/v1"
-	"github.com/sonata-labs/sonata/sdk"
+	"github.com/alecsavvy/mojave/common/cid"
+	v1 "github.com/alecsavvy/mojave/gen/api/v1"
+	"github.com/alecsavvy/mojave/sdk"
 )
 
 // TestDirectUpload tests the direct upload flow for files < 50MB.
@@ -265,4 +265,3 @@ func TestChunkedUploadInOrder(t *testing.T) {
 
 	t.Logf("in-order chunked upload successful: transcoded=%s", finalResp.Msg.TranscodedCid)
 }
-

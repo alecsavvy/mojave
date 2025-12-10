@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/alecsavvy/mojave/config"
+	"github.com/alecsavvy/mojave/gen/api/v1/v1connect"
+	"github.com/alecsavvy/mojave/types/module"
 	"github.com/labstack/echo/v4"
-	"github.com/sonata-labs/sonata/config"
-	"github.com/sonata-labs/sonata/gen/api/v1/v1connect"
-	"github.com/sonata-labs/sonata/types/module"
 	"go.uber.org/zap"
 )
 
@@ -60,7 +60,7 @@ func (s *Server) Start() error {
 
 	s.registerRoutes()
 
-	address := fmt.Sprintf("%s:%d", s.config.Sonata.HTTP.Host, s.config.Sonata.HTTP.Port)
+	address := fmt.Sprintf("%s:%d", s.config.Mojave.HTTP.Host, s.config.Mojave.HTTP.Port)
 	s.MarkReady()
 
 	if err := s.httpServer.Start(address); err != nil && err != http.ErrServerClosed {

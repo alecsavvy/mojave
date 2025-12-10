@@ -4,6 +4,20 @@ import (
 	"context"
 	"os"
 
+	"github.com/alecsavvy/mojave/config"
+	"github.com/alecsavvy/mojave/core"
+	"github.com/alecsavvy/mojave/store/chainstore"
+	"github.com/alecsavvy/mojave/store/localstore"
+	"github.com/alecsavvy/mojave/x/account"
+	"github.com/alecsavvy/mojave/x/chain"
+	"github.com/alecsavvy/mojave/x/composition"
+	"github.com/alecsavvy/mojave/x/ddex"
+	"github.com/alecsavvy/mojave/x/p2p"
+	"github.com/alecsavvy/mojave/x/server"
+	"github.com/alecsavvy/mojave/x/statesync"
+	"github.com/alecsavvy/mojave/x/storage"
+	"github.com/alecsavvy/mojave/x/system"
+	"github.com/alecsavvy/mojave/x/validator"
 	cmtconfig "github.com/cometbft/cometbft/config"
 	cmtflags "github.com/cometbft/cometbft/libs/cli/flags"
 	cmtlog "github.com/cometbft/cometbft/libs/log"
@@ -11,20 +25,6 @@ import (
 	cmtp2p "github.com/cometbft/cometbft/p2p"
 	"github.com/cometbft/cometbft/privval"
 	"github.com/cometbft/cometbft/proxy"
-	"github.com/sonata-labs/sonata/config"
-	"github.com/sonata-labs/sonata/core"
-	"github.com/sonata-labs/sonata/store/chainstore"
-	"github.com/sonata-labs/sonata/store/localstore"
-	"github.com/sonata-labs/sonata/x/account"
-	"github.com/sonata-labs/sonata/x/chain"
-	"github.com/sonata-labs/sonata/x/composition"
-	"github.com/sonata-labs/sonata/x/ddex"
-	"github.com/sonata-labs/sonata/x/p2p"
-	"github.com/sonata-labs/sonata/x/server"
-	"github.com/sonata-labs/sonata/x/statesync"
-	"github.com/sonata-labs/sonata/x/storage"
-	"github.com/sonata-labs/sonata/x/system"
-	"github.com/sonata-labs/sonata/x/validator"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
 )
@@ -55,12 +55,12 @@ type App struct {
 func NewApp(cfg *config.Config, zapLogger *zap.Logger) (*App, error) {
 	appLogger := zapLogger.Named("app").Sugar()
 
-	chainStore, err := chainstore.NewChainStore(cfg.Sonata.ChainStore.Path)
+	chainStore, err := chainstore.NewChainStore(cfg.Mojave.ChainStore.Path)
 	if err != nil {
 		return nil, err
 	}
 
-	localStore, err := localstore.NewLocalStore(cfg.Sonata.LocalStore.Path)
+	localStore, err := localstore.NewLocalStore(cfg.Mojave.LocalStore.Path)
 	if err != nil {
 		return nil, err
 	}

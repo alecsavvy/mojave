@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package p2p.v1;
 
-option go_package = "github.com/sonata-labs/sonata/gen/p2p/v1";
+option go_package = "github.com/alecsavvy/mojave/gen/p2p/v1";
 
 message P2PRequest {}
 message P2PResponse {}

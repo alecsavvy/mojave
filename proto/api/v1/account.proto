@@ -4,7 +4,7 @@ package api.v1;
 
 import "account/v1/v1.proto";
 
-option go_package = "github.com/sonata-labs/sonata/gen/api/v1";
+option go_package = "github.com/alecsavvy/mojave/gen/api/v1";
 
 service Account {
   rpc GetAccount(GetAccountRequest) returns (GetAccountResponse) {}

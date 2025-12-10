@@ -8,18 +8,18 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"github.com/alecsavvy/mojave/common/cid"
+	"github.com/alecsavvy/mojave/config"
+	v1 "github.com/alecsavvy/mojave/gen/api/v1"
+	"github.com/alecsavvy/mojave/gen/api/v1/v1connect"
+	chainv1 "github.com/alecsavvy/mojave/gen/chain/v1"
+	storagev1 "github.com/alecsavvy/mojave/gen/storage/v1"
+	"github.com/alecsavvy/mojave/media"
+	"github.com/alecsavvy/mojave/store/chainstore"
+	"github.com/alecsavvy/mojave/store/localstore"
+	"github.com/alecsavvy/mojave/types/module"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/gogoproto/proto"
-	"github.com/sonata-labs/sonata/common/cid"
-	"github.com/sonata-labs/sonata/config"
-	v1 "github.com/sonata-labs/sonata/gen/api/v1"
-	"github.com/sonata-labs/sonata/gen/api/v1/v1connect"
-	chainv1 "github.com/sonata-labs/sonata/gen/chain/v1"
-	storagev1 "github.com/sonata-labs/sonata/gen/storage/v1"
-	"github.com/sonata-labs/sonata/media"
-	"github.com/sonata-labs/sonata/store/chainstore"
-	"github.com/sonata-labs/sonata/store/localstore"
-	"github.com/sonata-labs/sonata/types/module"
 	"go.uber.org/zap"
 )
 
@@ -275,7 +275,7 @@ func (s *StorageService) submitFileUploadTx(ctx context.Context, originalCID, tr
 
 	// Build the transaction
 	uploaderAddr := "" // TODO: Get from request context/auth
-	transcoderAddr := s.config.Sonata.ValidatorAddress
+	transcoderAddr := s.config.Mojave.ValidatorAddress
 
 	msg := &storagev1.FileUploadMessage{
 		UploaderAddress:   uploaderAddr,
@@ -290,7 +290,7 @@ func (s *StorageService) submitFileUploadTx(ctx context.Context, originalCID, tr
 	signedTx := &chainv1.SignedTransaction{
 		Transaction: &chainv1.Transaction{
 			Header: &chainv1.TransactionHeader{
-				ChainId:   s.config.Sonata.ChainID,
+				ChainId:   s.config.Mojave.ChainID,
 				Nonce:     uint64(time.Now().UnixNano()),
 				GasPrice:  1,
 				GasLimit:  100000,

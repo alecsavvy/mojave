@@ -10,7 +10,7 @@ import "ddex/ern/v432/v432.proto";
 import "ddex/mead/v11/v11.proto";
 import "ddex/pie/v10/v10.proto";
 
-option go_package = "github.com/sonata-labs/sonata/gen/ddex/v1";
+option go_package = "github.com/alecsavvy/mojave/gen/ddex/v1";
 
 message NewReleaseMessage {
   oneof msg {

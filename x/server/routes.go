@@ -3,9 +3,9 @@ package server
 import (
 	"net/http"
 
+	"github.com/alecsavvy/mojave/gen/api/v1/v1connect"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/sonata-labs/sonata/gen/api/v1/v1connect"
 )
 
 func (s *Server) registerRoutes() {

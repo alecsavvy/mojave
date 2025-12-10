@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/sonata-labs/sonata/app"
-	"github.com/sonata-labs/sonata/config"
+	"github.com/alecsavvy/mojave/app"
+	"github.com/alecsavvy/mojave/config"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 )

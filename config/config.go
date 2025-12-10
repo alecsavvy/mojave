@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	DefaultHomeDir = ".sonata"
+	DefaultHomeDir = ".mojave"
 )
 
 func DefaultHomeDirPath() string {
@@ -21,13 +21,13 @@ func DefaultHomeDirPath() string {
 }
 
 type Config struct {
-	Sonata   *SonataConfig
+	Mojave   *MojaveConfig
 	CometBFT *config.Config
 }
 
 func DefaultConfig() *Config {
 	return &Config{
-		Sonata:   DefaultSonataConfig(),
+		Mojave:   DefaultMojaveConfig(),
 		CometBFT: config.DefaultConfig(),
 	}
 }
@@ -37,11 +37,11 @@ func (c *Config) ValidateBasic() error {
 }
 
 func (c *Config) SetRoot(root string) {
-	c.Sonata.SetRoot(root)
+	c.Mojave.SetRoot(root)
 	c.CometBFT.SetRoot(root)
 }
 
-type SonataConfig struct {
+type MojaveConfig struct {
 	Root             string            `mapstructure:"root" toml:"root"`
 	ChainID          string            `mapstructure:"chain_id" toml:"chain_id"`
 	ValidatorAddress string            `mapstructure:"validator_address" toml:"validator_address"`
@@ -51,10 +51,10 @@ type SonataConfig struct {
 	LocalStore       *LocalStoreConfig `mapstructure:"localstore" toml:"localstore"`
 }
 
-func DefaultSonataConfig() *SonataConfig {
-	return &SonataConfig{
+func DefaultMojaveConfig() *MojaveConfig {
+	return &MojaveConfig{
 		Root:             DefaultHomeDirPath(),
-		ChainID:          "sonata-1",
+		ChainID:          "mojave-1",
 		ValidatorAddress: "",
 		HTTP:             DefaultHTTPConfig(),
 		Socket:           DefaultSocketConfig(),
@@ -63,11 +63,11 @@ func DefaultSonataConfig() *SonataConfig {
 	}
 }
 
-func (c *SonataConfig) ValidateBasic() error {
+func (c *MojaveConfig) ValidateBasic() error {
 	return nil
 }
 
-func (c *SonataConfig) SetRoot(root string) {
+func (c *MojaveConfig) SetRoot(root string) {
 	c.Root = root
 	c.HTTP.SetRoot(root)
 	c.Socket.SetRoot(root)
@@ -101,7 +101,7 @@ type SocketConfig struct {
 func DefaultSocketConfig() *SocketConfig {
 	return &SocketConfig{
 		Root: DefaultHomeDirPath(),
-		Path: "unix:///tmp/sonata.sock",
+		Path: "unix:///tmp/mojave.sock",
 	}
 }
 
@@ -143,8 +143,8 @@ func (c *LocalStoreConfig) SetRoot(root string) {
 	c.Path = filepath.Join(root, "data", "local.db")
 }
 
-// SaveAs writes the SonataConfig to the specified file path as TOML.
-func (c *SonataConfig) SaveAs(filePath string) error {
+// SaveAs writes the MojaveConfig to the specified file path as TOML.
+func (c *MojaveConfig) SaveAs(filePath string) error {
 	data, err := toml.Marshal(c)
 	if err != nil {
 		return err

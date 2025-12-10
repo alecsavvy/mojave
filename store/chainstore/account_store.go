@@ -1,7 +1,7 @@
 package chainstore
 
 import (
-	accountv1 "github.com/sonata-labs/sonata/gen/account/v1"
+	accountv1 "github.com/alecsavvy/mojave/gen/account/v1"
 	"google.golang.org/protobuf/proto"
 )
 

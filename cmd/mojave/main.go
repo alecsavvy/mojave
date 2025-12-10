@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/sonata-labs/sonata/commands"
+	"github.com/alecsavvy/mojave/commands"
 )
 
 func main() {

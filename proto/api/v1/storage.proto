@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package api.v1;
 
-option go_package = "github.com/sonata-labs/sonata/gen/api/v1";
+option go_package = "github.com/alecsavvy/mojave/gen/api/v1";
 
 service Storage {
   rpc Upload(UploadRequest) returns (UploadResponse) {}

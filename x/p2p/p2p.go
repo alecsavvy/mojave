@@ -4,10 +4,10 @@ import (
 	"context"
 
 	"connectrpc.com/connect"
-	"github.com/sonata-labs/sonata/config"
-	v1 "github.com/sonata-labs/sonata/gen/api/v1"
-	"github.com/sonata-labs/sonata/gen/api/v1/v1connect"
-	"github.com/sonata-labs/sonata/types/module"
+	"github.com/alecsavvy/mojave/config"
+	v1 "github.com/alecsavvy/mojave/gen/api/v1"
+	"github.com/alecsavvy/mojave/gen/api/v1/v1connect"
+	"github.com/alecsavvy/mojave/types/module"
 	"go.uber.org/zap"
 )
 

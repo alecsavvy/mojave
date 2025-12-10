@@ -21,7 +21,7 @@ func GenerateGenesis(configDir string, validatorKeys []crypto.PubKey) error {
 		}
 	}
 
-	chainID := fmt.Sprintf("sonata-%s", time.Now().Format("20060102150405"))
+	chainID := fmt.Sprintf("mojave-%s", time.Now().Format("20060102150405"))
 	genDoc := cmttypes.GenesisDoc{
 		ChainID:     chainID,
 		GenesisTime: time.Now(),

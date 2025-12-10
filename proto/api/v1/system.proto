@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package api.v1;
 
-option go_package = "github.com/sonata-labs/sonata/gen/api/v1";
+option go_package = "github.com/alecsavvy/mojave/gen/api/v1";
 
 service System {
   rpc GetReady(GetReadyRequest) returns (GetReadyResponse) {}
@@ -26,4 +26,3 @@ message GetStatusResponse {}
 message GetNodeInfoRequest {}
 
 message GetNodeInfoResponse {}
-

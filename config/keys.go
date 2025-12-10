@@ -3,11 +3,11 @@ package config
 import (
 	"fmt"
 
+	"github.com/alecsavvy/mojave/common"
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/cometbft/cometbft/p2p"
 	"github.com/cometbft/cometbft/privval"
-	"github.com/sonata-labs/sonata/common"
 )
 
 // GenerateNodeKeys creates validator and node keys for a node.

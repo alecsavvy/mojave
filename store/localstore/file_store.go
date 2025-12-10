@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"errors"
 
+	storagev1 "github.com/alecsavvy/mojave/gen/storage/v1"
 	"github.com/cockroachdb/pebble"
-	storagev1 "github.com/sonata-labs/sonata/gen/storage/v1"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -207,4 +207,3 @@ func (l *LocalStore) HasUpload(cid string) bool {
 	closer.Close()
 	return true
 }
-

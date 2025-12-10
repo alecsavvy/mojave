@@ -4,15 +4,15 @@ package chain.v1;
 
 import "account/v1/v1.proto";
 
-option go_package = "github.com/sonata-labs/sonata/gen/chain/v1";
+option go_package = "github.com/alecsavvy/mojave/gen/chain/v1";
 
 message CreateAccountTransaction {
-    account.v1.Account account = 1;
+  account.v1.Account account = 1;
 }
 
 message CreateAccountEvent {
-    string address = 1;
-    string sender = 2;
-    string tx_hash = 3;
-    uint64 block_height = 4;
+  string address = 1;
+  string sender = 2;
+  string tx_hash = 3;
+  uint64 block_height = 4;
 }

@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	accountv1 "github.com/alecsavvy/mojave/gen/account/v1"
+	v1 "github.com/alecsavvy/mojave/gen/api/v1"
+	chainv1 "github.com/alecsavvy/mojave/gen/chain/v1"
+	"github.com/alecsavvy/mojave/sdk"
 	"github.com/cosmos/gogoproto/proto"
-	accountv1 "github.com/sonata-labs/sonata/gen/account/v1"
-	v1 "github.com/sonata-labs/sonata/gen/api/v1"
-	chainv1 "github.com/sonata-labs/sonata/gen/chain/v1"
-	"github.com/sonata-labs/sonata/sdk"
 )
 
 func getNodeURL() string {
@@ -27,7 +27,7 @@ func buildCreateAccountTx(account *accountv1.Account) ([]byte, error) {
 	signedTx := &chainv1.SignedTransaction{
 		Transaction: &chainv1.Transaction{
 			Header: &chainv1.TransactionHeader{
-				ChainId:   "sonata-test",
+				ChainId:   "mojave-test",
 				Nonce:     1,
 				GasPrice:  1,
 				GasLimit:  100000,

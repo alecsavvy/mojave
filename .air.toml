@@ -1,14 +1,11 @@
-# Air hot reload configuration for Sonata
+# Air hot reload configuration for Mojave
 # https://github.com/air-verse/air
-
-root = "."
-tmp_dir = "tmp/air"
 
 [build]
   # Build command
-  cmd = "go build -o ./tmp/air/sonata ./cmd/sonata"
+  cmd = "go build -o ./tmp/mojave/air ./cmd/mojave"
   # Binary file to run
-  bin = "./tmp/air/sonata"
+  bin = "./tmp/mojave/air"
   # Arguments passed to the binary (set via AIR_ARGS env var or -- args)
   args_bin = []
   # Watch these file extensions
