@@ -4,6 +4,7 @@ go 1.25.4
 
 require (
 	connectrpc.com/connect v1.19.1
+	github.com/alecsavvy/ddex-proto v0.1.0
 	github.com/cockroachdb/pebble v1.1.2
 	github.com/cometbft/cometbft v1.0.1
 	github.com/cometbft/cometbft/api v1.0.0
@@ -12,7 +13,6 @@ require (
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/multiformats/go-multihash v0.2.3
 	github.com/pelletier/go-toml/v2 v2.2.2
-	github.com/sonata-labs/ddex-proto v0.1.0
 	github.com/spf13/cobra v1.10.1
 	github.com/spf13/viper v1.19.0
 	go.uber.org/zap v1.27.1

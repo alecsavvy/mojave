@@ -7,13 +7,13 @@
 package v1
 
 import (
-	v381 "github.com/sonata-labs/ddex-proto/gen/ddex/ern/v381"
-	v383 "github.com/sonata-labs/ddex-proto/gen/ddex/ern/v383"
-	v42 "github.com/sonata-labs/ddex-proto/gen/ddex/ern/v42"
-	v43 "github.com/sonata-labs/ddex-proto/gen/ddex/ern/v43"
-	v432 "github.com/sonata-labs/ddex-proto/gen/ddex/ern/v432"
-	v11 "github.com/sonata-labs/ddex-proto/gen/ddex/mead/v11"
-	v10 "github.com/sonata-labs/ddex-proto/gen/ddex/pie/v10"
+	v381 "github.com/alecsavvy/ddex-proto/gen/ddex/ern/v381"
+	v383 "github.com/alecsavvy/ddex-proto/gen/ddex/ern/v383"
+	v42 "github.com/alecsavvy/ddex-proto/gen/ddex/ern/v42"
+	v43 "github.com/alecsavvy/ddex-proto/gen/ddex/ern/v43"
+	v432 "github.com/alecsavvy/ddex-proto/gen/ddex/ern/v432"
+	v11 "github.com/alecsavvy/ddex-proto/gen/ddex/mead/v11"
+	v10 "github.com/alecsavvy/ddex-proto/gen/ddex/pie/v10"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
