@@ -14,9 +14,9 @@ func ReadConfig(homeDir string) (*Config, error) {
 	}
 
 	// Read Sonata config
-	sonataConfig, err := ReadSonataConfig(homeDir)
+	mojaveConfig, err := ReadMojaveConfig(homeDir)
 	if err != nil {
-		return nil, fmt.Errorf("reading sonata config: %w", err)
+		return nil, fmt.Errorf("reading mojave config: %w", err)
 	}
 
 	// Read CometBFT config
@@ -26,29 +26,29 @@ func ReadConfig(homeDir string) (*Config, error) {
 	}
 
 	return &Config{
-		Sonata:   sonataConfig,
+		Mojave:   mojaveConfig,
 		CometBFT: cmtConfig,
 	}, nil
 }
 
-func ReadSonataConfig(homeDir string) (*SonataConfig, error) {
-	sonataConfig := DefaultSonataConfig()
-	sonataConfig.SetRoot(homeDir)
+func ReadMojaveConfig(homeDir string) (*MojaveConfig, error) {
+	mojaveConfig := DefaultMojaveConfig()
+	mojaveConfig.SetRoot(homeDir)
 
 	v := viper.New()
-	v.SetConfigFile(filepath.Join(homeDir, "config", "sonata.toml"))
+	v.SetConfigFile(filepath.Join(homeDir, "config", "mojave.toml"))
 
 	if err := v.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("reading config file: %w", err)
 	}
-	if err := v.Unmarshal(sonataConfig); err != nil {
+	if err := v.Unmarshal(mojaveConfig); err != nil {
 		return nil, fmt.Errorf("unmarshaling config: %w", err)
 	}
-	if err := sonataConfig.ValidateBasic(); err != nil {
+	if err := mojaveConfig.ValidateBasic(); err != nil {
 		return nil, fmt.Errorf("validating config: %w", err)
 	}
 
-	return sonataConfig, nil
+	return mojaveConfig, nil
 }
 
 func ReadCometBFTConfig(homeDir string) (*cmtconfig.Config, error) {
