@@ -14,7 +14,7 @@ go install github.com/alecsavvy/mojave/cmd/mojave@latest
 go install github.com/air-verse/air@latest
 
 # initialize a local node to a local dir
-mojave init --home=./tmp/mojave-dev
+mojave init --home ./tmp/mojave-dev
 
 # start dev node using local dir
 air -- run --home ./tmp/mojave-dev
