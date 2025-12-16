@@ -11,6 +11,7 @@ export default defineConfig({
     },
   },
   iconUrl: '/logo.png',
+  ogImageUrl: '/og.png',
   sidebar: [
     {
       text: 'One Pager',
