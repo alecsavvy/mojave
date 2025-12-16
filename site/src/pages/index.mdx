@@ -2,13 +2,24 @@
 layout: landing
 title: Mojave
 description: The protocol for open audio distribution.
+showTopNav: false
 showSidebar: true
 ---
 
 import { HomePage } from 'vocs/components'
 
 <HomePage.Root>
-  <HomePage.Tagline>Mojave</HomePage.Tagline>
+  <img
+    src="/logo.png"
+    alt="Mojave"
+    style={{
+      width: 96,
+      height: 96,
+      marginBottom: '1rem',
+      opacity: 0.95,
+    }}
+  />
+  <HomePage.Tagline> Mojave</HomePage.Tagline>
   <HomePage.Description>Open and equitable audio distribution.</HomePage.Description>
   <HomePage.Buttons>
     <HomePage.Button href="/onepager" variant="accent">One Pager</HomePage.Button>

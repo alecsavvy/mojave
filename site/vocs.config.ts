@@ -9,20 +9,12 @@ export default defineConfig({
       light: '#d97706', // Warm amber/orange for Mojave desert theme
       dark: '#f59e0b',  // Brighter amber for dark mode visibility
     },
-    // colorScheme not set - enables manual dark/light mode toggle
   },
+  iconUrl: '/logo.png',
   sidebar: [
     {
       text: 'One Pager',
       link: '/onepager',
-    },
-    {
-      text: 'Whitepaper',
-      link: '/whitepaper',
-    },
-    {
-      text: 'Yellowpaper',
-      link: '/yellowpaper',
     },
     {
       text: 'Glossary',
