@@ -1,0 +1,15 @@
+---
+layout: landing
+title: Mojave Architecture File Storage
+description: The protocol for open audio distribution.
+showTopNav: false
+showSidebar: true
+---
+
+# File Storage
+
+This is how file storage works in Mojave.
+
+## DEK distribution
+
+OpenTDF encrypts the file using a Deterministic Encryption Key (DEK). The DEK is encrypted and distributed to the validator nodes in the network but can be customized by the uploader for higher security. DEKs are small and cheap to distribute, making them an ideal way to encrypt files. Rotating validator sets does not require re-encrypting the file.
