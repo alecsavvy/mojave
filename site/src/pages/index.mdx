@@ -19,10 +19,19 @@ import { HomePage } from 'vocs/components'
       opacity: 0.95,
     }}
   />
-  <HomePage.Tagline> Mojave</HomePage.Tagline>
+  <div
+    style={{
+      alignItems: 'center',
+      display: 'inline-flex',
+      gap: '0.5rem',
+      justifyContent: 'center',
+    }}
+  >
+    <HomePage.Tagline> Mojave</HomePage.Tagline>
+    <HomePage.Button href="/onepager" variant="accent">One Pager</HomePage.Button>
+  </div>
   <HomePage.Description>Open and equitable audio distribution.</HomePage.Description>
   <HomePage.Buttons>
-    <HomePage.Button href="/onepager" variant="accent">One Pager</HomePage.Button>
     <HomePage.Button href="https://github.com/alecsavvy/mojave">Protocol</HomePage.Button>
     <HomePage.Button href="https://github.com/alecsavvy/ddex-proto">DDEX</HomePage.Button>
     <HomePage.Button href="https://github.com/alecsavvy/opentdf">OpenTDF</HomePage.Button>
