@@ -1,0 +1,43 @@
+sequenceDiagram
+    participant Client
+    participant UV as Upload Validator
+    participant Chain as CometBFT Chain
+    participant RS as Replication Set
+    participant DHS as DEK Holder Set
+
+    Client->>UV: raw audio + images + DDEX metadata<br/>+ replication set config<br/>+ DEK holder set config
+
+    rect rgb(40, 40, 60)
+        Note over UV: Processing
+        UV->>UV: transcode audio → FLAC
+        UV->>UV: normalize images → PNG
+        UV->>UV: generate FLAC CID
+        UV->>UV: generate image CIDs
+        UV->>UV: generate DEK
+        UV->>UV: encrypt FLAC with DEK → .tdf
+        UV->>UV: generate encrypted CID
+        UV->>UV: wrap DEK for client recovery key
+    end
+
+    UV->>UV: begin seeding .tdf + PNGs (BitTorrent)
+
+    UV->>Chain: UploadComplete tx<br/>(FLAC CID, encrypted CID, image CIDs,<br/>client wrapped DEK, replication set, DEK holder set)
+
+    Chain-->>RS: upload.complete event
+    Chain-->>DHS: upload.complete event
+
+    UV-->>Client: CIDs + metadata
+
+    rect rgb(30, 50, 40)
+        Note over RS,DHS: Peer Replication
+        RS->>RS: fetch .tdf via BitTorrent<br/>(rendezvous on encrypted CID)
+        RS->>RS: fetch PNGs via BitTorrent<br/>(rendezvous on image CIDs)
+        RS->>RS: store via gocloud.dev
+        DHS->>UV: fetch wrapped DEK via CometBFT reactor
+        DHS->>DHS: store wrapped DEK in local store
+    end
+
+    Client->>Chain: PublishRelease tx (signed)<br/>DDEX ERN referencing CIDs
+
+    Chain-->>RS: release.published event
+    Chain-->>DHS: release.published event

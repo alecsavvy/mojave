@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant Device
+    participant RV as Replication Validator
+    participant DHV as DEK Holder Validator
+    participant Chain as CometBFT Chain
+    participant BT as BitTorrent Network
+
+    Device->>RV: access request<br/>{ cid, device_x25519_pubkey }<br/>signed by Ed25519
+
+    RV->>RV: check DEK holder set<br/>(not a DEK holder for this CID)
+
+    RV-->>Device: redirect to DEK holder validator
+
+    Device->>DHV: access request<br/>{ cid, device_x25519_pubkey }<br/>signed by Ed25519
+
+    DHV->>Chain: read access policy for CID
+    Chain-->>DHV: policy + conditions
+
+    DHV->>DHV: verify signature + evaluate policy
+
+    DHV->>Chain: GrantAccess tx (audit only)
+    DHV->>DHV: wrap DEK to device X25519 pubkey
+    DHV-->>Device: wrapped DEK
+
+    Device->>BT: fetch .tdf<br/>(served by any seeding validator)
+    BT-->>Device: encrypted .tdf blob
+
+    Device->>Device: unwrap DEK with device X25519 private key
+    Device->>Device: decrypt .tdf → FLAC
+    Device->>Device: play

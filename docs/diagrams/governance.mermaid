@@ -1,0 +1,58 @@
+graph TD
+    subgraph Elections["Social Elections (staking + voting)"]
+        CAND[Candidate submits<br/>SubmitCandidacy tx<br/>+ stake deposit<br/>+ identity disclosure]
+        VOTE[Token holders vote<br/>proportional to staked MOJ<br/>14-day voting period]
+        THRESH{Quorum 33%<br/>+ Supermajority 67%?}
+        ADMIT[Admitted to active set<br/>at next epoch boundary]
+        REJECT[Candidacy rejected<br/>stake returned]
+
+        CAND --> VOTE
+        VOTE --> THRESH
+        THRESH -->|yes| ADMIT
+        THRESH -->|no| REJECT
+    end
+
+    subgraph ValidatorSet["Validator Set"]
+        V_IND[Industry operators<br/>Sony, DistroKid, etc.]
+        V_COM[Community operators<br/>proven track record]
+        V_ACA[Academic / nonprofit<br/>neutrality, longevity]
+
+        ADMIT --> V_IND
+        ADMIT --> V_COM
+        ADMIT --> V_ACA
+    end
+
+    subgraph OracleSet["Oracle Set (per-network)"]
+        O_US[US — DMCA expertise]
+        O_EU[EU — DSA / copyright directives]
+        O_GL[Global — multi-jurisdiction]
+
+        ADMIT --> O_US
+        ADMIT --> O_EU
+        ADMIT --> O_GL
+    end
+
+    subgraph Removal["Recall"]
+        RECALL[RecallValidator /<br/>RecallOracle proposal]
+        R_VOTE[Same voting process]
+        R_THRESH{Passes?}
+        UNBOND[Unbonding period<br/>stake locked, slashable]
+        REMOVED[Removed from active set]
+
+        RECALL --> R_VOTE
+        R_VOTE --> R_THRESH
+        R_THRESH -->|yes| UNBOND
+        UNBOND --> REMOVED
+    end
+
+    subgraph Takedowns["Takedown Authority"]
+        O_US -->|TakedownRequest| TD[DEK removal<br/>+ audit trail]
+        O_EU -->|TakedownRequest| TD
+        O_GL -->|TakedownRequest| TD
+    end
+
+    style Elections fill:#1a1a2e,color:#fff
+    style ValidatorSet fill:#1a5276,color:#fff
+    style OracleSet fill:#533483,color:#fff
+    style Takedowns fill:#922b21,color:#fff
+    style Removal fill:#7d6608,color:#fff

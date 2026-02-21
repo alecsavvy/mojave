@@ -1,0 +1,19 @@
+---
+description: Documentation conventions for Mojave
+globs: "docs/**/*.md"
+alwaysApply: false
+---
+
+# Documentation conventions
+
+- `docs/README.md` is the entry point — doc map, reading order, open questions
+- `docs/architecture.md` is the source of truth for system design
+- Diagrams live in `docs/diagrams/` as `.mermaid` files, referenced inline with `> **[name](diagrams/file.mermaid)**`
+- Cross-references between docs use relative links: `[storage.md](storage.md)`
+- Key spaces and state schemas go in `storage.md`, not `architecture.md`
+- File layout and BitTorrent details go in `content.md`
+- Token/fee details go in `economics.md`
+- Election/takedown details go in `governance.md`
+- When adding new state, update both the relevant doc AND `storage.md` key spaces
+- When adding new transaction types, update `architecture.md` Transaction Types section
+- Open questions go in `docs/README.md` under "Open questions and known gaps"

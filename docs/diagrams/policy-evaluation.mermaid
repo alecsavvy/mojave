@@ -1,0 +1,33 @@
+flowchart TD
+    REQ[Access Request<br/>signed by Ed25519<br/>+ device X25519 pubkey] --> LOAD[Load access policy<br/>for CID from chain state]
+
+    LOAD --> TYPE{Policy type?}
+
+    TYPE -->|public| PUB[Grant immediately<br/>DEK in the clear]
+    TYPE -->|direct_grant| CASBIN[Casbin ACL evaluation]
+    TYPE -->|role_based| CASBIN
+    TYPE -->|conditional| CASBIN
+    TYPE -->|programmable| GOJA[Goja JS Runtime]
+
+    CASBIN --> ENFORCE["Enforce(sub, obj, act, ...attrs)<br/>via chain-state adapter"]
+    ENFORCE --> CUSTOM{Custom matcher<br/>function?}
+    CUSTOM -->|no| RESULT
+    CUSTOM -->|yes| GOJA_MATCH[Goja evaluates<br/>matcher predicate only]
+    GOJA_MATCH --> RESULT
+
+    GOJA --> BUDGET[Allocate gas budget]
+    BUDGET --> EVAL["evaluate(request)<br/>with mojave host API"]
+    EVAL --> GAS{Gas exhausted?}
+    GAS -->|yes| DENY
+    GAS -->|no| RESULT
+
+    RESULT{Allowed?}
+    RESULT -->|yes| GRANT[Wrap DEK to device X25519 pubkey<br/>Submit GrantAccess tx — audit only<br/>Return wrapped DEK to device]
+    RESULT -->|no| DENY[Access denied<br/>No transaction]
+
+    PUB --> GRANT
+
+    style CASBIN fill:#2d6a4f,color:#fff
+    style GOJA fill:#533483,color:#fff
+    style GRANT fill:#1a5276,color:#fff
+    style DENY fill:#922b21,color:#fff

@@ -1,0 +1,37 @@
+sequenceDiagram
+    participant Device
+    participant API as Validator API<br/>(GraphQL / ConnectRPC)
+    participant DHV as DEK Holder Validator
+    participant BT as BitTorrent Network
+
+    Note over Device: User signs in with Ed25519 wallet
+
+    Device->>API: query "what can I play?"<br/>(signed by Ed25519)
+    API-->>Device: list of CIDs + DDEX metadata<br/>+ image CIDs (cover art)
+
+    rect rgb(30, 50, 40)
+        Note over Device,BT: Background Download
+        loop for each CID in library
+            alt Desktop (Tauri)
+                Device->>BT: leech .tdf via BitTorrent<br/>(rendezvous on encrypted CID)
+                BT-->>Device: encrypted .tdf blob
+            else Browser
+                Device->>API: HTTP GET .tdf
+                API-->>Device: encrypted .tdf blob
+            end
+            Device->>API: HTTP GET cover art PNGs
+            API-->>Device: PNG images
+            Device->>Device: store locally<br/>(filesystem or OPFS)
+        end
+    end
+
+    rect rgb(40, 40, 60)
+        Note over Device,DHV: On-Demand Playback
+        Device->>DHV: access request<br/>{ cid, device_x25519_pubkey }<br/>signed by Ed25519
+        DHV-->>Device: wrapped DEK
+        Device->>Device: unwrap DEK with device X25519 key
+        Device->>Device: decrypt .tdf → FLAC
+        Device->>Device: play
+    end
+
+    Note over Device: Offline: .tdf + non-expired DEK = play without network

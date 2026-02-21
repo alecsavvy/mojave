@@ -1,0 +1,20 @@
+---
+description: Go coding conventions for Mojave
+globs: "**/*.go"
+alwaysApply: false
+---
+
+# Go conventions
+
+- Module: `github.com/alecsavvy/mojave`
+- Go 1.25+
+- CLI: cobra (`commands/` package)
+- Config: `config/` package, loaded from path
+- App wiring: `app/` package holds ABCI app with store + content store deps
+- State store: `store/` — will be PebbleDB via CometBFT ABCI
+- Content store: `content/` — will use gocloud.dev blob.Bucket
+- Server: `server/` — will expose ConnectRPC + GraphQL (gqlgen)
+- Proto: `proto/` — protobuf definitions, generate with `protoc`
+- DDEX types imported from external `ddex-proto` module
+- All on-chain state protobuf-encoded
+- Errors should wrap with context, not swallow
