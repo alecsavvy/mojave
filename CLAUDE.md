@@ -1,6 +1,6 @@
 # Mojave
 
-Decentralized music distribution protocol. Go + CometBFT + OpenTDF + BitTorrent + Casbin + Goja.
+Decentralized music distribution protocol. Go + CometBFT 1.x + OpenTDF + BitTorrent + Casbin + Goja.
 
 ## Project status
 
@@ -11,7 +11,7 @@ Early stage — scaffold with placeholder implementations. Architecture is desig
 - `PROTOCOL.md` — **client-facing interface contract** (API, crypto, content access, payment). Copy this into client repos for their LLMs.
 - `docs/README.md` — why this exists, how to read the docs, open design questions
 - `docs/architecture.md` — full system design: four planes (consensus, storage, encryption, policy), all transaction types, all flows
-- `docs/storage.md` — two PebbleDB stores: chain store (ABCI state) and local store (validator-specific)
+- `docs/storage.md` — two PebbleDB stores: chain store (ABCI++ state, CometBFT 1.x) and local store (validator-specific)
 - `docs/content.md` — on-disk file layout, BitTorrent integration, reconciliation loop
 - `docs/economics.md` — MOJ token, fees, validator rewards, bootstrapping
 - `docs/governance.md` — validator/oracle elections, takedowns, jurisdictional compliance
@@ -22,7 +22,7 @@ Early stage — scaffold with placeholder implementations. Architecture is desig
 ```
 cmd/mojave/       CLI entrypoint (cobra)
 commands/         cobra commands (root, start)
-app/              ABCI application (placeholder)
+app/              ABCI++ application (placeholder; CometBFT 1.x, no legacy DeliverTx)
 store/            chain state store (placeholder for PebbleDB)
 content/          content-addressed file store (placeholder)
 server/           external API server (placeholder)
@@ -34,7 +34,7 @@ docs/             architecture and design documentation
 ## Tech stack
 
 - **Language**: Go (1.25+)
-- **Consensus**: CometBFT (ABCI state machine, BFT consensus, p2p reactors)
+- **Consensus**: CometBFT 1.x (ABCI++ state machine, BFT consensus, p2p reactors). Use PrepareProposal, ProcessProposal, FinalizeBlock — not legacy ABCI DeliverTx.
 - **State store**: PebbleDB (two instances — chain store via CometBFT, local store for validator data)
 - **Encryption**: OpenTDF (DEK/KEK wrapping, `.flac.tdf` containers)
 - **File replication**: BitTorrent (CID-based rendezvous for encrypted blobs and images)

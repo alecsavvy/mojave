@@ -10,8 +10,8 @@ alwaysApply: false
 - Go 1.25+
 - CLI: cobra (`commands/` package)
 - Config: `config/` package, loaded from path
-- App wiring: `app/` package holds ABCI app with store + content store deps
-- State store: `store/` — will be PebbleDB via CometBFT ABCI
+- App wiring: `app/` package holds ABCI++ app (CometBFT 1.x) with store + content store deps. Use ABCI++ lifecycle: PrepareProposal, ProcessProposal, FinalizeBlock (not legacy DeliverTx).
+- State store: `store/` — will be PebbleDB via CometBFT ABCI++
 - Content store: `content/` — will use gocloud.dev blob.Bucket
 - Server: `server/` — will expose ConnectRPC + GraphQL (gqlgen)
 - Proto: `proto/` — protobuf definitions, generate with `protoc`

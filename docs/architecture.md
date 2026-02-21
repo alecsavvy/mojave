@@ -6,7 +6,7 @@
 
 Mojave is a decentralized music distribution system built on four planes:
 
-- **Consensus plane** (CometBFT): the source of truth. Stores state, orders transactions, coordinates validators via ABCI events. Nothing is "real" until it's on-chain.
+- **Consensus plane** (CometBFT 1.x, ABCI++): the source of truth. Stores state, orders transactions, coordinates validators via ABCI++ events. Nothing is "real" until it's on-chain. We use ABCI++ (PrepareProposal, ProcessProposal, FinalizeBlock), not the legacy ABCI interface (BeginBlock, DeliverTx, EndBlock).
 - **Storage plane** (BitTorrent + gocloud.dev): encrypted file replication. BitTorrent is the replication protocol between validators. gocloud.dev is each validator's local storage abstraction — it lets them back their blob store with disk, S3, GCS, whatever. These are complementary: gocloud.dev is "where I keep my copy," BitTorrent is "how I get copies to/from peers."
 - **Encryption plane** (OpenTDF): cryptographic enforcement of access. OpenTDF manages DEK/KEK wrapping so that only authorized keyholders can decrypt content. The chain replaces the centralized Key Access Server (KAS) — wrapped DEKs live on-chain as state, not held by any single party.
 - **Policy plane** (Casbin + Goja): authorization logic and programmable business rules. Casbin provides structured IAM — roles, groups, hierarchies, RBAC/ABAC — backed by a custom adapter that reads/writes policy state on-chain. A sandboxed JavaScript runtime (Goja) handles logic that can't be expressed as Casbin policies — complex licensing, custom attestations, dynamic conditions. This is where DDEX's gap lives: DDEX assumes bucket/web-service-level access control, which doesn't exist here, so the policy plane fills that role explicitly.
@@ -702,7 +702,7 @@ Three communication layers, each used where it fits:
 
 ### Protobuf (transaction and p2p format)
 
-All on-chain transactions and validator-to-validator p2p messages use Protocol Buffers as the wire format. Protobuf gives strong typing, backward-compatible schema evolution, and code generation for every major language. Transaction messages (`UploadComplete`, `PublishRelease`, `GrantAccess`, etc.) are defined as protobuf messages, signed by the submitter, and submitted to CometBFT via ABCI. Reactor messages (DEK distribution, sync requests) are also protobuf.
+All on-chain transactions and validator-to-validator p2p messages use Protocol Buffers as the wire format. Protobuf gives strong typing, backward-compatible schema evolution, and code generation for every major language. Transaction messages (`UploadComplete`, `PublishRelease`, `GrantAccess`, etc.) are defined as protobuf messages, signed by the submitter, and submitted to CometBFT via ABCI++. Reactor messages (DEK distribution, sync requests) are also protobuf.
 
 Protobuf is the internal language of the system — validators speak it, chain state is encoded in it, p2p reactor messages use it, and transactions are encoded in it. But protobuf is not what UIs should have to work with directly.
 
@@ -796,7 +796,7 @@ Validators are admitted through social election (staking + community vote), not 
 
 ## Trust Assumptions
 
-**Upload validator and unencrypted audio.** The upload validator temporarily holds unencrypted audio during transcoding. The validator is trusted not to leak the raw file during that window. In CometBFT, validators are bonded/staked and have economic skin in the game, which mitigates this. This is a conscious tradeoff, not an oversight.
+**Upload validator and unencrypted audio.** The upload validator temporarily holds unencrypted audio during transcoding. The validator is trusted not to leak the raw file during that window. In CometBFT 1.x, validators are bonded/staked and have economic skin in the game, which mitigates this. This is a conscious tradeoff, not an oversight.
 
 **Policy script execution.** Policy scripts are user-deployed code running inside the validator. The Goja sandbox, gas metering, and restricted host API mitigate the risk, but a malicious or buggy script could still consume its full gas budget on every evaluation. Chain governance should set sensible gas limits and potentially require script audits or staking for deployment.
 

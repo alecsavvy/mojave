@@ -1,6 +1,6 @@
 # Mojave — Agent Instructions
 
-Decentralized music distribution protocol built in Go. CometBFT for consensus, OpenTDF for encryption, BitTorrent for file replication, Casbin + Goja for access control.
+Decentralized music distribution protocol built in Go. CometBFT 1.x (ABCI++) for consensus, OpenTDF for encryption, BitTorrent for file replication, Casbin + Goja for access control.
 
 ## Documentation
 
@@ -22,8 +22,8 @@ Read `docs/README.md` first — it explains the full doc structure, reading orde
 ```
 cmd/mojave/       CLI entrypoint
 commands/         cobra commands
-app/              CometBFT ABCI application (placeholder)
-store/            chain state store — will be PebbleDB via CometBFT
+app/              CometBFT 1.x ABCI++ application (placeholder). Use ABCI++: PrepareProposal, ProcessProposal, FinalizeBlock — not legacy DeliverTx.
+store/            chain state store — will be PebbleDB via CometBFT ABCI++
 content/          content-addressed file store — will use gocloud.dev
 server/           API server — will expose ConnectRPC + GraphQL
 config/           configuration
@@ -41,7 +41,7 @@ go test ./...
 
 ## Tech stack
 
-Go 1.25+, CometBFT, PebbleDB, OpenTDF, BitTorrent, gocloud.dev, Casbin, Goja, ConnectRPC, gqlgen, cobra, protobuf. Desktop client: Tauri v2 (Rust + React). Crypto: Ed25519 (signing), X25519 (device-scoped encryption via ECDH).
+Go 1.25+, CometBFT 1.x (ABCI++), PebbleDB, OpenTDF, BitTorrent, gocloud.dev, Casbin, Goja, ConnectRPC, gqlgen, cobra, protobuf. Desktop client: Tauri v2 (Rust + React). Crypto: Ed25519 (signing), X25519 (device-scoped encryption via ECDH).
 
 ## Coding conventions
 

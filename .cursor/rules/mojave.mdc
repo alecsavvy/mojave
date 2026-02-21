@@ -5,7 +5,7 @@ alwaysApply: true
 
 # Mojave
 
-Decentralized music distribution protocol. Go + CometBFT + OpenTDF + BitTorrent + Casbin + Goja.
+Decentralized music distribution protocol. Go + CometBFT 1.x + OpenTDF + BitTorrent + Casbin + Goja.
 
 ## Status
 
@@ -22,7 +22,7 @@ Early stage — scaffold with placeholders. Architecture is documented in `docs/
 ## Code layout
 
 - `cmd/mojave/` — CLI entrypoint (cobra)
-- `app/` — ABCI application (placeholder)
+- `app/` — ABCI++ application (placeholder). CometBFT 1.x uses ABCI++, not legacy ABCI (no DeliverTx; use PrepareProposal, ProcessProposal, FinalizeBlock).
 - `store/` — chain state (placeholder for PebbleDB)
 - `content/` — file store (placeholder for gocloud.dev)
 - `server/` — API (placeholder for ConnectRPC + GraphQL)
@@ -30,7 +30,7 @@ Early stage — scaffold with placeholders. Architecture is documented in `docs/
 
 ## Stack
 
-Go 1.25+, CometBFT, PebbleDB, OpenTDF, BitTorrent, gocloud.dev, Casbin, Goja, ConnectRPC, gqlgen, cobra, protobuf. Ed25519 signing, X25519 encryption. Token: MOJ (10^9 grains = 1 MOJ).
+Go 1.25+, CometBFT 1.x (ABCI++), PebbleDB, OpenTDF, BitTorrent, gocloud.dev, Casbin, Goja, ConnectRPC, gqlgen, cobra, protobuf. Ed25519 signing, X25519 encryption. Token: MOJ (10^9 grains = 1 MOJ).
 
 ## Rules
 

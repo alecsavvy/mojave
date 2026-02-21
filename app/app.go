@@ -6,7 +6,7 @@ import (
 	"github.com/alecsavvy/mojave/store"
 )
 
-// App holds the application state and dependencies (ABCI app placeholder).
+// App holds the application state and dependencies (ABCI++ app placeholder for CometBFT 1.x; use PrepareProposal, ProcessProposal, FinalizeBlock, not legacy DeliverTx).
 type App struct {
 	cfg     *config.Config
 	store   *store.Store

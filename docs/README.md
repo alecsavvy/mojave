@@ -35,7 +35,7 @@ The docs are structured around concerns, not layers. Start with `architecture.md
 1. [architecture.md](architecture.md) — the complete system design. Four planes, all flows, all transaction types.
 2. [storage.md](storage.md) — PebbleDB key spaces (chain store + local store). This is what you implement.
 3. [content.md](content.md) — on-disk file layout, BitTorrent integration, reconciliation loop. This is what the validator manages on the filesystem.
-4. [economics.md](economics.md) — token model, fee structure. This is what the ABCI app enforces.
+4. [economics.md](economics.md) — token model, fee structure. This is what the ABCI++ app enforces (CometBFT 1.x).
 5. [governance.md](governance.md) — elections, takedowns, jurisdictional compliance. This is what the governance module implements.
 
 **If you're an artist or label evaluating the system:**
@@ -133,7 +133,7 @@ The accounts key space in storage.md has `pubkey`, `nonce`, `created_at` but no 
 ### Governance gaps
 
 **11. Epoch boundaries.**
-governance.md says validators are "added to the active set at the next epoch boundary." Epochs are never defined. CometBFT handles validator set changes via `EndBlock` — is that the epoch, or is there a higher-level concept?
+governance.md says validators are "added to the active set at the next epoch boundary." Epochs are never defined. CometBFT 1.x uses ABCI++ (FinalizeBlock, not legacy EndBlock); validator set changes are driven by the application in the ABCI++ lifecycle — is that the epoch, or is there a higher-level concept?
 
 **12. Pending takedowns on oracle recall.**
 If an oracle is recalled while they have a pending `TakedownRequest` (in the counter-notice window), what happens? Is the takedown auto-dismissed? Does another oracle take over? The doc is silent on this.
@@ -155,4 +155,4 @@ economics.md says content purchases transfer MOJ from consumer to content owner 
 After a takedown, validators delete DEKs and optionally stop seeding. But good samaritans and consumers who already have the `.flac.tdf` can keep seeding undecryptable ciphertext indefinitely. This is probably acceptable (it's useless ciphertext), but should be stated explicitly as a known property.
 
 **17. DDEX ERN validation.**
-Who validates that the DDEX metadata in a `PublishRelease` transaction is well-formed? The upload validator during processing? The ABCI application during transaction validation? Peer validators during consensus? If nobody validates it, malformed metadata goes on-chain permanently.
+Who validates that the DDEX metadata in a `PublishRelease` transaction is well-formed? The upload validator during processing? The ABCI++ application during transaction validation (e.g. in ProcessProposal or FinalizeBlock)? Peer validators during consensus? If nobody validates it, malformed metadata goes on-chain permanently.

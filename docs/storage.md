@@ -4,17 +4,17 @@ Every validator runs two PebbleDB instances. They serve completely different pur
 
 | | Chain Store | Local Store |
 |---|---|---|
-| Engine | PebbleDB (via CometBFT ABCI) | PebbleDB (validator-managed) |
+| Engine | PebbleDB (via CometBFT 1.x ABCI++) | PebbleDB (validator-managed) |
 | Scope | Consensus — identical across all validators | Instance — unique to this validator |
 | Durability | Replicated by consensus. Recoverable from any peer via state sync. | Ephemeral or locally durable. Lost if the node is destroyed. |
 | Contents | DDEX metadata, entitlements, policies, uploads, uploader wrapped DEKs | Validator wrapped DEKs, processing scratch, local indexes |
-| Who writes | ABCI state transitions (deterministic, consensus-gated) | Validator application code (local, non-deterministic) |
+| Who writes | ABCI++ state transitions (deterministic, consensus-gated; FinalizeBlock) | Validator application code (local, non-deterministic) |
 
 ## Chain Store
 
-The chain store is CometBFT's ABCI application state. Every validator holds an identical copy. Writes happen only through committed transactions — a write that doesn't pass consensus doesn't exist. This is the source of truth for the entire network.
+The chain store is CometBFT 1.x ABCI++ application state. Every validator holds an identical copy. Writes happen only through committed transactions (applied in FinalizeBlock) — a write that doesn't pass consensus doesn't exist. This is the source of truth for the entire network.
 
-PebbleDB is the backing engine (CometBFT's default since the IAVL → PebbleDB migration). The ABCI application reads and writes through CometBFT's state management; it never opens the database directly.
+PebbleDB is the backing engine (CometBFT's default since the IAVL → PebbleDB migration). The ABCI++ application reads and writes through CometBFT's state management; it never opens the database directly.
 
 ### Key spaces
 
