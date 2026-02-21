@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "github.com/alecsavvy/mojave/commands"
 
 func main() {
-	fmt.Println("Hello, World!")
+	_ = commands.Execute()
 }
