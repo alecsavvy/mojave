@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package mojave.service;
+
+service MojaveService {
+    // chain rpcs
+    rpc GetBlock(GetBlockRequest) returns (GetBlockResponse) {}
+    rpc GetTransaction(GetTransactionRequest) returns (GetTransactionResponse) {}
+    rpc SendTransaction(SendTransactionRequest) returns (SendTransactionResponse) {}
+    rpc GetAccount(GetAccountRequest) returns (GetAccountResponse) {}
+
+    // content rpcs
+    rpc UploadAudio(UploadAudioRequest) returns (stream UploadAudioResponse) {}
+    rpc GetAudio(GetAudioRequest) returns (GetAudioResponse) {}
+    rpc UploadImage(UploadImageRequest) returns (stream UploadImageResponse) {}
+    rpc GetImage(GetImageRequest) returns (GetImageResponse) {}
+
+    // metadata rpcs
+    rpc GetERN(GetERNRequest) returns (GetERNResponse) {}
+    rpc GetMEAD(GetMEADRequest) returns (GetMEADResponse) {}
+    rpc GetPIE(GetPIERequest) returns (GetPIEResponse) {}
+}
