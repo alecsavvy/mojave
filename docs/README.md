@@ -85,6 +85,13 @@ All diagrams live in [diagrams/](diagrams/) as `.mermaid` files and are referenc
 | [governance.mermaid](diagrams/governance.mermaid) | governance.md | Election process, validator/oracle sets, recall mechanism |
 | [takedown.mermaid](diagrams/takedown.mermaid) | governance.md | Takedown flow — claim, review, counter-notice, DEK removal |
 
+### Design decisions (token and payments)
+
+- **MOJ for everything.** One native token (MOJ) for gas, storage fees, content purchases, staking, and validator rewards. No attestation-based USDC or multi-currency settlement in the protocol for now; keeps implementation simple. See [economics.md](economics.md).
+- **Per-chain MOJ.** Each chain has its own MOJ economy; native tokens are not transferable across chains (no IBC). Liquidity and “get in/out in USD” can be provided by exchanges listing MOJ; that is exchange-layer.
+- **Faucet for bootstrap.** Faucet (rate-limited) is the primary way to get MOJ into users' hands until exchange listings or other on-ramps exist. Validators do not sell MOJ for USDC; that stays off the protocol.
+- **USD in UX only.** People think in USD; clients display USD equivalent (price feed) and can support “price in USD” with conversion to MOJ at purchase. No on-chain USDC or EigenLayer/ETH lock-in.
+
 ## Open questions and known gaps
 
 These are unresolved design questions identified during documentation review. They don't block implementation but need answers before the design is final.

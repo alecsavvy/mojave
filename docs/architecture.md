@@ -772,7 +772,7 @@ Clients authenticate by signing a challenge with their Ed25519 key. The API veri
 
 > See [economics.md](economics.md) for the full token model, fee structure, validator rewards, and bootstrapping strategy.
 
-Mojave has a native token (MOJ, base unit: grains, 1 MOJ = 10^9 grains) used for gas fees, storage fees, content purchases, and validator rewards. Storage is the expensive operation — proportional to file size and replication factor. Gas for normal user activity (browsing, purchasing, policy changes) is effectively free. Content purchases are direct transfers from consumer to content owner — the protocol takes no cut at the base layer.
+Mojave has a native token (MOJ, base unit: grains, 1 MOJ = 10^9 grains) used for gas fees, storage fees, content purchases, and validator rewards. MOJ is the only on-chain currency; there is no attestation-based or multi-currency payment path in the protocol for now. Storage is the expensive operation — proportional to file size and replication factor. Gas for normal user activity (browsing, purchasing, policy changes) is effectively free. Content purchases are direct transfers in MOJ from consumer to content owner — the protocol takes no cut at the base layer. USD is a display and UX concern in clients (price feeds, “price in USD” with conversion to MOJ at purchase); liquidity and exchange (MOJ ↔ USD) are handled off-chain (faucet, then exchanges if they list MOJ).
 
 ## Design Principles
 

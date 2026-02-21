@@ -2,6 +2,8 @@
 
 Mojave has a single native token used for gas fees, storage fees, content purchases, and validator rewards. The token follows a dual-denomination model inspired by Solana's SOL/lamports split.
 
+**Design choice: MOJ for everything.** We use MOJ as the only on-chain currency. There is no attestation-based USDC (or other stablecoin) payment path, and no multi-currency settlement in the protocol for now. This keeps the design and implementation simple. A faucet provides MOJ for bootstrap until there is a clearer path (e.g. exchange listing). If demand emerges later, attestations or alternative payment rails can be considered; the protocol does not depend on them. Cross-chain MOJ transfer (e.g. IBC) is not in scope — each chain has its own MOJ economy. Liquidity and “get in/out in USD” can be provided by exchanges listing MOJ; that is exchange-layer, not protocol.
+
 ## Token
 
 | | |
@@ -193,7 +195,13 @@ A faucet works for bootstrapping but isn't a long-term solution. For mainnet, us
 - **Fiat on-ramp integration** — partner with a payment processor (MoonPay, Transak, etc.) to let users buy MOJ with a credit card directly in the client.
 - **Artists as distributors** — an artist could give away small amounts of MOJ to fans as part of a release campaign. The artist funded their account via an exchange; the fan gets tokens without touching crypto infrastructure.
 
-The protocol doesn't mandate any of these — they're ecosystem-level solutions. The base layer just needs the token to exist and be transferable.
+The protocol doesn't mandate any of these — they're ecosystem-level solutions. The base layer just needs the token to exist and be transferable. For the foreseeable future we rely on the **faucet** (rate-limited, fed from the bootstrap allocation) as the primary way to get MOJ into users' hands until exchange listings or other on-ramps exist. Keeping MOJ-only and a faucet avoids the complexity and legal surface of validators selling MOJ for USDC or operating as exchanges.
+
+## Token positioning and UX
+
+MOJ is a **utility token**: gas, staking, content payments, and validator rewards. The protocol and messaging should treat it as infrastructure, not as the main speculative asset (avoid the dynamic where “the token” overshadows the product).
+
+**People think in USD.** The protocol settles only in MOJ. Clients and apps should display **USD equivalent** where it helps — e.g. a price feed or client-side conversion so users see “$0.50” instead of “0.5 MOJ.” Content owners can set “price in USD” in their policy or UI; at purchase time the client converts to MOJ (user already has MOJ, or acquires it via faucet/exchange). No on-chain USDC or attestation is required for that. Exchanges can list MOJ/USD or MOJ/USDC so users can move between MOJ and dollars off-chain. We avoid tying the protocol to EigenLayer or any ETH lock-in for liquidity; MOJ can be bridged or traded via exchanges if and when they support it.
 
 ## Transaction fee examples
 

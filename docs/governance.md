@@ -2,7 +2,7 @@
 
 > **[Governance overview diagram](diagrams/governance.mermaid)** · **[Takedown flow diagram](diagrams/takedown.mermaid)**
 
-This document covers validator elections, oracle elections, copyright takedowns, jurisdictional compliance, and the on-chain governance process that ties them together.
+This document covers validator elections, publisher admission (who can publish on this chain), oracle elections, copyright takedowns, jurisdictional compliance, and the on-chain governance process that ties them together. It also describes how clients and indexers work across multiple chains.
 
 ## Why governance matters here
 
@@ -52,6 +52,33 @@ This is different from anonymous DeFi validation. The music industry needs to kn
 | Community operator | A respected community member with proven ops track record | Grassroots trust, geographic diversity |
 | Academic / nonprofit | A university research lab, Internet Archive | Neutrality, long-term commitment, no commercial conflict |
 
+## Publisher admission
+
+Who can publish content on a chain is determined by **chain-level policy**, not by a single global rule. The validator set and governance of each chain define that policy. The same on-chain policy machinery used for access control (Casbin models and rules, optionally Goja scripts) is used for publisher admission — evaluated at upload time instead of at access time.
+
+### Why chain-level policy
+
+Different chains serve different trust and risk profiles:
+
+- **Indie label chain.** Validators are elected by the label and community; publisher policy allows all of the label’s artists (or a curated allow-list). Open within that community.
+- **Major label chain.** Validators are the label’s infrastructure or approved partners; publisher policy restricts uploads to approved distributors and rights holders. Gated to control quality and legal exposure.
+- **Permissionless (“cowboy”) chain.** Publisher policy allows anyone to publish. Maximizes openness but exposes the chain to more copyright and liability risk — similar to early Audius. Oracles and takedowns (see below) are the reactive enforcement; the chain accepts that tradeoff.
+
+The protocol does not mandate “any chain must be open” or “any chain must be gated.” Each chain chooses where it sits on that spectrum via governance.
+
+### How it works
+
+- **On-chain policy.** The chain maintains a **chain-wide publisher policy**: a Casbin model and rule set (and optionally a Goja script for programmable logic), keyed at chain scope rather than per-CID. The same key spaces and adapter pattern as content access policies apply; the model ID for publisher admission is a governance parameter (e.g. `publisher_admission` or a governance-set ID).
+- **Evaluation at upload.** When a client submits raw audio to an upload validator, or when a validator is about to commit an `UploadComplete` transaction, the validator evaluates the publisher policy: “Is this uploader (Ed25519 pubkey) allowed to publish on this chain?” Inputs typically include the uploader’s public key and any attributes governance has defined (e.g. role, allow-list membership). If the policy denies, the validator rejects the upload; no state change.
+- **Governance sets the policy.** Governance proposals can add or remove publisher policy rules (e.g. allow-list entries, role assignments), change the model, or switch between “anyone” and “allow-list” or “role-based” by updating the chain’s publisher policy. Validators enforce whatever is currently on-chain; they do not unilaterally decide who can publish.
+
+### Relation to oracles and takedowns
+
+- **Publisher admission** is **proactive**: it decides who is allowed to create new content on the chain.
+- **Oracles and takedowns** are **reactive**: they handle copyright claims and illegal content after publication. Content that passed publisher admission can still be taken down if an oracle receives a valid claim and the takedown workflow completes. On a permissionless chain, more uploads may be disputed; on a gated chain, fewer — but both use the same takedown mechanism when needed.
+
+The two layers are independent: a chain can be tightly gated for publishers and still have elected oracles for takedowns; a chain can be fully open for publishers and rely on oracles to enforce copyright. No IBC or cross-chain coordination is required for this — each chain’s governance configures both.
+
 ## Oracle elections
 
 Oracles are elected entities with a specific authority: they can submit copyright takedown requests on-chain. Oracles are the bridge between the legal system and the protocol. They don't have validator powers — they can't participate in consensus, produce blocks, or hold DEKs. Their only capability is submitting `TakedownRequest` transactions.
@@ -85,11 +112,11 @@ An elected oracle can submit:
 | `TakedownRequest` | Initiates a takedown process for a specific CID |
 | `TakedownResolve` | Resolves a takedown — either confirms removal or dismisses the claim |
 
-Oracles cannot directly delete content or revoke DEKs. They submit requests that the protocol processes through a defined workflow (see Takedowns below).
+Oracles cannot directly delete content or revoke DEKs. They submit requests that the protocol processes through a defined workflow (see Takedowns below). Oracle authority is independent of how open or gated a chain’s publisher admission is: whether anyone can publish or only approved parties, takedowns apply to content that has been published and is subject to a valid claim.
 
 ## Takedowns
 
-When content needs to be removed — copyright infringement, illegal material, court order — the takedown mechanism is DEK removal. The encrypted `.flac.tdf` blobs become permanently inaccessible without destroying the audit trail.
+When content needs to be removed — copyright infringement, illegal material, court order — the takedown mechanism is DEK removal. This applies to any content that has been published on the chain, regardless of how permissive or gated the chain’s publisher admission policy is. A permissionless chain will see more takedown activity; a gated chain fewer — but the mechanism is the same. The encrypted `.flac.tdf` blobs become permanently inaccessible without destroying the audit trail.
 
 ### Why DEK removal, not file deletion
 
@@ -220,6 +247,15 @@ Flags don't remove DEKs or block access globally. They're advisory metadata that
 
 Flags are on-chain — transparent, auditable, queryable. A UI can filter content based on the user's locale and active flags.
 
+## Clients and indexers
+
+Chains are independent. There is no protocol-level requirement for chains to talk to each other (no IBC). **Identity is portable**: the same Ed25519 keypair (wallet) works on every chain. What changes is which chain or chains the client talks to.
+
+- **Clients** (music players, storefronts, upload tools) are configured with the chain or chains relevant to them — e.g. a single indie-chain API, or a list of chain endpoints (indie, major-label, permissionless). The user’s address is the same on all of them; the client switches context the way a wallet switches from Ethereum mainnet to Sepolia. The client discovers content (which may live on different chains), then uses the appropriate chain’s API for upload, access, or purchase.
+- **Indexers** (search, catalog, discovery) pull from the network(s) they care about. They may index one chain, or many, and expose a unified or filtered view. Discovery (“Green Day is on chain B”) can be off-chain (registry, config) or derived from indexed chain data. No cross-chain proofs are required — just pointing at the right chain’s state and API.
+
+So “interconnect” is client- and indexer-side: they pull from the relevant networks. Each chain’s state (including publisher policy, entitlements, and takedowns) is self-contained; clients and indexers aggregate as needed.
+
 ## Governance proposals
 
 Beyond elections, the network uses on-chain governance proposals for protocol-level decisions. These follow standard Cosmos SDK governance patterns:
@@ -232,7 +268,8 @@ Beyond elections, the network uses on-chain governance proposals for protocol-le
 | `RecallValidator` | Remove a validator | Supermajority of staked votes |
 | `OracleCandidacy` | Elect a new oracle | Supermajority of staked votes |
 | `RecallOracle` | Remove an oracle | Supermajority of staked votes |
-| `ParameterChange` | Modify chain parameters (gas prices, inflation, etc.) | Supermajority of staked votes |
+| `PublisherPolicyChange` | Update chain-wide publisher admission (model, rules, or script reference) | Supermajority of staked votes |
+| `ParameterChange` | Modify chain parameters (gas prices, inflation, publisher policy model ID, etc.) | Supermajority of staked votes |
 | `SoftwareUpgrade` | Coordinate a chain upgrade | Supermajority of staked votes |
 | `CommunitySpend` | Allocate funds from the community/treasury pool | Supermajority of staked votes |
 
@@ -255,5 +292,6 @@ Beyond elections, the network uses on-chain governance proposals for protocol-le
 | `veto_threshold` | 33% | Minimum veto votes to kill a proposal |
 | `min_deposit` | 1,000 MOJ | Minimum deposit to submit a proposal |
 | `counter_notice_window` | 14 days | Time for content owners to respond to a takedown |
+| `publisher_policy_model_id` | (governance-set) | Casbin model ID for chain-wide publisher admission; rules are updated via `PublisherPolicyChange` |
 | `max_oracles` | 21 | Maximum number of active oracles |
 | `max_validators` | 100 | Maximum number of active validators |
