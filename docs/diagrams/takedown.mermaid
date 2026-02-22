@@ -1,19 +1,19 @@
 sequenceDiagram
     participant CL as Claimant
-    participant OR as Elected Oracle
+    participant TA as Group's Takedown Authority
     participant Chain as CometBFT Chain
     participant VAL as Validators
     participant OWN as Content Owner
 
-    CL->>OR: copyright claim<br/>(evidence, CID, legal basis)
+    CL->>TA: copyright claim<br/>(evidence, CID, legal basis)
 
     rect rgb(216, 216, 252)
-        Note over OR: Off-chain review
-        OR->>OR: verify evidence
-        OR->>OR: confirm jurisdiction
+        Note over TA: Off-chain review (group's compliance)
+        TA->>TA: verify evidence
+        TA->>TA: confirm jurisdiction
     end
 
-    OR->>Chain: TakedownRequest tx<br/>(CID, reason, evidence hash)
+    TA->>Chain: TakedownRequest tx<br/>(CID, reason, evidence hash)<br/>signed by group takedown key
 
     Chain-->>VAL: takedown.pending event
     Chain-->>OWN: takedown.pending event
@@ -22,20 +22,20 @@ sequenceDiagram
 
     alt Counter-notice filed
         OWN->>Chain: CounterNotice tx<br/>(evidence, legal basis)
-        Chain-->>OR: counter-notice received
+        Chain-->>TA: counter-notice received
 
         rect rgb(206, 206, 255)
-            Note over OR: Review counter-notice
+            Note over TA: Review counter-notice
         end
 
         alt Takedown confirmed
-            OR->>Chain: TakedownResolve(confirmed)
+            TA->>Chain: TakedownResolve(confirmed)
         else Takedown dismissed
-            OR->>Chain: TakedownResolve(dismissed)
+            TA->>Chain: TakedownResolve(dismissed)
             Note over Chain: Content restored<br/>TAKEDOWN_PENDING removed
         end
     else No counter-notice
-        OR->>Chain: TakedownResolve(confirmed)
+        TA->>Chain: TakedownResolve(confirmed)
     end
 
     opt Takedown confirmed

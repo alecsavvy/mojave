@@ -212,19 +212,19 @@ Accounts are implicitly created on first transaction. No registration step.
 | `identity` | string | Self-reported identity / organization name |
 | `admitted_at` | uint64 | Block height when election passed |
 
-#### Oracles (elected, per-network)
+#### Publisher groups (group registry)
 
-**Prefix:** `oracles/`
+**Prefix:** `groups/`
 
-**Key:** `oracles/{pubkey}`
+**Key:** `groups/{group_id}`
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `pubkey` | bytes | Oracle's Ed25519 public key |
-| `status` | enum | `CANDIDATE` · `ACTIVE` · `REMOVED` |
-| `jurisdiction` | repeated string | Jurisdictions this oracle covers |
-| `identity` | string | Self-reported identity |
-| `admitted_at` | uint64 | Block height when election passed |
+| `group_id` | bytes | Group identity (e.g. account or derived id) |
+| `takedown_authority_pubkey` | bytes | Ed25519 pubkey(s) that can submit takedowns for this group's content |
+| `status` | enum | `ACTIVE` · `SUSPENDED` · `REMOVED` |
+| `stake` | uint64 | Optional stake (in grains) for group representation in governance |
+| `admitted_at` | uint64 | Block height when `AdmitGroup` passed |
 
 #### Takedowns
 
@@ -236,7 +236,8 @@ Accounts are implicitly created on first transaction. No registration step.
 |-------|------|-------------|
 | `cid` | bytes | Content CID subject to takedown |
 | `status` | enum | `PENDING` · `CONFIRMED` · `DISMISSED` |
-| `oracle_pubkey` | bytes | Oracle that submitted the request |
+| `group_id` | bytes | Publisher group that owns this content; only that group's takedown authority may submit |
+| `takedown_authority_pubkey` | bytes | Pubkey that submitted the request (must match group's takedown authority) |
 | `reason` | string | Takedown reason |
 | `evidence_hash` | bytes | Hash of off-chain evidence |
 | `requested_at` | uint64 | Block height of `TakedownRequest` |
@@ -254,7 +255,7 @@ Accounts are implicitly created on first transaction. No registration step.
 |-------|------|-------------|
 | `cid` | bytes | Content CID |
 | `jurisdiction` | string | ISO 3166-1 country code |
-| `oracle_pubkey` | bytes | Oracle that set the flag |
+| `takedown_authority_pubkey` | bytes | Group takedown authority that set the flag |
 | `reason` | string | Reason for jurisdictional restriction |
 | `flagged_at` | uint64 | Block timestamp |
 

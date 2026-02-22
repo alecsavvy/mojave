@@ -9,7 +9,7 @@ Mojave is a decentralized music distribution system built on four planes:
 - **Consensus plane** (CometBFT 1.x, ABCI++): the source of truth. Stores state, orders transactions, coordinates validators via ABCI++ events. Nothing is "real" until it's on-chain. We use ABCI++ (PrepareProposal, ProcessProposal, FinalizeBlock), not the legacy ABCI interface (BeginBlock, DeliverTx, EndBlock).
 - **Storage plane** (BitTorrent + gocloud.dev): encrypted file replication. BitTorrent is the replication protocol between validators. gocloud.dev is each validator's local storage abstraction — it lets them back their blob store with disk, S3, GCS, whatever. These are complementary: gocloud.dev is "where I keep my copy," BitTorrent is "how I get copies to/from peers."
 - **Encryption plane** (OpenTDF): cryptographic enforcement of access. OpenTDF manages DEK/KEK wrapping so that only authorized keyholders can decrypt content. The chain replaces the centralized Key Access Server (KAS) — wrapped DEKs live on-chain as state, not held by any single party.
-- **Policy plane** (Casbin + Goja): authorization logic and programmable business rules. Casbin provides structured IAM — roles, groups, hierarchies, RBAC/ABAC — backed by a custom adapter that reads/writes policy state on-chain. A sandboxed JavaScript runtime (Goja) handles logic that can't be expressed as Casbin policies — complex licensing, custom attestations, dynamic conditions. This is where DDEX's gap lives: DDEX assumes bucket/web-service-level access control, which doesn't exist here, so the policy plane fills that role explicitly.
+- **Policy plane**: Core access is simple — if the consumer has an entitlement (purchase or grant) for this CID, the validator issues a wrapped DEK. Territory and deal type (subscription vs. download) come from DDEX metadata. When fine-grained control is needed (roles, metadata visibility, custom conditions), Casbin (structured IAM) and Goja (programmable logic) are available; they are optional, not required for basic "purchase or grant → access."
 
 ## Keys
 
@@ -28,7 +28,7 @@ When a consumer requests access:
 
 1. The device includes its X25519 public key in the access request.
 2. The user signs the request with their Ed25519 wallet key (proving identity).
-3. The validator verifies the signature, checks the Casbin policy.
+3. The validator verifies the signature and checks that the consumer has an entitlement for this CID (e.g. purchase or grant). Territory and deal-type rules, when present, are read from DDEX metadata; optional Casbin/Goja policies apply only when the content owner has set them.
 4. If authorized: wraps the DEK against the device's X25519 public key, returns it directly.
 5. The device unwraps the DEK with its local X25519 private key and decrypts the content.
 
@@ -116,8 +116,8 @@ Wrapped DEKs are the DEK encrypted against a specific entity's X25519 public key
 
 - Not stored on-chain or on validators. Wrapped at access time against the requesting device's X25519 public key and returned directly to the device.
 - Each device has its own X25519 keypair. A wrapped DEK from one device is useless on another.
-- **Expiration** (optional): can carry an expiry (block height or timestamp). After expiry, the device requests a fresh wrapped DEK from a validator. The validator re-checks the Casbin policy at each request, so revocation takes effect at the next request. Permanent grants (purchased content) can omit the expiry.
-- The on-chain `GrantAccess` record logs the access event (Ed25519 key + CID + timestamp) for the proof/attestation system, but contains no wrapped DEK data.
+- **Expiration** (optional): can carry an expiry (e.g. for subscription-style access). After expiry, the device must request a fresh wrapped DEK; the validator re-checks entitlement and stops issuing when the subscription lapses. This is the same model as modern streaming — control is validator-side, not key self-destruct on device. Permanent grants (purchased content) omit the expiry.
+- The on-chain `GrantAccess` record logs every DEK issuance (Ed25519 key + CID + timestamp), forming a paper trail for leak attribution: if content leaks, grants can be correlated with users.
 
 ### Releases (keyed by FLAC CID)
 
@@ -164,7 +164,7 @@ Same model, different depth. The independent just doesn't use delegation.
 
 ### Access Policies (keyed by CID)
 
-Declarative rules attached to content by its owner. Evaluated by validators before issuing wrapped DEKs.
+**Core path:** If the consumer has an entitlement (purchase or grant) for this CID, the validator issues a wrapped DEK. Territory and deal type (e.g. subscription vs. download) are read from DDEX; no separate territory system is required. Access policies below apply only when the content owner wants fine-grained control (roles, conditions, metadata).
 
 - **Type**: `public` | `direct_grant` | `role_based` | `conditional` | `programmable`
 - **Casbin model reference** (for `direct_grant`, `role_based`, `conditional`): references the on-chain Casbin model and policy set used for evaluation. A default model is available for simple cases.
@@ -199,7 +199,7 @@ The Casbin adapter stores policy rules as structured on-chain state:
 
 ### Access
 
-11. **`GrantAccess`** (signed by validator) — "I've verified this consumer is authorized per the on-chain policy." Recorded on-chain as an audit trail (Ed25519 signing key + CID + timestamp) for the proof/attestation system. The actual wrapped DEK is delivered directly to the requesting device (wrapped against the device's X25519 public key) and is not stored on-chain.
+11. **`GrantAccess`** (signed by validator) — "I've verified this consumer has an entitlement for this CID (and any policy/territory checks pass)." The validator wraps the DEK for the device's X25519 public key and delivers it directly; the wrapped DEK is not stored on-chain. The grant is recorded on-chain (Ed25519 key + CID + timestamp) as an audit trail for proofs and for leak attribution — if content leaks, the chain shows who received DEKs.
 12. **`RevokeAccess`** (signed by owner/admin) — "Remove this grant." Validators will stop issuing new wrapped DEKs for this identity. Wrapped DEKs already on devices still work until they expire, but the device can't get a fresh one.
 
 ### Proofs
@@ -287,11 +287,12 @@ Device                    DEK Holder Validator         Chain
   |   { cid, device_x25519   |                         |
   |     _pubkey }             |                         |
   |   signed by Ed25519 ---->|                         |
-  |                          |-- read policy for CID ->|
-  |                          |<-- policy + conditions --|
+  |                          |-- check entitlement     |
+  |                          |   (and policy if set) ->|
+  |                          |<-- OK / deny            |
   |                          |                         |
   |              verify Ed25519 signature              |
-  |              verify consumer meets policy          |
+  |              verify entitlement (+ DDEX/policy)   |
   |                          |                         |
   |                          |-- GrantAccess tx ------>|
   |                          |   (audit: Ed25519 key   |
@@ -321,10 +322,11 @@ Device                Replication Validator     DEK Holder Validator     Chain
   |    holder validator -----|                         |                   |
   |                          |                         |                   |
   |-- access request -------------------------------->|                   |
-  |                          |                         |-- read policy --->|
-  |                          |                         |<-- policy --------|
+  |                          |                         |-- check entitlement ->|
+  |                          |                         |   (+ policy if set)   |
+  |                          |                         |<-- OK / deny --------|
   |                          |                         |                   |
-  |                          |              verify signature + policy      |
+  |                          |              verify signature + entitlement |
   |                          |                         |                   |
   |                          |                         |-- GrantAccess --->|
   |                          |                         |   (audit only)    |
@@ -404,13 +406,13 @@ Steps 2 and 3 can happen in either order. You can download your entire library i
 
 ### Offline playback
 
-Once a device has both the `.tdf` file and a valid (non-expired) wrapped DEK, it can play offline. No network needed. For permanently granted content (purchased), the wrapped DEK never expires — true offline ownership. For subscription content with expiring DEKs, the device plays offline until the DEK expires, then needs to come online to refresh.
+Once a device has both the `.tdf` file and a valid (non-expired) wrapped DEK, it can play offline. No network needed. **Offline-first:** validators do not stream audio; they only issue wrapped DEKs. Ciphertext is fetched via BitTorrent or CDN; decryption is local. For purchased content, the wrapped DEK never expires — true offline ownership. For subscription-style access, the wrapped DEK can carry an expiry; when it expires, the device comes online to refresh. The validator stops issuing when the subscription lapses (same as modern streaming — no key self-destruct on device).
 
 ## Policy Plane
 
-DDEX defines metadata formats but explicitly does not define access control — it assumes that happens at the infrastructure level (CDN buckets, web service auth, etc.). In a decentralized system, there is no infrastructure owner to enforce access. The policy plane fills this gap.
+**Simple access:** If the consumer has an entitlement (purchase or grant) for the requested CID, the validator issues a wrapped DEK. Territory and deal type (subscription vs. download) come from **DDEX metadata** — no separate territory system. Deal type can drive behaviour (e.g. subscription → wrapped DEK with expiry; download → permanent DEK). This covers the common case without any policy engine.
 
-The policy plane has two layers: Casbin for structured IAM, and Goja for programmable logic that goes beyond what a policy engine can express.
+**Fine-grained control:** When content owners need more than "has entitlement" — roles, metadata visibility, territorial rules beyond DDEX, custom conditions — the policy plane adds **Casbin** (structured IAM) and **Goja** (programmable logic). Both are optional. DDEX defines metadata but not access control; in a decentralized system the policy plane fills that gap only where owners opt in.
 
 ### Casbin (structured IAM)
 
@@ -452,17 +454,19 @@ m = g(r.sub, p.sub) && r.obj == p.obj && r.act == p.act
 
 A label with territorial distribution might use a richer model with domain-scoped roles and ABAC attributes. The model itself is stored on-chain and referenced by the content's access policy.
 
-#### Policy types
+#### Policy types (when fine-grained control is needed)
+
+When the content owner wants more than a simple entitlement check (e.g. roles, territory beyond DDEX, custom conditions), they attach one of:
 
 | Policy type    | Backed by   | Example                                              |
 |----------------|-------------|------------------------------------------------------|
-| `public`       | (built-in)  | Anyone can access. DEK published in the clear.       |
+| `public`       | (built-in)  | Anyone can access.                                   |
 | `direct_grant` | Casbin ACL  | Owner explicitly grants access to specific keys.     |
 | `role_based`   | Casbin RBAC | Any entity with a `consumer` role can access.        |
-| `conditional`  | Casbin ABAC | Access granted if request attributes match predicates (territory, time window, subscription tier). |
+| `conditional`  | Casbin ABAC | Access if request attributes match (territory from DDEX, time window, etc.). |
 | `programmable` | Goja        | Custom JS logic for cases Casbin can't express.      |
 
-The first four types cover the vast majority of use cases without any code execution — Casbin evaluates them as structured policy lookups.
+Territory is normally taken from DDEX; Casbin/Goja add structure when owners need it. The first four types are evaluated as structured policy lookups; no code execution unless `programmable`.
 
 ### Goja (programmable policies)
 
@@ -564,15 +568,11 @@ function evaluate(request) {
 
 When a validator processes a `GrantAccess` request:
 
-1. Load the access policy for the requested CID from chain state.
-2. If the policy type is `public`: grant immediately, no evaluation needed.
-3. If the policy type is `direct_grant`, `role_based`, or `conditional`: evaluate via Casbin. The validator's embedded Casbin engine loads the model and policies from chain state (via the custom adapter) and runs `Enforce(sub, obj, act, ...attrs)`. No Goja involved.
-4. If the policy type is `programmable`: load the referenced JS script, instantiate a Goja runtime with the `mojave` host API, call `evaluate(request)` with a gas budget.
-5. If a Casbin model uses a custom matcher function backed by Goja: Casbin evaluates the policy as normal but calls into Goja for that specific predicate.
-6. If the result is allowed: the validator wraps the DEK for the consumer's public key and submits a `GrantAccess` transaction.
-7. If the result is denied or gas is exhausted: access denied, no transaction.
+1. Check that the consumer has an **entitlement** for this CID (purchase or grant). If not, deny. Optionally apply territory/deal-type rules from DDEX.
+2. If the content has an access policy (for fine-grained control): load it from chain state. If `public`, grant immediately. If `direct_grant`, `role_based`, or `conditional`, evaluate via Casbin. If `programmable`, run the referenced Goja script with a gas budget.
+3. If the result is allowed: the validator wraps the DEK for the consumer's device public key, delivers it to the device, and submits a `GrantAccess` transaction (audit trail). If denied or gas exhausted: no DEK, no transaction.
 
-All validators must agree on the result. Casbin evaluation is deterministic given the same model and policies from chain state. Goja evaluation is deterministic given the same inputs and runtime constraints. Since all validators read the same chain state, they converge.
+All validators must agree. Entitlement and policy evaluation are deterministic from chain state, so they converge.
 
 ## Proofs & Attestations
 
@@ -582,13 +582,13 @@ Not every user needs proofs, but for those who do — artists tracking plays for
 
 ### What's already provable
 
-`GrantAccess` transactions are on-chain. Each one is a signed, timestamped record that a specific consumer was granted access to a specific CID by a specific validator. From these, you can derive:
+`GrantAccess` transactions are on-chain. Each one is a signed, timestamped record that a specific consumer was granted a DEK for a specific CID by a specific validator. Persisting these as events gives a **paper trail for leak attribution**: if content leaks, the chain shows who received DEKs and when, so grants can be correlated with users. From these records you can also derive:
 
 - Total access grants for a CID (or set of CIDs)
 - Unique consumers per CID
 - Access grants over a time range
-- Access grants by territory (if territory is captured in the request)
-- Access grants by distributor (which validator issued them, under which policy)
+- Access grants by territory (if captured in the request)
+- Access grants by validator (which issued them, under which policy)
 
 This is the raw data. Proof scripts aggregate and shape it into meaningful attestations.
 
@@ -790,7 +790,7 @@ Mojave has a native token (MOJ, base unit: grains, 1 MOJ = 10^9 grains) used for
 
 ## Governance
 
-> See [governance.md](governance.md) for the full governance model — validator elections, oracle elections, copyright takedowns, and jurisdictional compliance.
+> See [governance.md](governance.md) for the full governance model — validator elections, publisher groups, per-group takedown authority, copyright takedowns, and jurisdictional compliance.
 
 Validators are admitted through social election (staking + community vote), not just staking alone. Oracles — elected per-network — handle copyright takedowns by submitting on-chain requests that trigger DEK removal. Jurisdictional compliance is a local validator decision, not a global consensus action. See the governance doc for details.
 

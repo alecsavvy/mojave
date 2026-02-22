@@ -2,7 +2,9 @@
 
 > **[Governance overview diagram](diagrams/governance.mermaid)** · **[Takedown flow diagram](diagrams/takedown.mermaid)**
 
-This document covers validator elections, publisher admission (who can publish on this chain), oracle elections, copyright takedowns, jurisdictional compliance, and the on-chain governance process that ties them together. It also describes how clients and indexers work across multiple chains.
+This document covers validator elections, publisher groups (“states”), publisher admission, copyright takedowns (by each group’s designated takedown authority), jurisdictional compliance, federal governance with group representation, and how clients and indexers work across multiple chains.
+
+The design is inspired by a **federal/state** split: the chain is the federal layer (validators run neutral infrastructure and serve all groups equally); **publisher groups** are like states, each with their own upload policy and **takedown authority** — the group’s development or compliance arm designates who can submit takedowns for that group’s content. There are no network-wide oracles; compliance and takedowns are entirely in the hands of each publisher group. Validators have the most scrutiny on admitting new groups. Federal governance gives groups representation based on stake and activity.
 
 ## Why governance matters here
 
@@ -52,71 +54,58 @@ This is different from anonymous DeFi validation. The music industry needs to kn
 | Community operator | A respected community member with proven ops track record | Grassroots trust, geographic diversity |
 | Academic / nonprofit | A university research lab, Internet Archive | Neutrality, long-term commitment, no commercial conflict |
 
+### Validators as federal infrastructure
+
+Validators are the **federal** layer. They run neutral infrastructure and must serve **all** admitted publisher groups equally. A validator cannot refuse to serve one group (e.g. Audius) while serving another (e.g. Sony). Replication and DEK holder assignments apply to content from every group; validators do not get to opt out by group. Jurisdictional content filtering (see below) remains the only exception — a validator may locally refuse content that violates its declared legal jurisdiction (e.g. not serve in Germany content that is illegal there). That is a legal compliance carve-out, not a choice to discriminate between groups.
+
+Validators also have **the most scrutiny on allowing new states**. Admitting a new publisher group (a new “state” on the chain) requires a governance process in which the validator set has the primary or heaviest weight. So creating a new group is not permissionless; it is validator-scrutinized. See Publisher groups and Governance proposals below.
+
+## Publisher groups (states)
+
+Publisher groups are the **state** layer. Each group (e.g. a label, Audius, Sony, an indie collective) has its own “laws”: who can publish under it and who can initiate takedowns for its content. Compliance and takedowns are **entirely in the hands of the publisher group’s development or compliance arm** — there are no network-wide oracles. Content is always associated with a publisher group (or marked independent). Only that group’s designated **takedown authority** can submit a takedown for that group’s content; Sony cannot file a takedown for content under Audius’ group. This prevents one group from bullying another’s content.
+
+### Group identity and on-chain state
+
+- Each **group** has an on-chain identity: `group_id` (or group account/pubkey). The chain maintains a group registry: which groups exist, their stake (if any), and the group’s **takedown authority** — the pubkey(s) that can submit takedowns (e.g. DDEX purge/takedown release messages) and resolve them for that group’s content. The group (e.g. its development arm, legal, or compliance team) controls this key; no separate oracle election is needed.
+- **Content** (each upload/release) is tagged with a **publisher_group_id**. So the chain can answer “which group backs this CID?”
+- **Who can publish under a group** is determined by that group: an allow-list of pubkeys, or a role/capability the group key signs. Groups manage this off-chain or via on-chain rules they control; the chain only checks at upload time that the uploader is allowed for the claimed group (or meets chain-wide rules for “independent” uploads).
+
+### Creating a new group (admitting a new state)
+
+Creating a new publisher group is **validator-scrutinized**. It is not permissionless. A proposal to admit a new group (e.g. `AdmitGroup`) is decided by governance in which **validators have the most say** — e.g. validator-weighted vote, or a dual requirement (stake majority and validator supermajority). This mirrors the high bar for “adding a new state” in a federal system. The proposal typically includes:
+
+- Group identity and **designated takedown authority** (the pubkey(s) that will submit takedowns for this group’s content — e.g. the group’s compliance or development arm).
+- Optional: minimum stake the group will lock (governance can require stake and slashing on takedown to align incentives).
+- Contact and dispute-resolution commitment.
+
+Once admitted, the group appears in the group registry and can receive content tagged with its `group_id`. Only that group’s takedown authority can submit a takedown for that group’s content — using **DDEX’s takedown/purge release message** (or an on-chain transaction that carries it), so groups use the same industry-standard signal for “remove this release.” The group can update its takedown authority via group governance or a designated update path (e.g. group key signs a `SetGroupTakedownAuthority` transaction).
+
+### Group stake and slashing (optional)
+
+A chain may require groups to **stake** MOJ (or allow optional staking). If content under a group receives a **confirmed takedown**, that group’s stake can be **slashed** (fully or partially). That ties abuse (copyright infringement, illegal content) to economic cost for the group and discourages groups from turning a blind eye. Parameters (slash amount, unbonding) are governance-set.
+
+### Relation to publisher admission
+
+Publisher admission (who can publish on the chain) is now **group-aware**. At upload time the chain checks: (1) the claimed publisher group exists and (if required) has sufficient stake; (2) the uploader is allowed to publish under that group (per the group’s allow-list or rules); and (3) any chain-wide floor (e.g. “all publishers must be in a group or meet independent criteria”) is satisfied. So the chain sets the floor; groups are the primary unit of “who can publish,” and each group has its own culture (e.g. Audius more permissive, Sony more bureaucratic).
+
 ## Publisher admission
 
-Who can publish content on a chain is determined by **chain-level policy**, not by a single global rule. The validator set and governance of each chain define that policy. The same on-chain policy machinery used for access control (Casbin models and rules, optionally Goja scripts) is used for publisher admission — evaluated at upload time instead of at access time.
-
-### Why chain-level policy
-
-Different chains serve different trust and risk profiles:
-
-- **Indie label chain.** Validators are elected by the label and community; publisher policy allows all of the label’s artists (or a curated allow-list). Open within that community.
-- **Major label chain.** Validators are the label’s infrastructure or approved partners; publisher policy restricts uploads to approved distributors and rights holders. Gated to control quality and legal exposure.
-- **Permissionless (“cowboy”) chain.** Publisher policy allows anyone to publish. Maximizes openness but exposes the chain to more copyright and liability risk — similar to early Audius. Oracles and takedowns (see below) are the reactive enforcement; the chain accepts that tradeoff.
-
-The protocol does not mandate “any chain must be open” or “any chain must be gated.” Each chain chooses where it sits on that spectrum via governance.
+Who can publish content on a chain is determined by **chain-level policy** and **publisher groups** (see above). You publish **under a group** (or as independent if the chain allows it). The chain maintains a floor (e.g. “must be in an admitted group” or “must meet chain-wide Casbin rules”); each group defines who can publish under it (allow-list, roles, or off-chain process). The same on-chain policy machinery used for access control (Casbin models and rules, optionally Goja scripts) can be used for chain-wide publisher admission and for group-level rules — evaluated at upload time.
 
 ### How it works
 
-- **On-chain policy.** The chain maintains a **chain-wide publisher policy**: a Casbin model and rule set (and optionally a Goja script for programmable logic), keyed at chain scope rather than per-CID. The same key spaces and adapter pattern as content access policies apply; the model ID for publisher admission is a governance parameter (e.g. `publisher_admission` or a governance-set ID).
-- **Evaluation at upload.** When a client submits raw audio to an upload validator, or when a validator is about to commit an `UploadComplete` transaction, the validator evaluates the publisher policy: “Is this uploader (Ed25519 pubkey) allowed to publish on this chain?” Inputs typically include the uploader’s public key and any attributes governance has defined (e.g. role, allow-list membership). If the policy denies, the validator rejects the upload; no state change.
-- **Governance sets the policy.** Governance proposals can add or remove publisher policy rules (e.g. allow-list entries, role assignments), change the model, or switch between “anyone” and “allow-list” or “role-based” by updating the chain’s publisher policy. Validators enforce whatever is currently on-chain; they do not unilaterally decide who can publish.
+- **Group-aware upload.** Every upload/release specifies a **publisher_group_id** (or “independent”). The chain checks: (1) the group exists (and has required stake if applicable); (2) the uploader is allowed to publish under that group; (3) any chain-wide publisher policy is satisfied. If any check fails, the validator rejects the upload.
+- **On-chain policy.** The chain may maintain a **chain-wide publisher policy** (Casbin model + rules, or Goja script) as a floor — e.g. “independent publishers must meet these rules” or “all publishers must belong to a group.” Group membership and per-group allow-lists are stored on-chain or proven at upload time. The model ID for publisher admission is a governance parameter.
+- **Governance.** Governance proposals (e.g. `PublisherPolicyChange`, `AdmitGroup`) update chain-wide policy and admit new groups. Validators enforce whatever is on-chain and do not unilaterally decide who can publish.
 
-### Relation to oracles and takedowns
+### Relation to takedowns
 
-- **Publisher admission** is **proactive**: it decides who is allowed to create new content on the chain.
-- **Oracles and takedowns** are **reactive**: they handle copyright claims and illegal content after publication. Content that passed publisher admission can still be taken down if an oracle receives a valid claim and the takedown workflow completes. On a permissionless chain, more uploads may be disputed; on a gated chain, fewer — but both use the same takedown mechanism when needed.
-
-The two layers are independent: a chain can be tightly gated for publishers and still have elected oracles for takedowns; a chain can be fully open for publishers and rely on oracles to enforce copyright. No IBC or cross-chain coordination is required for this — each chain’s governance configures both.
-
-## Oracle elections
-
-Oracles are elected entities with a specific authority: they can submit copyright takedown requests on-chain. Oracles are the bridge between the legal system and the protocol. They don't have validator powers — they can't participate in consensus, produce blocks, or hold DEKs. Their only capability is submitting `TakedownRequest` transactions.
-
-### Why oracles, not validators
-
-Validators are infrastructure operators. Copyright enforcement is a legal and social function — it requires understanding of copyright law, DMCA processes, rights databases, and dispute resolution. Conflating the two roles creates perverse incentives: a validator that's also a copyright enforcer might selectively take down competitors' content, or be pressured by a rights holder to favor their takedowns.
-
-Separating the roles means:
-- Validators focus on infrastructure — seeding, DEK management, consensus.
-- Oracles focus on copyright — verifying claims, submitting takedowns, handling disputes.
-- Neither can interfere with the other's domain.
-
-### Election process
-
-Oracles go through the same election process as validators — candidacy, voting, threshold, admission. The candidacy includes additional requirements:
-
-- Demonstrated expertise in copyright law or rights management.
-- Jurisdiction(s) they cover.
-- Dispute resolution process they commit to following.
-- Contact information for counter-notices.
-
-Oracle elections are **per-network** — different Mojave deployments (e.g. a US-focused network vs. a global network vs. a region-specific network) can elect different oracle sets appropriate to their jurisdiction and community.
-
-### Oracle authority
-
-An elected oracle can submit:
-
-| Transaction | Effect |
-|-------------|--------|
-| `TakedownRequest` | Initiates a takedown process for a specific CID |
-| `TakedownResolve` | Resolves a takedown — either confirms removal or dismisses the claim |
-
-Oracles cannot directly delete content or revoke DEKs. They submit requests that the protocol processes through a defined workflow (see Takedowns below). Oracle authority is independent of how open or gated a chain’s publisher admission is: whether anyone can publish or only approved parties, takedowns apply to content that has been published and is subject to a valid claim.
+- **Publisher admission** is **proactive**: it decides who can create new content and under which group.
+- **Takedowns** are **reactive** and **group-scoped**: only the content’s publisher group’s **takedown authority** (the pubkey(s) designated by that group) can submit a takedown for that content. Content that passed publisher admission can still be taken down by that group’s takedown authority if the group decides a valid claim has been made.
 
 ## Takedowns
 
-When content needs to be removed — copyright infringement, illegal material, court order — the takedown mechanism is DEK removal. This applies to any content that has been published on the chain, regardless of how permissive or gated the chain’s publisher admission policy is. A permissionless chain will see more takedown activity; a gated chain fewer — but the mechanism is the same. The encrypted `.flac.tdf` blobs become permanently inaccessible without destroying the audit trail.
+When content needs to be removed — copyright infringement, illegal material, court order — the takedown mechanism is DEK removal. **Publisher groups initiate takedowns** by sending the same kind of signal the industry already uses: **DDEX’s takedown/purge release message**. Content that slipped under a group’s radar (e.g. infringing uploads, court-ordered removal) is taken down when that group’s takedown authority submits a purge/takedown release message (or an on-chain transaction that carries it). The chain then runs the takedown workflow (counter-notice window, DEK removal). **Before any workflow runs**, the chain checks that the signer is the **takedown authority** for the CID’s publisher group (i.e. one of the pubkeys registered for that group in the group registry). If not, the request is rejected. This applies to any content that has been published on the chain. The encrypted `.flac.tdf` blobs become permanently inaccessible without destroying the audit trail. Compliance and the decision to take down content are entirely in the hands of each publisher group’s designated authority (e.g. their development or legal arm).
 
 ### Why DEK removal, not file deletion
 
@@ -133,20 +122,20 @@ The on-chain records remain — the upload, the release, the access grants, the 
 ### Takedown flow
 
 ```
-Claimant                Oracle              Chain              Validators
+Claimant         Group's takedown authority   Chain              Validators
   |                       |                   |                     |
   |-- copyright claim --->|                   |                     |
   |   (off-chain:         |                   |                     |
   |    evidence, CID,     |                   |                     |
-  |    legal basis)        |                   |                     |
+  |    legal basis)       |                   |                     |
   |                       |                   |                     |
-  |             oracle reviews claim           |                     |
-  |             verifies evidence              |                     |
+  |             group's authority reviews      |                     |
+  |             claim, verifies evidence       |                     |
   |                       |                   |                     |
   |                       |-- TakedownRequest -->|                     |
-  |                       |   (CID, oracle sig, |                     |
-  |                       |    reason, evidence |                     |
-  |                       |    hash)            |                     |
+  |                       |   (CID, sig,       |                     |
+  |                       |    reason, evidence|                     |
+  |                       |    hash)           |                     |
   |                       |                   |                     |
   |                       |                   |-- takedown.pending -->|
   |                       |                   |   event               |
@@ -179,11 +168,11 @@ Claimant                Oracle              Chain              Validators
 The uploader (or content owner) can submit a counter-notice during the window, claiming the takedown is invalid. The counter-notice is on-chain — signed, timestamped, part of the audit trail.
 
 If a counter-notice is submitted:
-1. The oracle reviews the counter-notice and any supporting evidence.
-2. The oracle submits `TakedownResolve` with a decision — confirmed (takedown stands) or dismissed (content is restored).
+1. The group’s takedown authority reviews the counter-notice and any supporting evidence.
+2. The takedown authority submits `TakedownResolve` with a decision — confirmed (takedown stands) or dismissed (content is restored).
 3. If dismissed: the `TAKEDOWN_PENDING` status is removed, the content remains accessible, and the takedown request stays on-chain as a record.
 
-If the oracle's decision is disputed, the community can recall the oracle via the election mechanism. The protocol doesn't adjudicate copyright disputes — it provides the process and the paper trail. Final legal disputes happen off-chain in courts.
+If the group’s decision is disputed, the uploader or community can pursue the group (e.g. via group governance, or off-chain). The protocol doesn’t adjudicate copyright disputes — it provides the process and the paper trail. Final legal disputes happen off-chain in courts.
 
 ### Takedown state
 
@@ -224,24 +213,16 @@ Validators can locally refuse to store or serve content that violates their juri
 
 This is functionally equivalent to how CDNs handle jurisdictional content — a CDN edge node in Germany might not serve content that's legal in the US. The content still exists on the network; it's just not served from that location.
 
-### Jurisdictional oracle sets
-
-Because oracle elections are per-network, different deployments can have oracle sets appropriate to their jurisdiction:
-
-- A US-focused deployment elects oracles familiar with DMCA.
-- An EU-focused deployment elects oracles familiar with the DSA and local copyright directives.
-- A global deployment might elect oracles from multiple jurisdictions with defined handoff procedures.
-
-The protocol doesn't encode any specific copyright law. It provides the mechanism (elected oracles, takedown workflow, counter-notices, audit trail) and lets each deployment configure the specifics.
+The protocol doesn't encode any specific copyright law. It provides the mechanism (per-group takedown authority, takedown workflow, counter-notices, audit trail); each group runs its own compliance.
 
 ### Content flagging
 
-In addition to full takedowns, oracles can flag content with jurisdictional restrictions:
+In addition to full takedowns, a group’s **takedown authority** can flag that group’s content with jurisdictional restrictions:
 
 | Transaction | Effect |
 |-------------|--------|
-| `FlagContent` | Adds a jurisdictional flag to a CID — e.g. "restricted in DE, FR" |
-| `UnflagContent` | Removes a jurisdictional flag |
+| `FlagContent` | Adds a jurisdictional flag to a CID. **Accepted only if** the signer is the takedown authority for that CID’s publisher group. E.g. "restricted in DE, FR". |
+| `UnflagContent` | Removes a jurisdictional flag (same authority check). |
 
 Flags don't remove DEKs or block access globally. They're advisory metadata that validators and clients can use to comply with local law. A validator in Germany that sees a `restricted in DE` flag can stop serving the content locally. A validator in the US ignores the flag.
 
@@ -256,29 +237,51 @@ Chains are independent. There is no protocol-level requirement for chains to tal
 
 So “interconnect” is client- and indexer-side: they pull from the relevant networks. Each chain’s state (including publisher policy, entitlements, and takedowns) is self-contained; clients and indexers aggregate as needed.
 
+## Federal governance and group representation
+
+Federal (chain-wide) governance decides parameter changes, new group admission, validator elections, and upgrades. To avoid pure plutocracy and to give **publisher groups** a voice, the chain can use **dual representation**: (1) **stake-weighted** voting (existing: token holders vote with staked MOJ), and (2) **group representation** where each admitted group gets a vote weight based on **stake + activity** for that group.
+
+### Group vote weight
+
+Each group’s voting power in federal governance is a function of:
+
+- **Stake** — MOJ staked or locked by/for that group (or attributed to the group in the registry). Reflects skin in the game.
+- **Activity** — an on-chain measure of usage over a recent window, e.g. number of CIDs published under that group, access grants for that group’s content, or similar. Prevents inactive capital from dominating and rewards real use.
+
+The exact formula (e.g. weighted sum or product of stake and activity, with caps) is governance-set. Newly admitted groups may have no activity yet; they can be given a default weight or required to hold minimum stake to participate. Activity metrics should be costly to game (e.g. tied to upload/storage fees) and computed over a rolling window.
+
+### How group and stake votes combine
+
+Options (governance chooses):
+
+- **Dual majority:** A proposal passes only if it gets a supermajority of **stake-weighted** votes **and** a supermajority of **group-representation** votes. So both token holders and groups must agree.
+- **Blended weight:** Total voting power = α × (stake-weighted total) + β × (group-representation total), with α, β governance parameters. A single roll call with combined weight.
+- **Proposal-type specific:** e.g. new group admission (`AdmitGroup`) requires validator supermajority or group+stake dual majority; parameter changes might be stake-only.
+
+Validators have **the most scrutiny on admitting new groups**: e.g. `AdmitGroup` proposals require validator-weighted supermajority (or a process where validators’ vote is the primary gate). Group representation then gives admitted groups a say in subsequent federal decisions (parameters, validator elections, etc.) based on their stake and activity.
+
 ## Governance proposals
 
-Beyond elections, the network uses on-chain governance proposals for protocol-level decisions. These follow standard Cosmos SDK governance patterns:
+Beyond elections, the network uses on-chain governance proposals for protocol-level decisions. Federal (chain-wide) proposals can use both **stake-weighted** voting and **group representation** (see above). Admitting a new publisher group is validator-scrutinized.
 
 ### Proposal types
 
 | Proposal | Purpose | Threshold |
 |----------|---------|-----------|
-| `ValidatorCandidacy` | Elect a new validator | Supermajority of staked votes |
+| `AdmitGroup` | Admit a new publisher group (“new state”). Requires **validator-scrutinized** approval (e.g. validator supermajority or dual stake + group majority). | Validator supermajority or governance-set dual majority |
+| `ValidatorCandidacy` | Elect a new validator | Supermajority of staked votes (and optionally group representation) |
 | `RecallValidator` | Remove a validator | Supermajority of staked votes |
-| `OracleCandidacy` | Elect a new oracle | Supermajority of staked votes |
-| `RecallOracle` | Remove an oracle | Supermajority of staked votes |
 | `PublisherPolicyChange` | Update chain-wide publisher admission (model, rules, or script reference) | Supermajority of staked votes |
-| `ParameterChange` | Modify chain parameters (gas prices, inflation, publisher policy model ID, etc.) | Supermajority of staked votes |
+| `ParameterChange` | Modify chain parameters (gas prices, inflation, publisher policy model ID, group vote formula, etc.) | Supermajority of staked votes |
 | `SoftwareUpgrade` | Coordinate a chain upgrade | Supermajority of staked votes |
 | `CommunitySpend` | Allocate funds from the community/treasury pool | Supermajority of staked votes |
 
 ### Voting
 
-- Voting power is proportional to staked MOJ.
-- Delegators inherit their validator's vote by default but can override.
+- **Stake-weighted voting:** Voting power is proportional to staked MOJ. Delegators inherit their validator's vote by default but can override.
+- **Group representation (optional per proposal type):** Each admitted group has a vote weight = f(group stake, group activity). The group key (or designated signer) casts the group’s vote. Proposals can require both a stake majority and a group-representation majority, or use a blended weight; see Federal governance and group representation.
 - Voting period is governance-set (default 14 days).
-- Quorum: 33% of staked tokens must vote.
+- Quorum: 33% of participating stake (and, if applicable, quorum of group representation) must vote.
 - Supermajority: 67% of votes must be `yes`.
 - Veto threshold: if > 33% of votes are `no_with_veto`, the proposal fails regardless of yes votes and the proposer's deposit is burned.
 
@@ -293,5 +296,8 @@ Beyond elections, the network uses on-chain governance proposals for protocol-le
 | `min_deposit` | 1,000 MOJ | Minimum deposit to submit a proposal |
 | `counter_notice_window` | 14 days | Time for content owners to respond to a takedown |
 | `publisher_policy_model_id` | (governance-set) | Casbin model ID for chain-wide publisher admission; rules are updated via `PublisherPolicyChange` |
-| `max_oracles` | 21 | Maximum number of active oracles |
+| `group_vote_activity_window` | 180 days | Rolling window (e.g. blocks or time) for computing group activity in federal vote weight |
+| `group_vote_stake_weight` | (governance-set) | Weight α for stake in group vote weight formula (e.g. weight = α×sqrt(stake) + β×sqrt(activity)) |
+| `group_vote_activity_weight` | (governance-set) | Weight β for activity in group vote weight formula |
 | `max_validators` | 100 | Maximum number of active validators |
+| `min_group_stake` | (governance-set) | Minimum stake (if any) for a group to be admitted or to participate in group-representation voting |

@@ -1,5 +1,7 @@
 # Mojave Documentation
 
+**Mojave is a legal, better alternative to LimeWire meets iTunes:** P2P distribution and discovery, with real ownership, payments to rights holders, and offline playback. A passion project for distribution that respects the chain of rights.
+
 ## Why Mojave exists
 
 The music industry runs on intermediaries. Between the artist and the listener sits a stack of platforms, distributors, aggregators, and streaming services — each taking a cut, each controlling access, each holding data the artist can't fully see or verify. An independent artist uploading to Spotify doesn't own their distribution infrastructure. A label shipping to Apple Music trusts Apple's servers, Apple's DRM, Apple's analytics. The artist gets a dashboard someone else built and a check they can't independently verify.
@@ -17,6 +19,21 @@ The bet is simple: if you give artists and labels the tools to own their distrib
 - **A distributor** can prove to a licensor that content was delivered N times in a specific territory, with a signed attestation from the network's validators — not a PDF report they generated themselves.
 - **A fan** buys a track and actually owns it. The encrypted file sits on their disk. The DEK is wrapped to their device. They can play it offline, forever, without a subscription. If the network disappeared tomorrow, anyone who has the file and the DEK keeps their music.
 - **A developer** builds a music player, a marketplace, or a recommendation engine on top of open chain state and a GraphQL API — no API keys, no rate limits, no terms of service that can be revoked.
+
+### Showcase frontends (mojave.audio)
+
+To demonstrate that the protocol is infrastructure and the UX is unbounded, the plan is to run multiple frontends on [mojave.audio](https://mojave.audio):
+
+| Frontend | Purpose |
+|----------|---------|
+| **mojave.audio** | Main site — Horizon theme (bright/dark), reference UI for the protocol |
+| **spotify.mojave.audio** | Spotify-style experience (browse, playlists, discovery) |
+| **bandcamp.mojave.audio** | Bandcamp-style (artist-first, pay what you want, ownership) |
+| **audius.mojave.audio** | Audius-style (community, trending, social) |
+| **itunes.mojave.audio** | iTunes-style (library, store, own your music) |
+| **myspace.mojave.audio** | MySpace-style (artist profiles, top friends, custom pages, early social music) |
+
+Same protocol, same chain; different UX paradigms. Desktop playback and optional seeding live in the Tauri app.
 
 ### What this is not
 
@@ -56,11 +73,11 @@ The docs are structured around concerns, not layers. Start with `architecture.md
 | Document | What it covers | Key audience |
 |----------|---------------|-------------|
 | [`PROTOCOL.md`](../PROTOCOL.md) | Client interface contract — auth, API, crypto, content access, payment flows, Rust/browser crate recommendations. Self-contained; designed to be copied into client repos. | Client developers, LLMs in external repos |
-| [architecture.md](architecture.md) | System overview, four planes, all actors, on-chain state, transaction types, upload/access/download flows, policy plane (Casbin + Goja), proofs & attestations, networking, API layer, design principles, trust assumptions | Everyone |
+| [architecture.md](architecture.md) | System overview, four planes, all actors, on-chain state, transaction types, upload/access/download flows, policy plane (entitlement-first; Casbin + Goja optional for fine-grained), proofs & attestations, networking, API layer, design principles, trust assumptions | Everyone |
 | [storage.md](storage.md) | Two PebbleDB stores — chain store (consensus state, key spaces, secondary indexes) and local store (validator DEKs, processing scratch, sync state). Rebuilding from peers. | Engineers |
 | [content.md](content.md) | On-disk file layout (`.flac.tdf` + `.png`), directory sharding, `gocloud.dev` integration, BitTorrent integration (seeding, leeching, good samaritans, dead seed problem), reconciliation loop, lifecycle, disk sizing | Engineers, validator operators |
 | [economics.md](economics.md) | Native token (MOJ/grains), gas fees, storage fees, content purchases, validator rewards, staking, genesis allocation, inflation schedule, bootstrapping phases, fee examples, governance parameters | Everyone |
-| [governance.md](governance.md) | Validator elections (social + staking), oracle elections (per-network), copyright takedowns (DEK removal), counter-notices, jurisdictional compliance, content flagging, governance proposals | Everyone |
+| [governance.md](governance.md) | Validator elections (social + staking), publisher groups (states), per-group takedown authority, copyright takedowns (DEK removal), counter-notices, jurisdictional compliance, content flagging, governance proposals | Everyone |
 
 ### Diagrams
 
@@ -82,7 +99,7 @@ All diagrams live in [diagrams/](diagrams/) as `.mermaid` files and are referenc
 | [networking.mermaid](diagrams/networking.mermaid) | architecture.md | Three communication layers — reactors, BitTorrent, API |
 | [type-generation.mermaid](diagrams/type-generation.mermaid) | architecture.md | Proto → Go → GraphQL pipeline across ddex-proto and mojave repos |
 | [validator-churn.mermaid](diagrams/validator-churn.mermaid) | architecture.md | Validator departure — unbonding, DEK holder replacement, optional rotation |
-| [governance.mermaid](diagrams/governance.mermaid) | governance.md | Election process, validator/oracle sets, recall mechanism |
+| [governance.mermaid](diagrams/governance.mermaid) | governance.md | Election process, validator set, publisher groups, recall mechanism |
 | [takedown.mermaid](diagrams/takedown.mermaid) | governance.md | Takedown flow — claim, review, counter-notice, DEK removal |
 
 ### Design decisions (token and payments)
@@ -135,8 +152,8 @@ The accounts key space in storage.md has `pubkey`, `nonce`, `created_at` but no 
 **11. Epoch boundaries.**
 governance.md says validators are "added to the active set at the next epoch boundary." Epochs are never defined. CometBFT 1.x uses ABCI++ (FinalizeBlock, not legacy EndBlock); validator set changes are driven by the application in the ABCI++ lifecycle — is that the epoch, or is there a higher-level concept?
 
-**12. Pending takedowns on oracle recall.**
-If an oracle is recalled while they have a pending `TakedownRequest` (in the counter-notice window), what happens? Is the takedown auto-dismissed? Does another oracle take over? The doc is silent on this.
+**12. Pending takedowns when a group’s takedown authority changes.**
+If a group updates its designated takedown authority (e.g. `SetGroupTakedownAuthority`) while a takedown for that group’s content is in the counter-notice window, what happens? Does the original authority’s pending request stand, or does the new authority take over? The doc is silent on this.
 
 **13. Transaction types from governance.md not in architecture.md.**
 The governance doc introduces new transaction types (`SubmitCandidacy`, `RecallValidator`, `OracleCandidacy`, `RecallOracle`, `TakedownRequest`, `TakedownResolve`, `CounterNotice`, `FlagContent`, `UnflagContent`) that aren't listed in architecture.md's Transaction Types section.

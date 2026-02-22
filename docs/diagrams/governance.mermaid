@@ -22,18 +22,13 @@ graph TD
         ADMIT --> V_ACA
     end
 
-    subgraph OracleSet["Oracle Set (per-network)"]
-        O_US[US — DMCA expertise]
-        O_EU[EU — DSA / copyright directives]
-        O_GL[Global — multi-jurisdiction]
-
-        ADMIT --> O_US
-        ADMIT --> O_EU
-        ADMIT --> O_GL
+    subgraph Groups["Publisher Groups (governance: AdmitGroup)"]
+        G_A[Group A — takedown authority]
+        G_B[Group B — takedown authority]
     end
 
     subgraph Removal["Recall"]
-        RECALL[RecallValidator /<br/>RecallOracle proposal]
+        RECALL[RecallValidator proposal]
         R_VOTE[Same voting process]
         R_THRESH{Passes?}
         UNBOND[Unbonding period<br/>stake locked, slashable]
@@ -45,14 +40,13 @@ graph TD
         UNBOND --> REMOVED
     end
 
-    subgraph Takedowns["Takedown Authority"]
-        O_US -->|TakedownRequest| TD[DEK removal<br/>+ audit trail]
-        O_EU -->|TakedownRequest| TD
-        O_GL -->|TakedownRequest| TD
+    subgraph Takedowns["Takedown (per-group authority only)"]
+        G_A -->|TakedownRequest| TD[DEK removal<br/>+ audit trail]
+        G_B -->|TakedownRequest| TD
     end
 
     style Elections fill:#1a1a2e,color:#fff
     style ValidatorSet fill:#1a5276,color:#fff
-    style OracleSet fill:#533483,color:#fff
+    style Groups fill:#533483,color:#fff
     style Takedowns fill:#922b21,color:#fff
     style Removal fill:#7d6608,color:#fff

@@ -8,7 +8,7 @@ Copy this file into your client repo's root so your LLM has full protocol contex
 
 ## What Mojave is
 
-A decentralized music distribution protocol. Validators (elected, accountable operators) store encrypted audio, enforce access policies, and serve content. Clients download encrypted files, request decryption keys, and play locally. The model is iTunes (own your library), not Spotify (stream from a service).
+A decentralized music distribution protocol — a legal, better alternative to LimeWire meets iTunes. P2P distribution and discovery; own your library; payments to rights holders; optional seeding from the client. Validators (elected, accountable operators) store encrypted audio, check entitlements (and optional access policies), and issue decryption keys. Clients download encrypted files, request DEKs, and play locally — offline-first. The model is iTunes (own your library), not streaming through the validator. Territory and deal type (subscription vs. download) come from DDEX metadata.
 
 ## Authentication
 
@@ -136,7 +136,8 @@ Device                          DEK Holder Validator
   |     device_x25519_pubkey }     |
   |   signed by Ed25519 --------->|
   |                                |
-  |   validator checks policy      |
+  |   validator checks entitlement |
+  |   (and policy if set)          |
   |   validator wraps DEK to       |
   |   device's X25519 pubkey       |
   |                                |

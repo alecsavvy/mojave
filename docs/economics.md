@@ -59,9 +59,9 @@ Storage fees are collected in the `UploadComplete` transaction. The uploading cl
 
 ### Content purchase fees
 
-When a consumer purchases access to content, they pay the price set by the content owner. This is a direct transfer — the protocol takes no cut at the base layer.
+When a consumer purchases access to content, they pay the price set by the content owner. This is a direct transfer — the protocol takes no cut at the base layer. Core access is entitlement-based: if the consumer has an entitlement (purchase or grant) for the CID, the validator issues a wrapped DEK. Price and deal type (e.g. subscription vs. download) can come from DDEX or from an optional access policy when the owner wants fine-grained control.
 
-The access policy determines the price. For `public` content, the price is zero. For gated content, the owner sets a price in MOJ via their access policy or Goja script:
+For gated content, the owner sets a price in MOJ via their access policy or Goja script (optional):
 
 ```javascript
 function evaluate(request) {
