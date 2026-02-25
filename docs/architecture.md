@@ -4,7 +4,7 @@
 
 > **[System overview diagram](diagrams/overview.mermaid)**
 
-Mojave is a decentralized music distribution system built on four planes:
+Mojave is a decentralized **music library** protocol: you digitize your collection (rips, imports), buy from artists, and own your files; in the future, trade or resell. It is built on four planes:
 
 - **Consensus plane** (CometBFT 1.x, ABCI++): the source of truth. Stores state, orders transactions, coordinates validators via ABCI++ events. Nothing is "real" until it's on-chain. We use ABCI++ (PrepareProposal, ProcessProposal, FinalizeBlock), not the legacy ABCI interface (BeginBlock, DeliverTx, EndBlock).
 - **Storage plane** (BitTorrent + gocloud.dev): encrypted file replication. BitTorrent is the replication protocol between validators. gocloud.dev is each validator's local storage abstraction — it lets them back their blob store with disk, S3, GCS, whatever. These are complementary: gocloud.dev is "where I keep my copy," BitTorrent is "how I get copies to/from peers."
@@ -57,9 +57,9 @@ Generate an ephemeral X25519 keypair, ECDH with the recipient's X25519 public ke
 
 ## Actors
 
-- **Clients**: music creators / rights holders. Have Ed25519 keypairs. Upload content, assert ownership, manage access.
-- **Validators**: run CometBFT nodes. Have Ed25519 keypairs (CometBFT validator keys). Process uploads, enforce policies, replicate files, serve content.
-- **Consumers**: want to access / stream music. Have Ed25519 keypairs. Granted access through on-chain policies.
+- **Clients**: music creators / rights holders, or **library owners** (you). Have Ed25519 keypairs. Upload catalog content and assert ownership; or add personal library content (rips, imports) and pay storage. Manage access and policies for catalog; own and access their library (catalog + personal).
+- **Validators**: run CometBFT nodes. Have Ed25519 keypairs (CometBFT validator keys). Process uploads (catalog and, optionally, personal library), enforce policies, replicate files, serve content.
+- **Consumers**: want to access / play music. Have Ed25519 keypairs. Granted access through on-chain policies (purchase or grant for catalog); for personal library, the owner is the only "consumer" (self-access).
 
 ## On-Chain State Machine
 
@@ -199,7 +199,7 @@ The Casbin adapter stores policy rules as structured on-chain state:
 
 ### Access
 
-11. **`GrantAccess`** (signed by validator) — "I've verified this consumer has an entitlement for this CID (and any policy/territory checks pass)." The validator wraps the DEK for the device's X25519 public key and delivers it directly; the wrapped DEK is not stored on-chain. The grant is recorded on-chain (Ed25519 key + CID + timestamp) as an audit trail for proofs and for leak attribution — if content leaks, the chain shows who received DEKs.
+11. **`GrantAccess`** (signed by validator or distributor) — "I've verified this consumer has an entitlement for this CID." Entitlement can come from a **USDC purchase attestation** (user paid; artist/distributor or validator verifies attestation and grants access). The validator (or distributor) wraps the DEK for the device's X25519 public key and delivers it; the grant is recorded on-chain (Ed25519 key + CID + timestamp) as an audit trail. Validators take a cut of the sale; see [economics.md](economics.md).
 12. **`RevokeAccess`** (signed by owner/admin) — "Remove this grant." Validators will stop issuing new wrapped DEKs for this identity. Wrapped DEKs already on devices still work until they expire, but the device can't get a fresh one.
 
 ### Proofs
@@ -345,16 +345,18 @@ The device decrypts locally. The validator never handles unencrypted content dur
 
 > **[Library download flow diagram](diagrams/library-download.mermaid)**
 
-The model is iTunes, not Spotify — users download their library and own it locally. The download and decryption are separate steps: get the encrypted `.tdf` file first (safe to transfer openly), then get a wrapped DEK to unlock it.
+The model is iTunes, not Spotify — users download their library and own it locally. The download and decryption are separate steps: get the encrypted `.tdf` file first (safe to transfer openly), then get a wrapped DEK to unlock it. The **Tauri app is both your library and your player** — one place to browse, play, and sync your owned music (catalog + personal library), so you're not "I bought it on Bandcamp, now I open VLC."
 
 ### Clients
 
 **Desktop (Tauri)** — the primary client. [Tauri](https://tauri.app/) v2, Rust backend, webview frontend (React/Svelte/etc.). The Rust core handles:
 
-- BitTorrent: `librqbit` (pure Rust BT client) leeches `.tdf` blobs and PNGs directly from validators and good samaritans.
+- BitTorrent: `librqbit` (pure Rust BT client) leeches `.tdf` blobs and PNGs directly from validators and good samaritans; **optionally seeds** after download so the desktop can act as a peer for your other devices.
 - Crypto: `ed25519-dalek`, `x25519-dalek` for signing and ECDH. `aes-gcm` for DEK-based decryption.
 - Protobuf: `prost` generates Rust types from the same `.proto` files the validators use.
 - Filesystem: full access. Library stored on disk wherever the user wants.
+
+**Device sync.** Your desktop can seed your library; your phone (or another device) can leech from the desktop when on the same network (same encrypted CID, same swarm). Local peer discovery (e.g. multicast on LAN) lets the phone find the laptop on the same Wi‑Fi. When the desktop is off or the phone is elsewhere, the phone can leech from validators if you've paid them to seed your personal library — so sync works "your devices first, validators when you pay for backup." See [personal-library-vision.md](personal-library-vision.md).
 
 The Rust client talking to Go validators over protobuf proves the protocol is language-agnostic — the `.proto` files are the contract, not the implementation language.
 
@@ -407,6 +409,31 @@ Steps 2 and 3 can happen in either order. You can download your entire library i
 ### Offline playback
 
 Once a device has both the `.tdf` file and a valid (non-expired) wrapped DEK, it can play offline. No network needed. **Offline-first:** validators do not stream audio; they only issue wrapped DEKs. Ciphertext is fetched via BitTorrent or CDN; decryption is local. For purchased content, the wrapped DEK never expires — true offline ownership. For subscription-style access, the wrapped DEK can carry an expiry; when it expires, the device comes online to refresh. The validator stops issuing when the subscription lapses (same as modern streaming — no key self-destruct on device).
+
+## Personal library (reorientation)
+
+Mojave is reoriented toward **your decentralized music library**: one place where your collection lives — rips and imports you digitize, plus music you purchase from artists. In the future, digital trades and secondhand sales will let you transfer or resell copies. Full design: [personal-library-vision.md](personal-library-vision.md).
+
+### Content sources
+
+| Source | Who adds it | Where it lives on-chain | Access |
+|--------|-------------|-------------------------|--------|
+| **Catalog** | Artist/label (upload → PublishRelease) | `uploads/`, `releases/`, entitlements, DEK holder set | You get access by purchase or grant → GrantAccess → wrapped DEK |
+| **Personal library** | You (rip/import) | Dedicated namespace (e.g. `library/{owner}`); not in public catalog | Only you (owner). Sync from your devices first (desktop seeds, phone leeches); optionally subscribe (assumed USDC subscription by content amount) for validator backup so you have sync when desktop is off. |
+| **Purchase** | You (buy from catalog) | Same as catalog; your key gets consumer entitlement | GrantAccess as today |
+
+**"My library"** is the union of: (a) catalog items you own (owner entitlement), (b) catalog items you can play (consumer entitlement), (c) personal library items (rip/import, owner in library namespace). Each item has a **source** (rip, import, purchase; later: trade, resale).
+
+### Rip / import (personal library)
+
+- You upload raw audio (or pre-normalized FLAC) and optional metadata; tag as **personal library**, owner = your key.
+- Validator can run the same pipeline (transcode → FLAC, encrypt) or you encrypt client-side and upload ciphertext only — tradeoff between implementation reuse and privacy (validator never sees plaintext).
+- Chain records the item under the library namespace; only your wrapped DEK on-chain; replication set small. Payment for replication is deferred (assumed USDC subscription by content amount when you want validator backup). No discovery by others; no publisher-group takedown (private storage).
+- Optional: link to a catalog release CID for display ("this rip matches that release") without granting anyone else access.
+
+### Future: transfer of consumer entitlement
+
+Trades and secondhand sales require **transferring** a consumer entitlement from one key to another. Not yet designed. Will need: transaction type(s) (e.g. `TransferConsumerEntitlement`, resale, or trade), transferability rules (policy/DDEX), optional royalty to rights holder, atomic revoke-from-A / grant-to-B. Same consensus and crypto; new state and flows. See [personal-library-vision.md](personal-library-vision.md).
 
 ## Policy Plane
 
@@ -770,9 +797,13 @@ Clients authenticate by signing a challenge with their Ed25519 key. The API veri
 
 ## Economics
 
-> See [economics.md](economics.md) for the full token model, fee structure, validator rewards, and bootstrapping strategy.
+> See [economics.md](economics.md) for the full model.
 
-Mojave has a native token (MOJ, base unit: grains, 1 MOJ = 10^9 grains) used for gas fees, storage fees, content purchases, and validator rewards. MOJ is the only on-chain currency; there is no attestation-based or multi-currency payment path in the protocol for now. Storage is the expensive operation — proportional to file size and replication factor. Gas for normal user activity (browsing, purchasing, policy changes) is effectively free. Content purchases are direct transfers in MOJ from consumer to content owner — the protocol takes no cut at the base layer. USD is a display and UX concern in clients (price feeds, “price in USD” with conversion to MOJ at purchase); liquidity and exchange (MOJ ↔ USD) are handled off-chain (faucet, then exchanges if they list MOJ).
+Mojave has **no native token**. Everyone has an **Ed25519 pubkey**. Payments use **USDC attestations**:
+
+- **User subscriptions** — Users pay a subscription (by library size) via USDC attestation; validators replicate their library and earn from that. Users and good samaritans also seed (BitTorrent); validators are not the only source.
+- **Content purchases** — Artists sign up as **distributors**. A user pays in USDC; an attestation proves payment. The artist (or validator on their behalf) **grants access** to the user (entitlement + wrapped DEK). **Validators take a cut** of the sale; the rest goes to the artist. Artist sale volume + user subscription fees pay for hosting.
+- **Validator revenue** — Cut of USDC content sales + user subscription fees. No MOJ, no block rewards, no gas in a protocol token.
 
 ## Design Principles
 

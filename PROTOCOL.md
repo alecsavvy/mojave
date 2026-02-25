@@ -8,7 +8,7 @@ Copy this file into your client repo's root so your LLM has full protocol contex
 
 ## What Mojave is
 
-A decentralized music distribution protocol — a legal, better alternative to LimeWire meets iTunes. P2P distribution and discovery; own your library; payments to rights holders; optional seeding from the client. Validators (elected, accountable operators) store encrypted audio, check entitlements (and optional access policies), and issue decryption keys. Clients download encrypted files, request DEKs, and play locally — offline-first. The model is iTunes (own your library), not streaming through the validator. Territory and deal type (subscription vs. download) come from DDEX metadata.
+A decentralized **music library** protocol — rip your vinyl and CDs, import your digital copies, buy from artists, own your files; in the future, trade or resell. Legal, better alternative to LimeWire meets iTunes. P2P distribution and discovery; one library (rips + purchases). Payments use **USDC attestations** (no native token): user subscriptions by library size, content purchases (artists as distributors; validators take a cut). Users and good samaritans seed; optional seeding from the client. Validators (elected, accountable operators) store encrypted audio, check entitlements (and optional access policies), and issue decryption keys. Clients download encrypted files, request DEKs, and play locally — offline-first. The model is iTunes (own your library), not streaming. The reference client (Tauri app) is **one app that is both your library and your player** — no "Bandcamp then VLC." Territory and deal type (subscription vs. download) come from DDEX metadata. See `docs/personal-library-vision.md` for the full reorientation (personal library, rip/import, device sync, future resale/trade).
 
 ## Authentication
 
@@ -48,8 +48,9 @@ Flexible query language. Ask for exactly what you need. GraphiQL endpoint availa
 
 | Query | What it returns |
 |-------|----------------|
-| What do I own? | List of CIDs where your key has an `owner` entitlement |
-| What can I play? | List of CIDs where your key has been granted access |
+| What do I own? | List of CIDs where your key has an `owner` entitlement (catalog) |
+| What can I play? | List of CIDs where your key has been granted access (catalog) |
+| What's in my library? | Union of: (a) catalog you own, (b) catalog you can play, (c) **personal library** items (rip/import, owner in library namespace). Each item has a source: rip, import, purchase, (future) trade/resale. See `docs/personal-library-vision.md`. |
 | Get release metadata | DDEX ERN, FLAC CID, encrypted CID, image CIDs, status |
 | Get cover art | PNG image (served directly, no access gate) |
 | Get access history | History of access grants — when, what, which validator |
@@ -171,14 +172,7 @@ All crypto happens on-device. The validator never sees the raw DEK or unencrypte
 
 ### 5. Purchase content
 
-Content purchases are embedded in the access request. The access policy (set by the content owner) determines the price.
-
-The `GrantAccess` transaction atomically:
-- Transfers MOJ (in grains) from the consumer's account to the content owner's account
-- Records the access grant on-chain (audit trail)
-- Returns the wrapped DEK to the device
-
-If the content is free (`public` policy), no payment is needed.
+Content purchases use **USDC attestations**. The user pays in USDC (on whatever rail produces the attestation). An attestation proves "pubkey X paid $Y to distributor Z for content C." The artist (distributor) or a validator verifies the attestation and **grants access** (entitlement + wrapped DEK). Validators take a cut of the sale; the rest goes to the artist. No native token; no on-chain balance. If the content is free (`public` policy), no payment is needed.
 
 ### 6. Offline playback
 

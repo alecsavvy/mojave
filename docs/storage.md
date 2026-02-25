@@ -190,11 +190,10 @@ This is the only wrapped DEK that lives on-chain. It exists as a last-resort rec
 | Field | Type | Description |
 |-------|------|-------------|
 | `pubkey` | bytes | Ed25519 public key |
-| `balance` | uint64 | Account balance in grains |
 | `nonce` | uint64 | Transaction sequence number (replay protection) |
 | `created_at` | uint64 | First seen block timestamp |
 
-Accounts are implicitly created on first transaction. No registration step.
+There is no native token; payments use USDC attestations (see [economics.md](economics.md)). Accounts are identity + nonce only. Implicitly created on first transaction.
 
 #### Validators (elected)
 
@@ -207,7 +206,7 @@ Accounts are implicitly created on first transaction. No registration step.
 | `pubkey` | bytes | Validator's Ed25519 public key |
 | `x25519_pubkey` | bytes | Validator's X25519 public key (for DEK wrapping) |
 | `status` | enum | `CANDIDATE` · `ACTIVE` · `UNBONDING` · `REMOVED` |
-| `stake` | uint64 | Staked MOJ (in grains) |
+| `stake` | uint64 | Optional bond or stake (TBD; no protocol token — see [economics.md](economics.md)) |
 | `jurisdiction` | repeated string | ISO 3166-1 country codes |
 | `identity` | string | Self-reported identity / organization name |
 | `admitted_at` | uint64 | Block height when election passed |
@@ -223,7 +222,7 @@ Accounts are implicitly created on first transaction. No registration step.
 | `group_id` | bytes | Group identity (e.g. account or derived id) |
 | `takedown_authority_pubkey` | bytes | Ed25519 pubkey(s) that can submit takedowns for this group's content |
 | `status` | enum | `ACTIVE` · `SUSPENDED` · `REMOVED` |
-| `stake` | uint64 | Optional stake (in grains) for group representation in governance |
+| `stake` | uint64 | Optional bond/stake for group representation (TBD; no protocol token) |
 | `admitted_at` | uint64 | Block height when `AdmitGroup` passed |
 
 #### Takedowns

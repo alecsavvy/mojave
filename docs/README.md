@@ -1,24 +1,22 @@
 # Mojave Documentation
 
-**Mojave is a legal, better alternative to LimeWire meets iTunes:** P2P distribution and discovery, with real ownership, payments to rights holders, and offline playback. A passion project for distribution that respects the chain of rights.
+**Mojave is your decentralized music library:** rip your vinyl and CDs, import your digital copies, and buy directly from artists. One place to own your music — encrypted, portable, offline-first. In the future: digital trades and secondhand sales. A legal, better alternative to LimeWire meets iTunes, with real ownership and payments to rights holders.
 
 ## Why Mojave exists
 
-The music industry runs on intermediaries. Between the artist and the listener sits a stack of platforms, distributors, aggregators, and streaming services — each taking a cut, each controlling access, each holding data the artist can't fully see or verify. An independent artist uploading to Spotify doesn't own their distribution infrastructure. A label shipping to Apple Music trusts Apple's servers, Apple's DRM, Apple's analytics. The artist gets a dashboard someone else built and a check they can't independently verify.
+**For you (the listener):** Your music is scattered — streaming services that can vanish, downloads locked to one app, physical media that isn’t in the cloud. Mojave is a single library you control: digitize what you own (rips, imports), buy from artists who sell here, and eventually trade or resell. No platform can delete your collection or change the rules after you’ve paid.
 
-This isn't a technology problem. The technology to distribute files, encrypt content, and track access has existed for decades. It's a trust problem. The infrastructure is owned by the platforms, and the platforms answer to shareholders, not artists.
-
-Mojave replaces the platform with a protocol. No single entity owns the infrastructure — a network of elected, accountable validators does. No single entity controls access — cryptographic policies enforced by consensus do. No single entity holds the analytics — on-chain audit trails that anyone can query do.
-
-The bet is simple: if you give artists and labels the tools to own their distribution — real ownership, with cryptographic proof, portable metadata, and transparent economics — they'll use them. Not because decentralization is a buzzword, but because the alternative is trusting a platform that can change its terms, delist your catalog, or shut down.
+**For artists and labels:** The music industry runs on intermediaries. Between the artist and the listener sits a stack of platforms, distributors, and streaming services — each taking a cut, each controlling access. Mojave replaces the platform with a protocol. No single entity owns the infrastructure; a network of elected, accountable validators does. No single entity controls access; cryptographic policies enforced by consensus do. The bet: give artists and labels the tools to own their distribution, and give listeners one place to own their library — rips, purchases, and (future) resales — and they’ll use it.
 
 ### What this enables that doesn't exist today
 
-- **An independent artist** uploads a track, sets a price, and sells directly to fans. No distributor, no 30% platform cut, no 6-month payment delay. The sale is an on-chain transaction. The artist sees it in real time.
-- **A label** manages a catalog across territories with structured access control — the same RBAC model they'd use with AWS IAM, but enforced by consensus instead of a cloud provider they don't control.
-- **A distributor** can prove to a licensor that content was delivered N times in a specific territory, with a signed attestation from the network's validators — not a PDF report they generated themselves.
-- **A fan** buys a track and actually owns it. The encrypted file sits on their disk. The DEK is wrapped to their device. They can play it offline, forever, without a subscription. If the network disappeared tomorrow, anyone who has the file and the DEK keeps their music.
-- **A developer** builds a music player, a marketplace, or a recommendation engine on top of open chain state and a GraphQL API — no API keys, no rate limits, no terms of service that can be revoked.
+- **You** digitize your personal library — rip vinyl, CDs, or import digital copies — and store them in the same system where you buy music. One library: your rips, your purchases, your keys. Offline playback, no subscription.
+- **You** buy a track from an artist or seller and actually own it. The encrypted file sits on your disk; the DEK is wrapped to your device. If the network disappeared tomorrow, you keep your music.
+- **An independent artist** uploads a track, sets a price, and sells directly to fans. No distributor, no 30% platform cut. The sale is an on-chain transaction.
+- **A label** manages a catalog across territories with structured access control — the same RBAC model they’d use with AWS IAM, but enforced by consensus.
+- **A distributor** can prove to a licensor that content was delivered N times in a specific territory, with a signed attestation from the network’s validators.
+- **In the future:** digital trades and secondhand sales — transfer or resell your copy under rules set by rights holders and the protocol.
+- **A developer** builds a music player, a marketplace, or a recommendation engine on top of open chain state and a GraphQL API — no API keys, no rate limits, no revocable terms of service.
 
 ### Showcase frontends (mojave.audio)
 
@@ -26,18 +24,18 @@ To demonstrate that the protocol is infrastructure and the UX is unbounded, the 
 
 | Frontend | Purpose |
 |----------|---------|
-| **mojave.audio** | Main site — Horizon theme (bright/dark), reference UI for the protocol |
+| **mojave.audio** | Main site — reference UI; aesthetic: chill vinyl listening room + late-2000s metallic desktop (see [design.md](design.md)) |
 | **spotify.mojave.audio** | Spotify-style experience (browse, playlists, discovery) |
 | **bandcamp.mojave.audio** | Bandcamp-style (artist-first, pay what you want, ownership) |
 | **audius.mojave.audio** | Audius-style (community, trending, social) |
 | **itunes.mojave.audio** | iTunes-style (library, store, own your music) |
 | **myspace.mojave.audio** | MySpace-style (artist profiles, top friends, custom pages, early social music) |
 
-Same protocol, same chain; different UX paradigms. Desktop playback and optional seeding live in the Tauri app.
+Same protocol, same chain; different UX paradigms. The **Tauri desktop app** is the reference client: your library, playback, and optional seeding in one place — so you're not "I bought it on Bandcamp, now I open VLC."
 
 ### What this is not
 
-- **Not a streaming service.** Mojave is infrastructure, not a product. There's no "Mojave app" for consumers (though anyone can build one). The protocol handles distribution, access control, and payment. The user experience is built on top by anyone.
+- **Not a streaming service.** Mojave is infrastructure; the reference experience is the Tauri app (library + player + sync). The protocol handles distribution, access control, and payment. Anyone can build other clients on top.
 - **Not DRM.** Once audio is decrypted and playing through speakers, it can be recorded. Mojave provides cryptographic access control and an audit trail, not copy protection. This is the same reality Spotify, Apple Music, and every other digital platform lives with.
 - **Not a blockchain for blockchain's sake.** CometBFT is used because the problem requires consensus (who owns what, who can access what, which validators hold which keys) and a bounded trust set (elected validators, not anonymous miners). If a centralized server could be trusted to do this, you'd use a centralized server.
 
@@ -61,10 +59,20 @@ The docs are structured around concerns, not layers. Start with `architecture.md
 2. [economics.md](economics.md) — focus on: Token, Content purchase fees, Transaction fee examples.
 3. [governance.md](governance.md) — focus on: Validator elections (who runs the network), Takedowns (how copyright is enforced).
 
+**If you care about design and aesthetic:**
+
+1. [design.md](design.md) — Vinyl listening room + late-2000s metallic desktop; character, palette, showcase frontends.
+
+**If you care about the "personal library" reorientation (rips, imports, future resale):**
+
+1. [personal-library-vision.md](personal-library-vision.md) — **start here**. Vision, catalog vs personal library, rip/import flow, future trades/resale, open questions.
+2. [architecture.md](architecture.md) — Personal library section; how it fits with existing upload/access flows.
+3. [storage.md](storage.md) — (When added) library key spaces and content source.
+
 **If you're a developer building on top (music player, marketplace, etc.):**
 
 1. [`PROTOCOL.md`](../PROTOCOL.md) — **start here**. The client-facing interface contract: auth, API, crypto, content access, payment, Rust/browser recommendations. This is everything you need without reading validator internals.
-2. [architecture.md](architecture.md) — if you need deeper context: API Layer (GraphQL + ConnectRPC), Library Download, Keys (device-scoped encryption).
+2. [architecture.md](architecture.md) — if you need deeper context: API Layer (GraphQL + ConnectRPC), Library Download, Keys (device-scoped encryption), Personal library.
 3. [content.md](content.md) — if you need BitTorrent integration details.
 4. [economics.md](economics.md) — if you need payment mechanics beyond what PROTOCOL.md covers.
 
@@ -72,11 +80,13 @@ The docs are structured around concerns, not layers. Start with `architecture.md
 
 | Document | What it covers | Key audience |
 |----------|---------------|-------------|
+| [design.md](design.md) | **Aesthetic:** vinyl listening room + late-2000s metallic desktop; character, palette, showcase frontends. | Design, frontend |
+| [personal-library-vision.md](personal-library-vision.md) | **Reorientation:** decentralized personal music library — rip/import, purchase, future trades/resale. Catalog vs personal library, flows, open questions. | Everyone (vision and product) |
 | [`PROTOCOL.md`](../PROTOCOL.md) | Client interface contract — auth, API, crypto, content access, payment flows, Rust/browser crate recommendations. Self-contained; designed to be copied into client repos. | Client developers, LLMs in external repos |
-| [architecture.md](architecture.md) | System overview, four planes, all actors, on-chain state, transaction types, upload/access/download flows, policy plane (entitlement-first; Casbin + Goja optional for fine-grained), proofs & attestations, networking, API layer, design principles, trust assumptions | Everyone |
+| [architecture.md](architecture.md) | System overview, four planes, all actors, on-chain state, transaction types, upload/access/download flows, policy plane (entitlement-first; Casbin + Goja optional for fine-grained), proofs & attestations, networking, API layer, design principles, trust assumptions; **personal library** (catalog vs library, rip/import). | Everyone |
 | [storage.md](storage.md) | Two PebbleDB stores — chain store (consensus state, key spaces, secondary indexes) and local store (validator DEKs, processing scratch, sync state). Rebuilding from peers. | Engineers |
 | [content.md](content.md) | On-disk file layout (`.flac.tdf` + `.png`), directory sharding, `gocloud.dev` integration, BitTorrent integration (seeding, leeching, good samaritans, dead seed problem), reconciliation loop, lifecycle, disk sizing | Engineers, validator operators |
-| [economics.md](economics.md) | Native token (MOJ/grains), gas fees, storage fees, content purchases, validator rewards, staking, genesis allocation, inflation schedule, bootstrapping phases, fee examples, governance parameters | Everyone |
+| [economics.md](economics.md) | No native token; USDC attestations for subscriptions (library size) and content purchases; artists as distributors; validators take a cut; users and good samaritans seed | Everyone |
 | [governance.md](governance.md) | Validator elections (social + staking), publisher groups (states), per-group takedown authority, copyright takedowns (DEK removal), counter-notices, jurisdictional compliance, content flagging, governance proposals | Everyone |
 
 ### Diagrams
@@ -102,12 +112,11 @@ All diagrams live in [diagrams/](diagrams/) as `.mermaid` files and are referenc
 | [governance.mermaid](diagrams/governance.mermaid) | governance.md | Election process, validator set, publisher groups, recall mechanism |
 | [takedown.mermaid](diagrams/takedown.mermaid) | governance.md | Takedown flow — claim, review, counter-notice, DEK removal |
 
-### Design decisions (token and payments)
+### Design decisions (payments)
 
-- **MOJ for everything.** One native token (MOJ) for gas, storage fees, content purchases, staking, and validator rewards. No attestation-based USDC or multi-currency settlement in the protocol for now; keeps implementation simple. See [economics.md](economics.md).
-- **Per-chain MOJ.** Each chain has its own MOJ economy; native tokens are not transferable across chains (no IBC). Liquidity and “get in/out in USD” can be provided by exchanges listing MOJ; that is exchange-layer.
-- **Faucet for bootstrap.** Faucet (rate-limited) is the primary way to get MOJ into users' hands until exchange listings or other on-ramps exist. Validators do not sell MOJ for USDC; that stays off the protocol.
-- **USD in UX only.** People think in USD; clients display USD equivalent (price feed) and can support “price in USD” with conversion to MOJ at purchase. No on-chain USDC or EigenLayer/ETH lock-in.
+- **No native token (no MOJ).** Everyone has an Ed25519 pubkey. Payments use **USDC attestations** (user subscriptions by library size + content purchases). See [economics.md](economics.md).
+- **Artists as distributors; validators take a cut.** Artists grant access on USDC purchase attestation; validators take a cut; artist sale volume + user subscription fees pay for hosting. Users and good samaritans also seed (BitTorrent). Liquidity and “get in/out in USD” can be provided by exchanges listing MOJ; that is exchange-layer.
+- (price feed) and can support “price in USD” with conversion to MOJ at purchase. No on-chain USDC or EigenLayer/ETH lock-in.
 
 ## Open questions and known gaps
 
@@ -115,8 +124,8 @@ These are unresolved design questions identified during documentation review. Th
 
 ### Protocol design
 
-**1. Who pays storage fees?**
-`UploadComplete` is signed by the validator, but economics.md says the client's account is debited for storage fees. The client hasn't signed this transaction. Either the client needs to pre-fund or co-sign the upload, or the fee is deducted from a pre-authorized escrow. This needs a concrete mechanism.
+**1. Payment for replication (deferred).**
+Who pays validators for replication and how is deferred. The assumed direction is a **USDC subscription** based on amount of content (e.g. $/month per GB or per tracks). Concrete mechanism (on-chain vs off-chain, tiers, metering) is TBD. See [economics.md](economics.md).
 
 **2. How does `public` policy work with DEK wrapping?**
 The policy types table says public content has the "DEK published in the clear." But the entire encryption model assumes wrapped DEKs. Does `public` mean the DEK is literally stored unencrypted on-chain? Or does it mean the validator auto-grants to any requester without checking identity? The latter is simpler and consistent with the wrapping model.
@@ -144,8 +153,7 @@ The docs use "CID" everywhere but never specify the hash algorithm (SHA-256, BLA
 **9. Upload validator selection.**
 The upload flow starts with "Client sends raw audio to Upload Validator" but never specifies how the client picks which validator. Random selection? Closest by latency? Explicit choice? This affects availability (what if the chosen validator is overloaded?) and trust (the upload validator sees unencrypted audio).
 
-**10. Account balance tracking.**
-The accounts key space in storage.md has `pubkey`, `nonce`, `created_at` but no `balance` field. The economics doc describes payments and transfers. Where do balances live?
+**10. Accounts.** With no native token, accounts may only need `pubkey` and `nonce` (replay protection). Payments are via USDC attestations (off-chain or on the chain where USDC lives); no on-chain balance in the protocol.
 
 ### Governance gaps
 
@@ -160,11 +168,9 @@ The governance doc introduces new transaction types (`SubmitCandidacy`, `RecallV
 
 ### Economics
 
-**14. One-time storage fees vs. indefinite storage.**
-Storage fees are one-time at upload, but validators store and seed indefinitely. Over years, the validator's ongoing costs (disk, bandwidth) may exceed the one-time payment. Is there a mechanism for ongoing compensation? Or do block rewards and gas fees cover the long-term cost? This should be explicit.
+**14. Replication payment.** Users pay a **USDC subscription** (by library size) via attestation; that revenue pays validators for user library backup. Artist sale volume (validators take a cut) pays for artist hosting. See [economics.md](economics.md).
 
-**15. Payment atomicity in GrantAccess.**
-economics.md says content purchases transfer MOJ from consumer to content owner atomically within the `GrantAccess` transaction. But `GrantAccess` is "signed by validator" per architecture.md. How does the validator transfer the consumer's funds? The consumer needs to authorize the payment somehow — pre-signed payment, escrow, or a two-step process.
+**15. Purchase attestation flow.** Content purchases use USDC attestations: user pays in USDC; attestation proves payment; artist (distributor) or validator verifies and grants access. Attestation format and verification (on-chain vs off-chain) are TBD. Validators take a cut of the sale.
 
 ### Content
 
@@ -173,3 +179,11 @@ After a takedown, validators delete DEKs and optionally stop seeding. But good s
 
 **17. DDEX ERN validation.**
 Who validates that the DDEX metadata in a `PublishRelease` transaction is well-formed? The upload validator during processing? The ABCI++ application during transaction validation (e.g. in ProcessProposal or FinalizeBlock)? Peer validators during consensus? If nobody validates it, malformed metadata goes on-chain permanently.
+
+### Personal library (reorientation)
+
+**18. Personal library: client-side vs validator-side encryption.**
+For rip/import (digitizing your own collection), should the client encrypt locally so validators never see plaintext, or reuse the current upload pipeline (validator transcodes and encrypts)? Client-side maximizes privacy; validator-side reuses implementation. See [personal-library-vision.md](personal-library-vision.md).
+
+**19. Transfer of consumer entitlement (resale / trade).**
+Secondhand sales and digital trades require transferring a consumer entitlement from one key to another. No transaction type exists yet. Need: transferability rules (who can transfer, who gets a cut), atomicity, and policy/DDEX hooks. See [personal-library-vision.md](personal-library-vision.md).

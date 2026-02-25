@@ -4,45 +4,45 @@
 
 This document covers validator elections, publisher groups (“states”), publisher admission, copyright takedowns (by each group’s designated takedown authority), jurisdictional compliance, federal governance with group representation, and how clients and indexers work across multiple chains.
 
-The design is inspired by a **federal/state** split: the chain is the federal layer (validators run neutral infrastructure and serve all groups equally); **publisher groups** are like states, each with their own upload policy and **takedown authority** — the group’s development or compliance arm designates who can submit takedowns for that group’s content. There are no network-wide oracles; compliance and takedowns are entirely in the hands of each publisher group. Validators have the most scrutiny on admitting new groups. Federal governance gives groups representation based on stake and activity.
+The design is inspired by a **federal/state** split: the chain is the federal layer (validators run neutral infrastructure and serve all groups equally); **publisher groups** are like states, each with their own upload policy and **takedown authority** — the group’s development or compliance arm designates who can submit takedowns for that group’s content. There are no network-wide oracles; compliance and takedowns are entirely in the hands of each publisher group. Validators have the most scrutiny on admitting new groups. Federal governance gives groups representation based on activity (and optionally a bond or stake in a non-protocol asset; the protocol has no native token — see [economics.md](economics.md)).
 
 ## Why governance matters here
 
-Most blockchains treat validator selection as a purely economic question — stake enough tokens, you're in. That works for general-purpose chains where validators are fungible compute providers. It doesn't work for a music distribution network.
+Most blockchains treat validator selection as a purely economic question — meet an economic threshold, you're in. That works for general-purpose chains where validators are fungible compute providers. It doesn't work for a music distribution network.
 
-Mojave validators handle unencrypted audio during processing, hold DEKs that grant access to protected content, and serve as the trust layer between rights holders and consumers. The people operating these nodes need to be accountable — not just economically, but socially. A rights holder shipping their catalog to a network of anonymous stakers is a non-starter for the music industry.
+Mojave validators handle unencrypted audio during processing, hold DEKs that grant access to protected content, and serve as the trust layer between rights holders and consumers. The people operating these nodes need to be accountable — not just economically, but socially. A rights holder shipping their catalog to a network of anonymous operators is a non-starter for the music industry.
 
 ## Validator elections
 
-Validator admission is a social election, not just a staking threshold. Staking is necessary but not sufficient. The network's users — artists, labels, consumers, existing validators — vote on who gets to operate a node.
+Validator admission is a **social election**. The network's users — artists, labels, consumers, existing validators — vote on who gets to operate a node. Validators earn from **USDC flows** (cut of content sales + user subscription fees), not from a native token. Stake or other economic criteria for candidacy/voting are TBD (see [economics.md](economics.md)).
 
 ### Election process
 
 1. **Candidacy.** An entity announces candidacy on-chain via a `SubmitCandidacy` transaction. The candidacy includes:
-   - Stake deposit (minimum threshold, governance-set).
    - Identity disclosure — who they are, where they operate, their jurisdiction(s).
    - Infrastructure commitment — hardware specs, uptime SLA, geographic location.
    - Motivation statement — why they want to operate a node (this is social, not technical).
+   - (Optional) Stake or bond — governance may require a deposit or bond; TBD.
 
-2. **Voting period.** A governance-set window (e.g. 14 days) during which token holders vote. Voting power is proportional to staked MOJ (including delegated stake). Votes are `yes`, `no`, or `abstain`.
+2. **Voting period.** A governance-set window (e.g. 14 days) during which eligible participants vote. Voting power and eligibility are governance-set (e.g. one vote per pubkey, or weighted by activity; no MOJ). Votes are `yes`, `no`, or `abstain`.
 
-3. **Threshold.** Candidacy passes if it exceeds a quorum (e.g. 33% of staked tokens participate) and a supermajority (e.g. 67% of votes are `yes`). These parameters are governance-adjustable.
+3. **Threshold.** Candidacy passes if it exceeds a quorum and a supermajority. These parameters are governance-adjustable.
 
-4. **Admission.** On passing, the candidate's validator is added to the active set at the next epoch boundary. They begin participating in consensus, receiving block rewards, and accepting replication/DEK holder assignments.
+4. **Admission.** On passing, the candidate's validator is added to the active set at the next epoch boundary. They begin participating in consensus and accepting replication/DEK holder assignments. They earn from USDC (cut of sales + subscriptions); no block rewards in a native token.
 
 ### Removal
 
 Validators can be removed by the same election mechanism in reverse:
 
-1. **Recall proposal.** Any token holder can submit a `RecallValidator` proposal, citing reasons (misconduct, downtime, trust violation, etc.).
+1. **Recall proposal.** Any eligible participant can submit a `RecallValidator` proposal, citing reasons (misconduct, downtime, trust violation, etc.).
 2. **Voting period.** Same window and thresholds as admission.
-3. **Removal.** On passing, the validator enters the standard unbonding period. Their stake is locked during unbonding and subject to slashing if misconduct is proven during that window. They stop participating in consensus immediately.
+3. **Removal.** On passing, the validator is removed from the active set. Unbonding period and slashing (if any) are governance-set; no native token required.
 
 Automatic removal (slashing for double-signing, extended downtime) still applies as a backstop — elections handle the social layer, slashing handles the protocol layer.
 
 ### Why this works for music
 
-The election process means the network can vote in entities the industry actually trusts — a major label's infrastructure arm, a well-known indie distributor, a music tech company with a track record. It can also block entities the community doesn't trust, regardless of how much they're willing to stake.
+The election process means the network can vote in entities the industry actually trusts — a major label's infrastructure arm, a well-known indie distributor, a music tech company with a track record. It can also block entities the community doesn't trust, regardless of economic weight.
 
 This is different from anonymous DeFi validation. The music industry needs to know who is handling their content. Elections create that accountability without requiring a centralized authority to grant permission.
 
@@ -66,27 +66,27 @@ Publisher groups are the **state** layer. Each group (e.g. a label, Audius, Sony
 
 ### Group identity and on-chain state
 
-- Each **group** has an on-chain identity: `group_id` (or group account/pubkey). The chain maintains a group registry: which groups exist, their stake (if any), and the group’s **takedown authority** — the pubkey(s) that can submit takedowns (e.g. DDEX purge/takedown release messages) and resolve them for that group’s content. The group (e.g. its development arm, legal, or compliance team) controls this key; no separate oracle election is needed.
+- Each **group** has an on-chain identity: `group_id` (or group account/pubkey). The chain maintains a group registry: which groups exist, their bond or stake (if any; TBD, no protocol token), and the group’s **takedown authority** — the pubkey(s) that can submit takedowns (e.g. DDEX purge/takedown release messages) and resolve them for that group’s content. The group (e.g. its development arm, legal, or compliance team) controls this key; no separate oracle election is needed.
 - **Content** (each upload/release) is tagged with a **publisher_group_id**. So the chain can answer “which group backs this CID?”
 - **Who can publish under a group** is determined by that group: an allow-list of pubkeys, or a role/capability the group key signs. Groups manage this off-chain or via on-chain rules they control; the chain only checks at upload time that the uploader is allowed for the claimed group (or meets chain-wide rules for “independent” uploads).
 
 ### Creating a new group (admitting a new state)
 
-Creating a new publisher group is **validator-scrutinized**. It is not permissionless. A proposal to admit a new group (e.g. `AdmitGroup`) is decided by governance in which **validators have the most say** — e.g. validator-weighted vote, or a dual requirement (stake majority and validator supermajority). This mirrors the high bar for “adding a new state” in a federal system. The proposal typically includes:
+Creating a new publisher group is **validator-scrutinized**. It is not permissionless. A proposal to admit a new group (e.g. `AdmitGroup`) is decided by governance in which **validators have the most say** — e.g. validator-weighted vote, or a dual requirement (governance-set majority and validator supermajority). This mirrors the high bar for “adding a new state” in a federal system. The proposal typically includes:
 
 - Group identity and **designated takedown authority** (the pubkey(s) that will submit takedowns for this group’s content — e.g. the group’s compliance or development arm).
-- Optional: minimum stake the group will lock (governance can require stake and slashing on takedown to align incentives).
+- Optional: minimum bond or stake the group will lock (governance can require a bond and slashing on takedown; no protocol token — see economics.md).
 - Contact and dispute-resolution commitment.
 
 Once admitted, the group appears in the group registry and can receive content tagged with its `group_id`. Only that group’s takedown authority can submit a takedown for that group’s content — using **DDEX’s takedown/purge release message** (or an on-chain transaction that carries it), so groups use the same industry-standard signal for “remove this release.” The group can update its takedown authority via group governance or a designated update path (e.g. group key signs a `SetGroupTakedownAuthority` transaction).
 
-### Group stake and slashing (optional)
+### Group bond and slashing (optional)
 
-A chain may require groups to **stake** MOJ (or allow optional staking). If content under a group receives a **confirmed takedown**, that group’s stake can be **slashed** (fully or partially). That ties abuse (copyright infringement, illegal content) to economic cost for the group and discourages groups from turning a blind eye. Parameters (slash amount, unbonding) are governance-set.
+A chain may require groups to post a **bond** (or allow optional bonding); there is no protocol native token. If content under a group receives a **confirmed takedown**, that group’s bond can be **slashed** (fully or partially). That ties abuse (copyright infringement, illegal content) to economic cost for the group and discourages groups from turning a blind eye. Parameters (slash amount, unbonding) are governance-set.
 
 ### Relation to publisher admission
 
-Publisher admission (who can publish on the chain) is now **group-aware**. At upload time the chain checks: (1) the claimed publisher group exists and (if required) has sufficient stake; (2) the uploader is allowed to publish under that group (per the group’s allow-list or rules); and (3) any chain-wide floor (e.g. “all publishers must be in a group or meet independent criteria”) is satisfied. So the chain sets the floor; groups are the primary unit of “who can publish,” and each group has its own culture (e.g. Audius more permissive, Sony more bureaucratic).
+Publisher admission (who can publish on the chain) is now **group-aware**. At upload time the chain checks: (1) the claimed publisher group exists and (if required) has sufficient bond or meets criteria; (2) the uploader is allowed to publish under that group (per the group’s allow-list or rules); and (3) any chain-wide floor (e.g. “all publishers must be in a group or meet independent criteria”) is satisfied. So the chain sets the floor; groups are the primary unit of “who can publish,” and each group has its own culture (e.g. Audius more permissive, Sony more bureaucratic).
 
 ## Publisher admission
 
@@ -94,7 +94,7 @@ Who can publish content on a chain is determined by **chain-level policy** and *
 
 ### How it works
 
-- **Group-aware upload.** Every upload/release specifies a **publisher_group_id** (or “independent”). The chain checks: (1) the group exists (and has required stake if applicable); (2) the uploader is allowed to publish under that group; (3) any chain-wide publisher policy is satisfied. If any check fails, the validator rejects the upload.
+- **Group-aware upload.** Every upload/release specifies a **publisher_group_id** (or “independent”). The chain checks: (1) the group exists (and meets required criteria if applicable); (2) the uploader is allowed to publish under that group; (3) any chain-wide publisher policy is satisfied. If any check fails, the validator rejects the upload.
 - **On-chain policy.** The chain may maintain a **chain-wide publisher policy** (Casbin model + rules, or Goja script) as a floor — e.g. “independent publishers must meet these rules” or “all publishers must belong to a group.” Group membership and per-group allow-lists are stored on-chain or proven at upload time. The model ID for publisher admission is a governance parameter.
 - **Governance.** Governance proposals (e.g. `PublisherPolicyChange`, `AdmitGroup`) update chain-wide policy and admit new groups. Validators enforce whatever is on-chain and do not unilaterally decide who can publish.
 
