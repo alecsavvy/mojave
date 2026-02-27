@@ -3,8 +3,8 @@ module github.com/alecsavvy/mojave
 go 1.25.4
 
 require (
+	github.com/cockroachdb/pebble v1.1.4
 	github.com/cometbft/cometbft v1.0.1
-	github.com/dgraph-io/badger/v4 v4.6.0
 	github.com/urfave/cli/v3 v3.6.2
 	go.uber.org/zap v1.27.1
 )
@@ -17,7 +17,6 @@ require (
 	github.com/cockroachdb/errors v1.11.3 // indirect
 	github.com/cockroachdb/fifo v0.0.0-20240816210425-c5d0cb0b6fc0 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20241215232642-bb51bb14a506 // indirect
-	github.com/cockroachdb/pebble v1.1.4 // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
 	github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 // indirect
 	github.com/cometbft/cometbft-db v1.0.4 // indirect
@@ -25,6 +24,7 @@ require (
 	github.com/cosmos/gogoproto v1.7.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0 // indirect
+	github.com/dgraph-io/badger/v4 v4.6.0 // indirect
 	github.com/dgraph-io/ristretto/v2 v2.1.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/getsentry/sentry-go v0.31.1 // indirect

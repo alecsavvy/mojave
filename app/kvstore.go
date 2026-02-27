@@ -3,22 +3,21 @@ package app
 import (
 	"bytes"
 	"context"
-	"errors"
 
+	"github.com/cockroachdb/pebble"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
-	"github.com/dgraph-io/badger/v4"
 	"go.uber.org/zap"
 )
 
 type KVStoreApplication struct {
 	logger       *zap.SugaredLogger
-	db           *badger.DB
-	onGoingBlock *badger.Txn
+	db           *pebble.DB
+	onGoingBlock *pebble.Batch
 }
 
 var _ abcitypes.Application = (*KVStoreApplication)(nil)
 
-func NewKVStoreApplication(logger *zap.SugaredLogger, db *badger.DB) *KVStoreApplication {
+func NewKVStoreApplication(logger *zap.SugaredLogger, db *pebble.DB) *KVStoreApplication {
 	return &KVStoreApplication{
 		logger:       logger,
 		db:           db,
@@ -43,25 +42,13 @@ func (app *KVStoreApplication) Info(_ context.Context, info *abcitypes.InfoReque
 func (app *KVStoreApplication) Query(_ context.Context, req *abcitypes.QueryRequest) (*abcitypes.QueryResponse, error) {
 	resp := abcitypes.QueryResponse{Key: req.Data}
 
-	dbErr := app.db.View(func(txn *badger.Txn) error {
-		item, err := txn.Get(req.Data)
-		if err != nil {
-			if !errors.Is(err, badger.ErrKeyNotFound) {
-				return err
-			}
-			resp.Log = "key does not exist"
-			return nil
-		}
-
-		return item.Value(func(val []byte) error {
-			resp.Log = "exists"
-			resp.Value = val
-			return nil
-		})
-	})
-	if dbErr != nil {
-		app.logger.Panicf("Error reading database, unable to execute query: %v", dbErr)
+	res, closer, err := app.db.Get(req.Data)
+	if err != nil {
+		return nil, err
 	}
+
+	defer closer.Close()
+	resp.Value = res
 	return &resp, nil
 }
 
@@ -85,7 +72,7 @@ func (app *KVStoreApplication) ProcessProposal(_ context.Context, proposal *abci
 func (app *KVStoreApplication) FinalizeBlock(_ context.Context, req *abcitypes.FinalizeBlockRequest) (*abcitypes.FinalizeBlockResponse, error) {
 	var txs = make([]*abcitypes.ExecTxResult, len(req.Txs))
 
-	app.onGoingBlock = app.db.NewTransaction(true)
+	app.onGoingBlock = app.db.NewBatch()
 	for i, tx := range req.Txs {
 		if code := app.isValid(tx); code != 0 {
 			app.logger.Errorf("Error: invalid transaction index %v", i)
@@ -95,7 +82,7 @@ func (app *KVStoreApplication) FinalizeBlock(_ context.Context, req *abcitypes.F
 			key, value := parts[0], parts[1]
 			app.logger.Infof("Adding key %s with value %s", key, value)
 
-			if err := app.onGoingBlock.Set(key, value); err != nil {
+			if err := app.onGoingBlock.Set(key, value, nil); err != nil {
 				app.logger.Panicf("Error writing to database, unable to execute tx: %v", err)
 			}
 
@@ -126,7 +113,7 @@ func (app *KVStoreApplication) FinalizeBlock(_ context.Context, req *abcitypes.F
 }
 
 func (app KVStoreApplication) Commit(_ context.Context, commit *abcitypes.CommitRequest) (*abcitypes.CommitResponse, error) {
-	return &abcitypes.CommitResponse{}, app.onGoingBlock.Commit()
+	return &abcitypes.CommitResponse{}, app.onGoingBlock.Commit(nil)
 }
 
 func (app *KVStoreApplication) ListSnapshots(_ context.Context, snapshots *abcitypes.ListSnapshotsRequest) (*abcitypes.ListSnapshotsResponse, error) {

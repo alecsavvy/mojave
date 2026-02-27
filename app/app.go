@@ -5,11 +5,11 @@ import (
 	"log"
 	"path"
 
+	"github.com/cockroachdb/pebble"
 	cfg "github.com/cometbft/cometbft/config"
 	"github.com/cometbft/cometbft/p2p"
 	"github.com/cometbft/cometbft/privval"
 	"github.com/cometbft/cometbft/proxy"
-	"github.com/dgraph-io/badger/v4"
 	"go.uber.org/zap"
 
 	cmtlog "github.com/cometbft/cometbft/libs/log"
@@ -37,10 +37,10 @@ func NewApp(cmtConfig *cfg.Config) *App {
 		log.Fatalf("Load node key: %v", err)
 	}
 
-	dbPath := path.Join(cmtConfig.RootDir, "badger")
-	db, err := badger.Open(badger.DefaultOptions(dbPath))
+	dbPath := path.Join(cmtConfig.RootDir, "pebble")
+	db, err := pebble.Open(dbPath, nil)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Open database: %v", err)
 	}
 
 	cmtLogger := cmtlog.NewNopLogger()
