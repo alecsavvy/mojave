@@ -118,6 +118,8 @@ func (app *KVStoreApplication) FinalizeBlock(_ context.Context, req *abcitypes.F
 		}
 	}
 
+	app.logger.Infow("finalized block", "height", req.Height)
+
 	return &abcitypes.FinalizeBlockResponse{
 		TxResults: txs,
 	}, nil

@@ -15,23 +15,18 @@ import (
 	cmttime "github.com/cometbft/cometbft/types/time"
 )
 
-func InitFilesWithConfig(config *cfg.Config) (*privval.FilePV, *p2p.NodeKey, *types.GenesisDoc, error) {
-	// ensure dirs exist for config and other CometBFT files
+// GenValidatorKeys creates config/data dirs and generates priv val + node key only.
+// It does not write config.toml or genesis. Used by testnet to get node IDs before setting persistent_peers.
+func GenValidatorKeys(config *cfg.Config) (*privval.FilePV, *p2p.NodeKey, crypto.PubKey, error) {
 	for _, subdir := range []string{"config", "data"} {
 		if err := os.MkdirAll(filepath.Join(config.RootDir, subdir), 0755); err != nil {
 			return nil, nil, nil, fmt.Errorf("create dir %s: %w", subdir, err)
 		}
 	}
 
-	// write config file
-	cfg.WriteConfigFile(filepath.Join(config.RootDir, "config", "config.toml"), config)
-
-	// private validator
 	privValKeyFile := config.PrivValidatorKeyFile()
 	privValStateFile := config.PrivValidatorStateFile()
-	var pv *privval.FilePV
-	var err error
-	pv, err = privval.GenFilePV(privValKeyFile, privValStateFile, func() (crypto.PrivKey, error) {
+	pv, err := privval.GenFilePV(privValKeyFile, privValStateFile, func() (crypto.PrivKey, error) {
 		return ed25519.GenPrivKey(), nil
 	})
 	if err != nil {
@@ -40,36 +35,52 @@ func InitFilesWithConfig(config *cfg.Config) (*privval.FilePV, *p2p.NodeKey, *ty
 	pv.Save()
 
 	nodeKeyFile := config.NodeKeyFile()
-	if _, err := p2p.LoadOrGenNodeKey(nodeKeyFile); err != nil {
-		return nil, nil, nil, err
-	}
-
 	nodeKey, err := p2p.LoadOrGenNodeKey(nodeKeyFile)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("can't load or generate node key: %w", err)
 	}
 
-	// genesis file
+	pubKey, err := pv.GetPubKey()
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("can't get pubkey: %w", err)
+	}
+	return pv, nodeKey, pubKey, nil
+}
+
+// InitValidatorOnly ensures dirs exist, writes config.toml, then generates priv val and node key.
+// Caller must set P2P/RPC/persistent_peers on config before calling. Does not create genesis.
+func InitValidatorOnly(config *cfg.Config) (*privval.FilePV, *p2p.NodeKey, crypto.PubKey, error) {
+	for _, subdir := range []string{"config", "data"} {
+		if err := os.MkdirAll(filepath.Join(config.RootDir, subdir), 0755); err != nil {
+			return nil, nil, nil, fmt.Errorf("create dir %s: %w", subdir, err)
+		}
+	}
+	cfg.WriteConfigFile(filepath.Join(config.RootDir, "config", "config.toml"), config)
+	return GenValidatorKeys(config)
+}
+
+// InitFilesWithConfig initializes a single-node directory: writes config, generates keys, and creates
+// a single-validator genesis. Returns (pv, nodeKey, genDoc, nil).
+func InitFilesWithConfig(config *cfg.Config) (*privval.FilePV, *p2p.NodeKey, *types.GenesisDoc, error) {
+	pv, nodeKey, pubKey, err := InitValidatorOnly(config)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
 	genFile := config.GenesisFile()
 	r := rand.Intn(1000000)
 	genDoc := types.GenesisDoc{
 		ChainID:         fmt.Sprintf("mojave-dev-%v", r),
 		GenesisTime:     cmttime.Now(),
 		ConsensusParams: types.DefaultConsensusParams(),
+		Validators: []types.GenesisValidator{{
+			Address: pubKey.Address(),
+			PubKey:  pubKey,
+			Power:   10,
+		}},
 	}
-	pubKey, err := pv.GetPubKey()
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("can't get pubkey: %w", err)
-	}
-	genDoc.Validators = []types.GenesisValidator{{
-		Address: pubKey.Address(),
-		PubKey:  pubKey,
-		Power:   10,
-	}}
-
 	if err := genDoc.SaveAs(genFile); err != nil {
 		return nil, nil, nil, err
 	}
-
 	return pv, nodeKey, &genDoc, nil
 }
