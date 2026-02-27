@@ -19,3 +19,4 @@ tasks:
     cmds:
       - cd cmd/mojave && go install .
     watch: true
+    
