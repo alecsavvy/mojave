@@ -19,5 +19,6 @@ func NewApp() *App {
 
 func (a *App) Run(ctx context.Context) error {
 	a.logger.Info("good morning!")
+	defer a.logger.Info("goodnight!")
 	return nil
 }
