@@ -11,12 +11,9 @@ import (
 
 func main() {
 	cmd := &cli.Command{
-		Flags: []cli.Flag{
-			&cli.BoolFlag{
-				Name:  "ginger-crouton",
-				Usage: "is it in the soup?",
-			},
-		},
+		Name:    "run",
+		Aliases: []string{"r"},
+		Usage:   "run the mojave node",
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			app := app.NewApp()
 

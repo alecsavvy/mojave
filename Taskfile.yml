@@ -1,0 +1,22 @@
+version: '3'
+
+tasks:
+  tidy:
+    cmds:
+      - go mod tidy
+
+  build:
+    cmds:
+      - go build ./...
+
+  install:
+    desc: install the local mojave build to the bin directory
+    sources:
+      - './**/*.go'
+      - 'go.mod'
+      - 'go.sum'
+    deps: [tidy, build]
+    cmds:
+      - cd cmd/mojave && go install .
+    watch: true
+    
