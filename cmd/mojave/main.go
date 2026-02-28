@@ -94,7 +94,7 @@ var testnetCmd = &cli.Command{
 		}
 		nodes := make([]nodeInfo, n)
 
-		for i := 0; i < n; i++ {
+		for i := range n {
 			nodeDir := filepath.Join(testnetDir, "node"+strconv.Itoa(i))
 			cmtConfig := cfg.DefaultConfig()
 			cmtConfig.SetRoot(nodeDir)
@@ -117,9 +117,9 @@ var testnetCmd = &cli.Command{
 		}
 
 		// 2) Set persistent_peers on each config
-		for i := 0; i < n; i++ {
+		for i := range n {
 			var peers []string
-			for j := 0; j < n; j++ {
+			for j := range n {
 				if j == i {
 					continue
 				}
@@ -137,11 +137,11 @@ var testnetCmd = &cli.Command{
 			ConsensusParams: types.DefaultConsensusParams(),
 			Validators:      make([]types.GenesisValidator, n),
 		}
-		for i := 0; i < n; i++ {
+		for i := range n {
 			genDoc.Validators[i] = nodes[i].pubKey
 		}
 
-		for i := 0; i < n; i++ {
+		for i := range n {
 			cfg.WriteConfigFile(filepath.Join(nodes[i].config.RootDir, "config", "config.toml"), nodes[i].config)
 			if err := genDoc.SaveAs(nodes[i].config.GenesisFile()); err != nil {
 				return fmt.Errorf("node %d write genesis: %w", i, err)
@@ -150,7 +150,7 @@ var testnetCmd = &cli.Command{
 
 		// 4) Run all nodes
 		var wg sync.WaitGroup
-		for i := 0; i < n; i++ {
+		for i := range n {
 			wg.Add(1)
 			nodeConfig := nodes[i].config
 			go func() {
