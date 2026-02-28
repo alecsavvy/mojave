@@ -1,60 +1,68 @@
 package app
 
 import (
-	"bytes"
 	"context"
+	"fmt"
 
+	v1 "github.com/alecsavvy/mojave/gen/mojave/v1"
+	"github.com/alecsavvy/mojave/store"
 	"github.com/cockroachdb/pebble"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
 
 type KVStoreApplication struct {
 	logger       *zap.SugaredLogger
-	db           *pebble.DB
+	store        *store.Store
 	onGoingBlock *pebble.Batch
 }
 
 var _ abcitypes.Application = (*KVStoreApplication)(nil)
 
-func NewKVStoreApplication(logger *zap.SugaredLogger, db *pebble.DB) *KVStoreApplication {
+func NewKVStoreApplication(logger *zap.SugaredLogger, db *store.Store) *KVStoreApplication {
 	return &KVStoreApplication{
 		logger:       logger,
-		db:           db,
+		store:        db,
 		onGoingBlock: nil,
 	}
-}
-
-func (app *KVStoreApplication) isValid(tx []byte) uint32 {
-	// check format
-	parts := bytes.Split(tx, []byte("="))
-	if len(parts) != 2 {
-		return 1
-	}
-
-	return 0
 }
 
 func (app *KVStoreApplication) Info(_ context.Context, info *abcitypes.InfoRequest) (*abcitypes.InfoResponse, error) {
 	return &abcitypes.InfoResponse{}, nil
 }
 
-func (app *KVStoreApplication) Query(_ context.Context, req *abcitypes.QueryRequest) (*abcitypes.QueryResponse, error) {
-	resp := abcitypes.QueryResponse{Key: req.Data}
-
-	res, closer, err := app.db.Get(req.Data)
-	if err != nil {
+func (app *KVStoreApplication) Query(ctx context.Context, req *abcitypes.QueryRequest) (*abcitypes.QueryResponse, error) {
+	query := &v1.Query{}
+	if err := proto.Unmarshal(req.Data, query); err != nil {
 		return nil, err
 	}
 
-	defer closer.Close()
-	resp.Value = res
-	return &resp, nil
+	switch query.Query.(type) {
+	case *v1.Query_KeyValue:
+		kvQuery := query.GetKeyValue()
+		kv, err := app.store.GetKeyValue(ctx, kvQuery.Key)
+		if err != nil {
+			return nil, err
+		}
+
+		queryResponse := &v1.QueryResponse{
+			Response: &v1.QueryResponse_KeyValue{
+				KeyValue: kv,
+			},
+		}
+		queryResponseBytes, err := proto.Marshal(queryResponse)
+		if err != nil {
+			return nil, err
+		}
+		return &abcitypes.QueryResponse{Value: queryResponseBytes}, nil
+	}
+
+	return nil, fmt.Errorf("unknown query type: %T", query.Query)
 }
 
 func (app *KVStoreApplication) CheckTx(_ context.Context, check *abcitypes.CheckTxRequest) (*abcitypes.CheckTxResponse, error) {
-	code := app.isValid(check.Tx)
-	return &abcitypes.CheckTxResponse{Code: code}, nil
+	return &abcitypes.CheckTxResponse{Code: 0}, nil
 }
 
 func (app *KVStoreApplication) InitChain(_ context.Context, chain *abcitypes.InitChainRequest) (*abcitypes.InitChainResponse, error) {
@@ -72,40 +80,58 @@ func (app *KVStoreApplication) ProcessProposal(_ context.Context, proposal *abci
 func (app *KVStoreApplication) FinalizeBlock(_ context.Context, req *abcitypes.FinalizeBlockRequest) (*abcitypes.FinalizeBlockResponse, error) {
 	var txs = make([]*abcitypes.ExecTxResult, len(req.Txs))
 
-	app.onGoingBlock = app.db.NewBatch()
+	app.onGoingBlock = app.store.NewBatch()
 	for i, tx := range req.Txs {
-		if code := app.isValid(tx); code != 0 {
-			app.logger.Errorf("Error: invalid transaction index %v", i)
-			txs[i] = &abcitypes.ExecTxResult{Code: code}
-		} else {
-			parts := bytes.SplitN(tx, []byte("="), 2)
-			key, value := parts[0], parts[1]
-			app.logger.Infof("Adding key %s with value %s", key, value)
-
-			if err := app.onGoingBlock.Set(key, value, nil); err != nil {
-				app.logger.Panicf("Error writing to database, unable to execute tx: %v", err)
+		events, err := func(tx []byte) ([]abcitypes.Event, error) {
+			var signedTransaction v1.SignedTransaction
+			if err := proto.Unmarshal(tx, &signedTransaction); err != nil {
+				return nil, err
 			}
 
-			app.logger.Infof("Successfully added key %s with value %s", key, value)
-
-			// Add an event for the transaction execution.
-			// Multiple events can be emitted for a transaction, but we are adding only one event
-			txs[i] = &abcitypes.ExecTxResult{
-				Code: 0,
-				Events: []abcitypes.Event{
-					{
-						Type: "app",
-						Attributes: []abcitypes.EventAttribute{
-							{Key: "key", Value: string(key), Index: true},
-							{Key: "value", Value: string(value), Index: true},
-						},
-					},
-				},
+			// TODO: Verify signature
+			var transaction v1.Transaction
+			if err := proto.Unmarshal(signedTransaction.Transaction, &transaction); err != nil {
+				return nil, err
 			}
+
+			switch transaction.Body.Body.(type) {
+			case *v1.TransactionBody_CreateAccount:
+				createAccountTx := transaction.Body.GetCreateAccount()
+				account := &v1.AccountState{
+					Address: createAccountTx.Pubkey,
+				}
+				if err := app.store.CreateAccount(context.Background(), app.onGoingBlock, account); err != nil {
+					return nil, err
+				}
+				return []abcitypes.Event{}, nil
+			case *v1.TransactionBody_KeyValue:
+				kvTx := transaction.Body.GetKeyValue()
+				kv := &v1.KeyValueState{
+					Key:   kvTx.Key,
+					Value: kvTx.Value,
+				}
+				if err := app.store.SetKeyValue(context.Background(), app.onGoingBlock, kv); err != nil {
+					return nil, err
+				}
+				return []abcitypes.Event{}, nil
+			default:
+				return nil, fmt.Errorf("unknown transaction body type: %T", transaction.Body)
+			}
+		}(tx)
+
+		code := abcitypes.CodeTypeOK
+		if err != nil {
+			app.logger.Errorf("Error processing transaction %v", err)
+			code = 1
+		}
+
+		txs[i] = &abcitypes.ExecTxResult{
+			Code:   code,
+			Events: events,
 		}
 	}
 
-	app.logger.Infow("finalized block", "height", req.Height)
+	app.logger.Infow("finalized block", "height", req.Height, "txs", len(req.Txs))
 
 	return &abcitypes.FinalizeBlockResponse{
 		TxResults: txs,

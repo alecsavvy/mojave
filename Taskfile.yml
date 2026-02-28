@@ -1,6 +1,11 @@
 version: '3'
 
 tasks:
+  dev:
+    desc: run everything needed for development
+    deps: [install, generate]
+    watch: true
+
   tidy:
     cmds:
       - go mod tidy
@@ -18,5 +23,14 @@ tasks:
     deps: [tidy, build]
     cmds:
       - cd cmd/mojave && go install .
-    watch: true
-    
+
+  generate:
+    cmds:
+      - buf generate
+    deps: [buf-lint]
+    sources:
+      - './proto/**/*.proto'
+
+  buf-lint:
+    cmds:
+      - buf lint

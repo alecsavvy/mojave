@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package mojave.v1;
+
+option go_package = "github.com/alecsavvy/mojave/gen/mojave/v1";
+
+message KeyValueTransaction {
+    string key = 1;
+    string value = 2;
+}
+
+message KeyValueState {
+    string key = 1;
+    string value = 2;
+}
+
+message KeyValueQuery {
+    string key = 1;
+}
