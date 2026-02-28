@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package mojave.v1;
+
+import "mojave/v1/account.proto";
+import "mojave/v1/kv.proto";
+
+option go_package = "github.com/alecsavvy/mojave/gen/mojave/v1";
+
+message SignedTransaction {
+  bytes signature = 1;
+  bytes transaction = 2;
+}
+
+message Transaction {
+    TransactionHeader header = 1;
+    TransactionBody body = 2;
+}
+
+message TransactionHeader {
+  string chain_id = 1;
+  string nonce = 2;
+  uint64 timeout_height = 3;
+  uint64 timeout_timestamp = 4;
+  string to_address = 5;
+  string from_address = 6;
+}
+
+message TransactionBody {
+  oneof body {
+    CreateAccountTransaction create_account = 1;
+    AssociatePubkeyTransaction associate_pubkey = 2;
+    KeyValueTransaction key_value = 3;
+  }
+}
+
+message TransactionEvent {
+    TransactionEventHeader header = 1;
+    TransactionEventBody body = 2;
+}
+
+message TransactionEventHeader {
+    string tx_hash = 1;
+    string block_height = 2;
+}
+
+message TransactionEventBody {
+    oneof body {
+        CreateAccountEvent create_account = 1;
+    }
+}

@@ -5,8 +5,10 @@ go 1.25.4
 require (
 	github.com/cockroachdb/pebble v1.1.4
 	github.com/cometbft/cometbft v1.0.1
+	github.com/stretchr/testify v1.11.1
 	github.com/urfave/cli/v3 v3.6.2
 	go.uber.org/zap v1.27.1
+	google.golang.org/protobuf v1.36.7
 )
 
 require (
@@ -62,7 +64,6 @@ require (
 	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/rs/cors v1.11.1 // indirect
 	github.com/sasha-s/go-deadlock v0.3.5 // indirect
-	github.com/stretchr/testify v1.11.1 // indirect
 	github.com/supranational/blst v0.3.14 // indirect
 	github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7 // indirect
 	go.etcd.io/bbolt v1.4.0 // indirect
@@ -80,6 +81,5 @@ require (
 	golang.org/x/text v0.28.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250115164207-1a7da9e5054f // indirect
 	google.golang.org/grpc v1.71.0 // indirect
-	google.golang.org/protobuf v1.36.7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

@@ -5,6 +5,7 @@ import (
 	"log"
 	"path"
 
+	"github.com/alecsavvy/mojave/store"
 	"github.com/cockroachdb/pebble"
 	cfg "github.com/cometbft/cometbft/config"
 	"github.com/cometbft/cometbft/p2p"
@@ -48,7 +49,8 @@ func NewApp(cmtConfig *cfg.Config) *App {
 	addr := pv.GetAddress().String()
 	logger = logger.With("addr", addr)
 
-	abci := NewKVStoreApplication(logger, db)
+	appStore := store.NewStore(db)
+	abci := NewKVStoreApplication(logger, appStore)
 
 	node, err := nm.NewNode(
 		context.Background(),
