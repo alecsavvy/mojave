@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"log"
 	"path"
 
 	"github.com/alecsavvy/mojave/store"
@@ -24,24 +23,24 @@ type App struct {
 
 // NewApp starts a node from an already-initialized config. The caller must have
 // written config.toml, genesis.json, priv validator key/state, and node key to the config's RootDir.
-func NewApp(cmtConfig *cfg.Config) *App {
+func NewApp(cmtConfig *cfg.Config) (*App, error) {
 	z, _ := zap.NewDevelopment()
 	logger := z.Sugar()
 
 	if err := cmtConfig.ValidateBasic(); err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	pv := privval.LoadFilePV(cmtConfig.PrivValidatorKeyFile(), cmtConfig.PrivValidatorStateFile())
 	nodeKey, err := p2p.LoadNodeKey(cmtConfig.NodeKeyFile())
 	if err != nil {
-		log.Fatalf("Load node key: %v", err)
+		return nil, err
 	}
 
 	dbPath := path.Join(cmtConfig.RootDir, "pebble")
 	db, err := pebble.Open(dbPath, nil)
 	if err != nil {
-		log.Fatalf("Open database: %v", err)
+		return nil, err
 	}
 
 	cmtLogger := cmtlog.NewNopLogger()
@@ -64,16 +63,16 @@ func NewApp(cmtConfig *cfg.Config) *App {
 		cmtLogger,
 	)
 	if err != nil {
-		log.Fatalf("Creating node: %v", err)
+		return nil, err
 	}
 	if err := node.Start(); err != nil {
-		log.Fatalf("Starting node: %v", err)
+		return nil, err
 	}
 
 	return &App{
 		logger: logger,
 		node:   node,
-	}
+	}, nil
 }
 
 func (a *App) Run(ctx context.Context) error {

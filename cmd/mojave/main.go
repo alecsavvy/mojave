@@ -52,8 +52,14 @@ var runCmd = &cli.Command{
 			return err
 		}
 
-		a := app.NewApp(cmtConfig)
-		return a.Run(ctx)
+		a, err := app.NewApp(cmtConfig)
+		if err != nil {
+			return fmt.Errorf("failed to create app: %w", err)
+		}
+		if err := a.Run(ctx); err != nil {
+			return fmt.Errorf("failed to run app: %w", err)
+		}
+		return nil
 	},
 }
 
@@ -149,7 +155,10 @@ var testnetCmd = &cli.Command{
 			nodeConfig := nodes[i].config
 			go func() {
 				defer wg.Done()
-				a := app.NewApp(nodeConfig)
+				a, err := app.NewApp(nodeConfig)
+				if err != nil {
+					log.Fatalf("failed to create app: %v", err)
+				}
 				_ = a.Run(ctx)
 			}()
 		}
