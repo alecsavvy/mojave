@@ -26,6 +26,7 @@ type Query struct {
 	// Types that are valid to be assigned to Query:
 	//
 	//	*Query_KeyValue
+	//	*Query_Account
 	Query         isQuery_Query `protobuf_oneof:"query"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -77,6 +78,15 @@ func (x *Query) GetKeyValue() *KeyValueQuery {
 	return nil
 }
 
+func (x *Query) GetAccount() *AccountStateQuery {
+	if x != nil {
+		if x, ok := x.Query.(*Query_Account); ok {
+			return x.Account
+		}
+	}
+	return nil
+}
+
 type isQuery_Query interface {
 	isQuery_Query()
 }
@@ -85,13 +95,20 @@ type Query_KeyValue struct {
 	KeyValue *KeyValueQuery `protobuf:"bytes,1,opt,name=key_value,json=keyValue,proto3,oneof"`
 }
 
+type Query_Account struct {
+	Account *AccountStateQuery `protobuf:"bytes,2,opt,name=account,proto3,oneof"`
+}
+
 func (*Query_KeyValue) isQuery_Query() {}
+
+func (*Query_Account) isQuery_Query() {}
 
 type QueryResponse struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Response:
 	//
 	//	*QueryResponse_KeyValue
+	//	*QueryResponse_Account
 	Response      isQueryResponse_Response `protobuf_oneof:"response"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -143,6 +160,15 @@ func (x *QueryResponse) GetKeyValue() *KeyValueState {
 	return nil
 }
 
+func (x *QueryResponse) GetAccount() *AccountState {
+	if x != nil {
+		if x, ok := x.Response.(*QueryResponse_Account); ok {
+			return x.Account
+		}
+	}
+	return nil
+}
+
 type isQueryResponse_Response interface {
 	isQueryResponse_Response()
 }
@@ -151,18 +177,26 @@ type QueryResponse_KeyValue struct {
 	KeyValue *KeyValueState `protobuf:"bytes,1,opt,name=key_value,json=keyValue,proto3,oneof"`
 }
 
+type QueryResponse_Account struct {
+	Account *AccountState `protobuf:"bytes,2,opt,name=account,proto3,oneof"`
+}
+
 func (*QueryResponse_KeyValue) isQueryResponse_Response() {}
+
+func (*QueryResponse_Account) isQueryResponse_Response() {}
 
 var File_mojave_v1_query_proto protoreflect.FileDescriptor
 
 const file_mojave_v1_query_proto_rawDesc = "" +
 	"\n" +
-	"\x15mojave/v1/query.proto\x12\tmojave.v1\x1a\x12mojave/v1/kv.proto\"I\n" +
+	"\x15mojave/v1/query.proto\x12\tmojave.v1\x1a\x17mojave/v1/account.proto\x1a\x12mojave/v1/kv.proto\"\x83\x01\n" +
 	"\x05Query\x127\n" +
-	"\tkey_value\x18\x01 \x01(\v2\x18.mojave.v1.KeyValueQueryH\x00R\bkeyValueB\a\n" +
-	"\x05query\"T\n" +
+	"\tkey_value\x18\x01 \x01(\v2\x18.mojave.v1.KeyValueQueryH\x00R\bkeyValue\x128\n" +
+	"\aaccount\x18\x02 \x01(\v2\x1c.mojave.v1.AccountStateQueryH\x00R\aaccountB\a\n" +
+	"\x05query\"\x89\x01\n" +
 	"\rQueryResponse\x127\n" +
-	"\tkey_value\x18\x01 \x01(\v2\x18.mojave.v1.KeyValueStateH\x00R\bkeyValueB\n" +
+	"\tkey_value\x18\x01 \x01(\v2\x18.mojave.v1.KeyValueStateH\x00R\bkeyValue\x123\n" +
+	"\aaccount\x18\x02 \x01(\v2\x17.mojave.v1.AccountStateH\x00R\aaccountB\n" +
 	"\n" +
 	"\bresponseB+Z)github.com/alecsavvy/mojave/gen/mojave/v1b\x06proto3"
 
@@ -180,19 +214,23 @@ func file_mojave_v1_query_proto_rawDescGZIP() []byte {
 
 var file_mojave_v1_query_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_mojave_v1_query_proto_goTypes = []any{
-	(*Query)(nil),         // 0: mojave.v1.Query
-	(*QueryResponse)(nil), // 1: mojave.v1.QueryResponse
-	(*KeyValueQuery)(nil), // 2: mojave.v1.KeyValueQuery
-	(*KeyValueState)(nil), // 3: mojave.v1.KeyValueState
+	(*Query)(nil),             // 0: mojave.v1.Query
+	(*QueryResponse)(nil),     // 1: mojave.v1.QueryResponse
+	(*KeyValueQuery)(nil),     // 2: mojave.v1.KeyValueQuery
+	(*AccountStateQuery)(nil), // 3: mojave.v1.AccountStateQuery
+	(*KeyValueState)(nil),     // 4: mojave.v1.KeyValueState
+	(*AccountState)(nil),      // 5: mojave.v1.AccountState
 }
 var file_mojave_v1_query_proto_depIdxs = []int32{
 	2, // 0: mojave.v1.Query.key_value:type_name -> mojave.v1.KeyValueQuery
-	3, // 1: mojave.v1.QueryResponse.key_value:type_name -> mojave.v1.KeyValueState
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	3, // 1: mojave.v1.Query.account:type_name -> mojave.v1.AccountStateQuery
+	4, // 2: mojave.v1.QueryResponse.key_value:type_name -> mojave.v1.KeyValueState
+	5, // 3: mojave.v1.QueryResponse.account:type_name -> mojave.v1.AccountState
+	4, // [4:4] is the sub-list for method output_type
+	4, // [4:4] is the sub-list for method input_type
+	4, // [4:4] is the sub-list for extension type_name
+	4, // [4:4] is the sub-list for extension extendee
+	0, // [0:4] is the sub-list for field type_name
 }
 
 func init() { file_mojave_v1_query_proto_init() }
@@ -200,12 +238,15 @@ func file_mojave_v1_query_proto_init() {
 	if File_mojave_v1_query_proto != nil {
 		return
 	}
+	file_mojave_v1_account_proto_init()
 	file_mojave_v1_kv_proto_init()
 	file_mojave_v1_query_proto_msgTypes[0].OneofWrappers = []any{
 		(*Query_KeyValue)(nil),
+		(*Query_Account)(nil),
 	}
 	file_mojave_v1_query_proto_msgTypes[1].OneofWrappers = []any{
 		(*QueryResponse_KeyValue)(nil),
+		(*QueryResponse_Account)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

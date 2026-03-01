@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package mojave.v1;
+
+option go_package = "github.com/alecsavvy/mojave/gen/mojave/v1";
+
+message TokenTransferTransaction {
+  bytes from_pubkey = 1;
+  bytes to_pubkey = 2;
+  uint64 amount = 3;
+}

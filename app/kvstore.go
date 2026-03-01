@@ -3,10 +3,12 @@ package app
 import (
 	"context"
 	"fmt"
+	"math"
 
 	mcrypto "github.com/alecsavvy/mojave/crypto"
 	v1 "github.com/alecsavvy/mojave/gen/mojave/v1"
 	"github.com/alecsavvy/mojave/store"
+	"github.com/alecsavvy/mojave/utils"
 	"github.com/cockroachdb/pebble"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
 	"go.uber.org/zap"
@@ -57,6 +59,24 @@ func (app *KVStoreApplication) Query(ctx context.Context, req *abcitypes.QueryRe
 			return nil, err
 		}
 		return &abcitypes.QueryResponse{Value: queryResponseBytes}, nil
+	case *v1.Query_Account:
+		accountQuery := query.GetAccount()
+		app.logger.Infow("querying account", "pubkey", accountQuery.Pubkey)
+		account, err := app.store.GetAccount(ctx, accountQuery.Pubkey)
+		if err != nil {
+			return nil, err
+		}
+
+		queryResponse := &v1.QueryResponse{
+			Response: &v1.QueryResponse_Account{
+				Account: account,
+			},
+		}
+		queryResponseBytes, err := proto.Marshal(queryResponse)
+		if err != nil {
+			return nil, err
+		}
+		return &abcitypes.QueryResponse{Value: queryResponseBytes}, nil
 	}
 
 	return nil, fmt.Errorf("unknown query type: %T", query.Query)
@@ -77,6 +97,13 @@ func (app *KVStoreApplication) CheckTx(_ context.Context, check *abcitypes.Check
 }
 
 func (app *KVStoreApplication) InitChain(_ context.Context, chain *abcitypes.InitChainRequest) (*abcitypes.InitChainResponse, error) {
+	batch := app.store.NewBatch()
+	// give zero address all the tokens for faucet
+	app.store.UpdateAccount(context.Background(), batch, &v1.AccountState{Pubkey: utils.ZeroAddress, Balance: math.MaxUint64})
+	if err := batch.Commit(nil); err != nil {
+		return nil, err
+	}
+
 	return &abcitypes.InitChainResponse{}, nil
 }
 
@@ -114,6 +141,30 @@ func (app *KVStoreApplication) FinalizeBlock(_ context.Context, req *abcitypes.F
 				if err := app.store.SetKeyValue(context.Background(), app.onGoingBlock, kv); err != nil {
 					return nil, err
 				}
+				return []abcitypes.Event{}, nil
+			case *v1.TransactionBody_TokenTransfer:
+				tokenTx := transaction.Body.GetTokenTransfer()
+
+				fromAccount, err := app.store.GetAccount(context.Background(), tokenTx.FromPubkey)
+				if err != nil {
+					return nil, err
+				}
+
+				fromAccount.Balance -= tokenTx.Amount
+				if err := app.store.UpdateAccount(context.Background(), app.onGoingBlock, fromAccount); err != nil {
+					return nil, err
+				}
+
+				toAccount, err := app.store.GetOrCreateAccount(context.Background(), app.onGoingBlock, tokenTx.ToPubkey)
+				if err != nil {
+					return nil, err
+				}
+
+				toAccount.Balance += tokenTx.Amount
+				if err := app.store.UpdateAccount(context.Background(), app.onGoingBlock, toAccount); err != nil {
+					return nil, err
+				}
+
 				return []abcitypes.Event{}, nil
 			default:
 				return nil, fmt.Errorf("unknown transaction body type: %T", transaction.Body)
