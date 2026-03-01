@@ -213,7 +213,6 @@ type TransactionBody struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Body:
 	//
-	//	*TransactionBody_CreateAccount
 	//	*TransactionBody_KeyValue
 	Body          isTransactionBody_Body `protobuf_oneof:"body"`
 	unknownFields protoimpl.UnknownFields
@@ -257,15 +256,6 @@ func (x *TransactionBody) GetBody() isTransactionBody_Body {
 	return nil
 }
 
-func (x *TransactionBody) GetCreateAccount() *CreateAccountTransaction {
-	if x != nil {
-		if x, ok := x.Body.(*TransactionBody_CreateAccount); ok {
-			return x.CreateAccount
-		}
-	}
-	return nil
-}
-
 func (x *TransactionBody) GetKeyValue() *KeyValueTransaction {
 	if x != nil {
 		if x, ok := x.Body.(*TransactionBody_KeyValue); ok {
@@ -279,15 +269,9 @@ type isTransactionBody_Body interface {
 	isTransactionBody_Body()
 }
 
-type TransactionBody_CreateAccount struct {
-	CreateAccount *CreateAccountTransaction `protobuf:"bytes,1,opt,name=create_account,json=createAccount,proto3,oneof"`
-}
-
 type TransactionBody_KeyValue struct {
-	KeyValue *KeyValueTransaction `protobuf:"bytes,2,opt,name=key_value,json=keyValue,proto3,oneof"`
+	KeyValue *KeyValueTransaction `protobuf:"bytes,1,opt,name=key_value,json=keyValue,proto3,oneof"`
 }
-
-func (*TransactionBody_CreateAccount) isTransactionBody_Body() {}
 
 func (*TransactionBody_KeyValue) isTransactionBody_Body() {}
 
@@ -399,7 +383,7 @@ type TransactionEventBody struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Body:
 	//
-	//	*TransactionEventBody_CreateAccount
+	//	*TransactionEventBody_AccountCreated
 	Body          isTransactionEventBody_Body `protobuf_oneof:"body"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -442,10 +426,10 @@ func (x *TransactionEventBody) GetBody() isTransactionEventBody_Body {
 	return nil
 }
 
-func (x *TransactionEventBody) GetCreateAccount() *CreateAccountEvent {
+func (x *TransactionEventBody) GetAccountCreated() *AccountCreatedEvent {
 	if x != nil {
-		if x, ok := x.Body.(*TransactionEventBody_CreateAccount); ok {
-			return x.CreateAccount
+		if x, ok := x.Body.(*TransactionEventBody_AccountCreated); ok {
+			return x.AccountCreated
 		}
 	}
 	return nil
@@ -455,11 +439,11 @@ type isTransactionEventBody_Body interface {
 	isTransactionEventBody_Body()
 }
 
-type TransactionEventBody_CreateAccount struct {
-	CreateAccount *CreateAccountEvent `protobuf:"bytes,1,opt,name=create_account,json=createAccount,proto3,oneof"`
+type TransactionEventBody_AccountCreated struct {
+	AccountCreated *AccountCreatedEvent `protobuf:"bytes,1,opt,name=account_created,json=accountCreated,proto3,oneof"`
 }
 
-func (*TransactionEventBody_CreateAccount) isTransactionEventBody_Body() {}
+func (*TransactionEventBody_AccountCreated) isTransactionEventBody_Body() {}
 
 var File_mojave_v1_transaction_proto protoreflect.FileDescriptor
 
@@ -479,19 +463,18 @@ const file_mojave_v1_transaction_proto_rawDesc = "" +
 	"\x11timeout_timestamp\x18\x04 \x01(\x04R\x10timeoutTimestamp\x12\x1b\n" +
 	"\tto_pubkey\x18\x05 \x01(\fR\btoPubkey\x12\x1f\n" +
 	"\vfrom_pubkey\x18\x06 \x01(\fR\n" +
-	"fromPubkey\"\xa6\x01\n" +
-	"\x0fTransactionBody\x12L\n" +
-	"\x0ecreate_account\x18\x01 \x01(\v2#.mojave.v1.CreateAccountTransactionH\x00R\rcreateAccount\x12=\n" +
-	"\tkey_value\x18\x02 \x01(\v2\x1e.mojave.v1.KeyValueTransactionH\x00R\bkeyValueB\x06\n" +
+	"fromPubkey\"X\n" +
+	"\x0fTransactionBody\x12=\n" +
+	"\tkey_value\x18\x01 \x01(\v2\x1e.mojave.v1.KeyValueTransactionH\x00R\bkeyValueB\x06\n" +
 	"\x04body\"\x82\x01\n" +
 	"\x10TransactionEvent\x129\n" +
 	"\x06header\x18\x01 \x01(\v2!.mojave.v1.TransactionEventHeaderR\x06header\x123\n" +
 	"\x04body\x18\x02 \x01(\v2\x1f.mojave.v1.TransactionEventBodyR\x04body\"T\n" +
 	"\x16TransactionEventHeader\x12\x17\n" +
 	"\atx_hash\x18\x01 \x01(\tR\x06txHash\x12!\n" +
-	"\fblock_height\x18\x02 \x01(\tR\vblockHeight\"f\n" +
-	"\x14TransactionEventBody\x12F\n" +
-	"\x0ecreate_account\x18\x01 \x01(\v2\x1d.mojave.v1.CreateAccountEventH\x00R\rcreateAccountB\x06\n" +
+	"\fblock_height\x18\x02 \x01(\tR\vblockHeight\"i\n" +
+	"\x14TransactionEventBody\x12I\n" +
+	"\x0faccount_created\x18\x01 \x01(\v2\x1e.mojave.v1.AccountCreatedEventH\x00R\x0eaccountCreatedB\x06\n" +
 	"\x04bodyB+Z)github.com/alecsavvy/mojave/gen/mojave/v1b\x06proto3"
 
 var (
@@ -508,30 +491,28 @@ func file_mojave_v1_transaction_proto_rawDescGZIP() []byte {
 
 var file_mojave_v1_transaction_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_mojave_v1_transaction_proto_goTypes = []any{
-	(*SignedTransaction)(nil),        // 0: mojave.v1.SignedTransaction
-	(*Transaction)(nil),              // 1: mojave.v1.Transaction
-	(*TransactionHeader)(nil),        // 2: mojave.v1.TransactionHeader
-	(*TransactionBody)(nil),          // 3: mojave.v1.TransactionBody
-	(*TransactionEvent)(nil),         // 4: mojave.v1.TransactionEvent
-	(*TransactionEventHeader)(nil),   // 5: mojave.v1.TransactionEventHeader
-	(*TransactionEventBody)(nil),     // 6: mojave.v1.TransactionEventBody
-	(*CreateAccountTransaction)(nil), // 7: mojave.v1.CreateAccountTransaction
-	(*KeyValueTransaction)(nil),      // 8: mojave.v1.KeyValueTransaction
-	(*CreateAccountEvent)(nil),       // 9: mojave.v1.CreateAccountEvent
+	(*SignedTransaction)(nil),      // 0: mojave.v1.SignedTransaction
+	(*Transaction)(nil),            // 1: mojave.v1.Transaction
+	(*TransactionHeader)(nil),      // 2: mojave.v1.TransactionHeader
+	(*TransactionBody)(nil),        // 3: mojave.v1.TransactionBody
+	(*TransactionEvent)(nil),       // 4: mojave.v1.TransactionEvent
+	(*TransactionEventHeader)(nil), // 5: mojave.v1.TransactionEventHeader
+	(*TransactionEventBody)(nil),   // 6: mojave.v1.TransactionEventBody
+	(*KeyValueTransaction)(nil),    // 7: mojave.v1.KeyValueTransaction
+	(*AccountCreatedEvent)(nil),    // 8: mojave.v1.AccountCreatedEvent
 }
 var file_mojave_v1_transaction_proto_depIdxs = []int32{
 	2, // 0: mojave.v1.Transaction.header:type_name -> mojave.v1.TransactionHeader
 	3, // 1: mojave.v1.Transaction.body:type_name -> mojave.v1.TransactionBody
-	7, // 2: mojave.v1.TransactionBody.create_account:type_name -> mojave.v1.CreateAccountTransaction
-	8, // 3: mojave.v1.TransactionBody.key_value:type_name -> mojave.v1.KeyValueTransaction
-	5, // 4: mojave.v1.TransactionEvent.header:type_name -> mojave.v1.TransactionEventHeader
-	6, // 5: mojave.v1.TransactionEvent.body:type_name -> mojave.v1.TransactionEventBody
-	9, // 6: mojave.v1.TransactionEventBody.create_account:type_name -> mojave.v1.CreateAccountEvent
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	7, // 2: mojave.v1.TransactionBody.key_value:type_name -> mojave.v1.KeyValueTransaction
+	5, // 3: mojave.v1.TransactionEvent.header:type_name -> mojave.v1.TransactionEventHeader
+	6, // 4: mojave.v1.TransactionEvent.body:type_name -> mojave.v1.TransactionEventBody
+	8, // 5: mojave.v1.TransactionEventBody.account_created:type_name -> mojave.v1.AccountCreatedEvent
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_mojave_v1_transaction_proto_init() }
@@ -542,11 +523,10 @@ func file_mojave_v1_transaction_proto_init() {
 	file_mojave_v1_account_proto_init()
 	file_mojave_v1_kv_proto_init()
 	file_mojave_v1_transaction_proto_msgTypes[3].OneofWrappers = []any{
-		(*TransactionBody_CreateAccount)(nil),
 		(*TransactionBody_KeyValue)(nil),
 	}
 	file_mojave_v1_transaction_proto_msgTypes[6].OneofWrappers = []any{
-		(*TransactionEventBody_CreateAccount)(nil),
+		(*TransactionEventBody_AccountCreated)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

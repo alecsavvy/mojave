@@ -28,8 +28,7 @@ message TransactionHeader {
 
 message TransactionBody {
   oneof body {
-    CreateAccountTransaction create_account = 1;
-    KeyValueTransaction key_value = 2;
+    KeyValueTransaction key_value = 1;
   }
 }
 
@@ -45,6 +44,6 @@ message TransactionEventHeader {
 
 message TransactionEventBody {
     oneof body {
-        CreateAccountEvent create_account = 1;
+        AccountCreatedEvent account_created = 1;
     }
 }
