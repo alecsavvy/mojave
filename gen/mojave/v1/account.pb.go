@@ -23,7 +23,7 @@ const (
 
 type AccountCreatedEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Pubkey        string                 `protobuf:"bytes,1,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
+	Pubkey        []byte                 `protobuf:"bytes,1,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -58,16 +58,16 @@ func (*AccountCreatedEvent) Descriptor() ([]byte, []int) {
 	return file_mojave_v1_account_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *AccountCreatedEvent) GetPubkey() string {
+func (x *AccountCreatedEvent) GetPubkey() []byte {
 	if x != nil {
 		return x.Pubkey
 	}
-	return ""
+	return nil
 }
 
 type AccountState struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Pubkey        string                 `protobuf:"bytes,1,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
+	Pubkey        []byte                 `protobuf:"bytes,1,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
 	Balance       uint64                 `protobuf:"varint,2,opt,name=balance,proto3" json:"balance,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -103,11 +103,11 @@ func (*AccountState) Descriptor() ([]byte, []int) {
 	return file_mojave_v1_account_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *AccountState) GetPubkey() string {
+func (x *AccountState) GetPubkey() []byte {
 	if x != nil {
 		return x.Pubkey
 	}
-	return ""
+	return nil
 }
 
 func (x *AccountState) GetBalance() uint64 {
@@ -119,7 +119,7 @@ func (x *AccountState) GetBalance() uint64 {
 
 type AccountStateQuery struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Pubkey        string                 `protobuf:"bytes,1,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
+	Pubkey        []byte                 `protobuf:"bytes,1,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -154,11 +154,11 @@ func (*AccountStateQuery) Descriptor() ([]byte, []int) {
 	return file_mojave_v1_account_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *AccountStateQuery) GetPubkey() string {
+func (x *AccountStateQuery) GetPubkey() []byte {
 	if x != nil {
 		return x.Pubkey
 	}
-	return ""
+	return nil
 }
 
 var File_mojave_v1_account_proto protoreflect.FileDescriptor
@@ -167,12 +167,12 @@ const file_mojave_v1_account_proto_rawDesc = "" +
 	"\n" +
 	"\x17mojave/v1/account.proto\x12\tmojave.v1\"-\n" +
 	"\x13AccountCreatedEvent\x12\x16\n" +
-	"\x06pubkey\x18\x01 \x01(\tR\x06pubkey\"@\n" +
+	"\x06pubkey\x18\x01 \x01(\fR\x06pubkey\"@\n" +
 	"\fAccountState\x12\x16\n" +
-	"\x06pubkey\x18\x01 \x01(\tR\x06pubkey\x12\x18\n" +
+	"\x06pubkey\x18\x01 \x01(\fR\x06pubkey\x12\x18\n" +
 	"\abalance\x18\x02 \x01(\x04R\abalance\"+\n" +
 	"\x11AccountStateQuery\x12\x16\n" +
-	"\x06pubkey\x18\x01 \x01(\tR\x06pubkeyB+Z)github.com/alecsavvy/mojave/gen/mojave/v1b\x06proto3"
+	"\x06pubkey\x18\x01 \x01(\fR\x06pubkeyB+Z)github.com/alecsavvy/mojave/gen/mojave/v1b\x06proto3"
 
 var (
 	file_mojave_v1_account_proto_rawDescOnce sync.Once

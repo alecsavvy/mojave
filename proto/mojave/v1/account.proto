@@ -5,14 +5,14 @@ package mojave.v1;
 option go_package = "github.com/alecsavvy/mojave/gen/mojave/v1";
 
 message AccountCreatedEvent {
-    string pubkey = 1;
+  bytes pubkey = 1;
 }
 
 message AccountState {
-    string pubkey = 1;
-    uint64 balance = 2;
+  bytes pubkey = 1;
+  uint64 balance = 2;
 }
 
 message AccountStateQuery {
-    string pubkey = 1;
+  bytes pubkey = 1;
 }

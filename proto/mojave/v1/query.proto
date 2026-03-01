@@ -2,18 +2,21 @@ syntax = "proto3";
 
 package mojave.v1;
 
+import "mojave/v1/account.proto";
 import "mojave/v1/kv.proto";
 
 option go_package = "github.com/alecsavvy/mojave/gen/mojave/v1";
 
 message Query {
-    oneof query {
-        KeyValueQuery key_value = 1;
-    }
+  oneof query {
+    KeyValueQuery key_value = 1;
+    AccountStateQuery account = 2;
+  }
 }
 
 message QueryResponse {
-    oneof response {
-        KeyValueState key_value = 1;
-    }
+  oneof response {
+    KeyValueState key_value = 1;
+    AccountState account = 2;
+  }
 }

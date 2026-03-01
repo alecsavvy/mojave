@@ -4,6 +4,7 @@ package mojave.v1;
 
 import "mojave/v1/account.proto";
 import "mojave/v1/kv.proto";
+import "mojave/v1/token.proto";
 
 option go_package = "github.com/alecsavvy/mojave/gen/mojave/v1";
 
@@ -29,6 +30,7 @@ message TransactionHeader {
 message TransactionBody {
   oneof body {
     KeyValueTransaction key_value = 1;
+    TokenTransferTransaction token_transfer = 2;
   }
 }
 

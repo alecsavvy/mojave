@@ -11,6 +11,7 @@ import (
 
 	mcrypto "github.com/alecsavvy/mojave/crypto"
 	v1 "github.com/alecsavvy/mojave/gen/mojave/v1"
+	"github.com/alecsavvy/mojave/utils"
 )
 
 type MojaveSDK struct {
@@ -81,6 +82,50 @@ func (sdk *MojaveSDK) GetKeyValue(ctx context.Context, key string) (*v1.KeyValue
 	}
 
 	return response.GetKeyValue(), nil
+}
+
+func (sdk *MojaveSDK) GetAccount(ctx context.Context, pubkey []byte) (*v1.AccountState, error) {
+	query := &v1.Query{
+		Query: &v1.Query_Account{
+			Account: &v1.AccountStateQuery{Pubkey: pubkey},
+		},
+	}
+
+	response, err := sdk.sendQuery(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	return response.GetAccount(), nil
+}
+
+func (sdk *MojaveSDK) TransferTokens(ctx context.Context, fromPubkey []byte, toPubkey []byte, amount uint64) error {
+	transaction := &v1.Transaction{
+		Header: &v1.TransactionHeader{
+			FromPubkey: sdk.GetPublicKey(),
+		},
+
+		Body: &v1.TransactionBody{
+			Body: &v1.TransactionBody_TokenTransfer{
+				TokenTransfer: &v1.TokenTransferTransaction{
+					FromPubkey: fromPubkey,
+					ToPubkey:   toPubkey,
+					Amount:     amount,
+				},
+			},
+		},
+	}
+
+	signedTransaction, err := sdk.SignTransaction(transaction)
+	if err != nil {
+		return err
+	}
+
+	return sdk.sendTransaction(ctx, signedTransaction)
+}
+
+func (sdk *MojaveSDK) FaucetTokens(ctx context.Context, toPubkey []byte, amount uint64) error {
+	return sdk.TransferTokens(ctx, utils.ZeroAddress, toPubkey, amount)
 }
 
 func (sdk *MojaveSDK) sendTransaction(ctx context.Context, transaction *v1.SignedTransaction) error {
