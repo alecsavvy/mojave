@@ -117,18 +117,28 @@ func (app *KVStoreApplication) ProcessProposal(_ context.Context, proposal *abci
 
 func (app *KVStoreApplication) FinalizeBlock(_ context.Context, req *abcitypes.FinalizeBlockRequest) (*abcitypes.FinalizeBlockResponse, error) {
 	var txs = make([]*abcitypes.ExecTxResult, len(req.Txs))
-
 	app.onGoingBlock = app.store.NewBatch()
 	for i, tx := range req.Txs {
-		events, err := func(tx []byte) ([]abcitypes.Event, error) {
+		txHash := utils.Hash(tx)
+		txResult := func(tx []byte) *v1.TransactionResult {
 			var signedTransaction v1.SignedTransaction
 			if err := proto.Unmarshal(tx, &signedTransaction); err != nil {
-				return nil, err
+				return &v1.TransactionResult{
+					Error: &v1.TransactionResultError{
+						Code: v1.TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_INVALID_REQUEST,
+						Log:  err.Error(),
+					},
+				}
 			}
 
 			transaction, err := mcrypto.VerifyTransaction(&signedTransaction)
 			if err != nil {
-				return nil, err
+				return &v1.TransactionResult{
+					Error: &v1.TransactionResultError{
+						Code: v1.TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_INVALID_SIGNATURE,
+						Log:  err.Error(),
+					},
+				}
 			}
 
 			switch transaction.Body.Body.(type) {
@@ -139,47 +149,105 @@ func (app *KVStoreApplication) FinalizeBlock(_ context.Context, req *abcitypes.F
 					Value: kvTx.Value,
 				}
 				if err := app.store.SetKeyValue(context.Background(), app.onGoingBlock, kv); err != nil {
-					return nil, err
+					return &v1.TransactionResult{
+						Error: &v1.TransactionResultError{
+							Code: v1.TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_INTERNAL,
+							Log:  err.Error(),
+						},
+					}
 				}
-				return []abcitypes.Event{}, nil
+				return &v1.TransactionResult{
+					Header: &v1.TransactionResultHeader{
+						TxHash:      txHash,
+						BlockHeight: uint64(req.Height),
+						ChainId:     transaction.Header.ChainId,
+						Nonce:       transaction.Header.Nonce,
+					},
+					Body: &v1.TransactionResultBody{
+						Body: &v1.TransactionResultBody_KeyValue{
+							KeyValue: &v1.KeyValueResult{},
+						},
+					},
+				}
 			case *v1.TransactionBody_TokenTransfer:
 				tokenTx := transaction.Body.GetTokenTransfer()
 
 				fromAccount, err := app.store.GetAccount(context.Background(), tokenTx.FromPubkey)
 				if err != nil {
-					return nil, err
+					return &v1.TransactionResult{
+						Error: &v1.TransactionResultError{
+							Code: v1.TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_INTERNAL,
+							Log:  err.Error(),
+						},
+					}
 				}
 
 				fromAccount.Balance -= tokenTx.Amount
 				if err := app.store.UpdateAccount(context.Background(), app.onGoingBlock, fromAccount); err != nil {
-					return nil, err
+					return &v1.TransactionResult{
+						Error: &v1.TransactionResultError{
+							Code: v1.TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_INTERNAL,
+							Log:  err.Error(),
+						},
+					}
 				}
 
 				toAccount, err := app.store.GetOrCreateAccount(context.Background(), app.onGoingBlock, tokenTx.ToPubkey)
 				if err != nil {
-					return nil, err
+					return &v1.TransactionResult{
+						Error: &v1.TransactionResultError{
+							Code: v1.TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_INTERNAL,
+							Log:  err.Error(),
+						},
+					}
 				}
 
 				toAccount.Balance += tokenTx.Amount
 				if err := app.store.UpdateAccount(context.Background(), app.onGoingBlock, toAccount); err != nil {
-					return nil, err
+					return &v1.TransactionResult{
+						Error: &v1.TransactionResultError{
+							Code: v1.TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_INTERNAL,
+							Log:  err.Error(),
+						},
+					}
 				}
 
-				return []abcitypes.Event{}, nil
+				return &v1.TransactionResult{
+					Header: &v1.TransactionResultHeader{
+						TxHash:      txHash,
+						BlockHeight: uint64(req.Height),
+						ChainId:     transaction.Header.ChainId,
+						Nonce:       transaction.Header.Nonce,
+					},
+					Body: &v1.TransactionResultBody{
+						Body: &v1.TransactionResultBody_TokenTransfer{
+							TokenTransfer: &v1.TokenTransferResult{},
+						},
+					},
+				}
 			default:
-				return nil, fmt.Errorf("unknown transaction body type: %T", transaction.Body)
+				return &v1.TransactionResult{
+					Error: &v1.TransactionResultError{
+						Code: v1.TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_INVALID_REQUEST,
+						Log:  fmt.Sprintf("unknown transaction body type: %T", transaction.Body),
+					},
+				}
 			}
 		}(tx)
 
-		code := abcitypes.CodeTypeOK
+		txResultBytes, err := proto.Marshal(txResult)
 		if err != nil {
-			app.logger.Errorf("Error processing transaction %v", err)
-			code = 1
+			return nil, err
+		}
+
+		code := uint32(0)
+		if txResult.Error != nil {
+			code = uint32(txResult.Error.Code)
 		}
 
 		txs[i] = &abcitypes.ExecTxResult{
-			Code:   code,
-			Events: events,
+			Code: code,
+			Data: txResultBytes,
 		}
 	}
 

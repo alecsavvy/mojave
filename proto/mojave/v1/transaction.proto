@@ -2,7 +2,6 @@ syntax = "proto3";
 
 package mojave.v1;
 
-import "mojave/v1/account.proto";
 import "mojave/v1/kv.proto";
 import "mojave/v1/token.proto";
 
@@ -14,17 +13,16 @@ message SignedTransaction {
 }
 
 message Transaction {
-    TransactionHeader header = 1;
-    TransactionBody body = 2;
+  TransactionHeader header = 1;
+  TransactionBody body = 2;
 }
 
 message TransactionHeader {
   string chain_id = 1;
   string nonce = 2;
-  uint64 timeout_height = 3;
-  uint64 timeout_timestamp = 4;
-  bytes to_pubkey = 5;
-  bytes from_pubkey = 6;
+  bytes from_pubkey = 3;
+  bytes to_pubkey = 4;
+  uint64 watt_limit = 5;
 }
 
 message TransactionBody {
@@ -34,18 +32,37 @@ message TransactionBody {
   }
 }
 
-message TransactionEvent {
-    TransactionEventHeader header = 1;
-    TransactionEventBody body = 2;
+message TransactionResult {
+  TransactionResultHeader header = 1;
+  TransactionResultBody body = 2;
+  TransactionResultError error = 3;
 }
 
-message TransactionEventHeader {
-    string tx_hash = 1;
-    string block_height = 2;
+message TransactionResultHeader {
+  string tx_hash = 1;
+  uint64 block_height = 2;
+  string chain_id = 3;
+  string nonce = 4;
+  uint64 watts_used = 5;
 }
 
-message TransactionEventBody {
-    oneof body {
-        AccountCreatedEvent account_created = 1;
-    }
+message TransactionResultBody {
+  oneof body {
+    KeyValueResult key_value = 1;
+    TokenTransferResult token_transfer = 2;
+  }
+}
+
+enum TransactionResultErrorCode {
+  TRANSACTION_RESULT_ERROR_CODE_UNSPECIFIED = 0;
+  TRANSACTION_RESULT_ERROR_CODE_INTERNAL = 1;
+  TRANSACTION_RESULT_ERROR_CODE_INVALID_REQUEST = 2;
+  TRANSACTION_RESULT_ERROR_CODE_INVALID_SIGNATURE = 3;
+  TRANSACTION_RESULT_ERROR_CODE_INVALID_NONCE = 4;
+  TRANSACTION_RESULT_ERROR_CODE_INVALID_WATT_LIMIT = 5;
+}
+
+message TransactionResultError {
+  TransactionResultErrorCode code = 1;
+  string log = 2;
 }

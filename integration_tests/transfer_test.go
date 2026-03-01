@@ -37,7 +37,8 @@ func TestTransfer(t *testing.T) {
 
 	sdk2 := app.SDK()
 
-	if err := sdk.TransferTokens(ctx, sdk.GetPublicKey(), sdk2.GetPublicKey(), 100); err != nil {
+	_, err = sdk.TransferTokens(ctx, sdk.GetPublicKey(), sdk2.GetPublicKey(), 100)
+	if err != nil {
 		t.Fatalf("failed to transfer tokens: %v", err)
 	}
 

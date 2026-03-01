@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/ed25519"
 	"errors"
-	"fmt"
 
 	"github.com/cometbft/cometbft/rpc/client/http"
 	"google.golang.org/protobuf/proto"
@@ -49,7 +48,7 @@ func (sdk *MojaveSDK) SignTransaction(transaction *v1.Transaction) (*v1.SignedTr
 	return signedTransaction, nil
 }
 
-func (sdk *MojaveSDK) SetKeyValue(ctx context.Context, key string, value string) error {
+func (sdk *MojaveSDK) SetKeyValue(ctx context.Context, key string, value string) (*v1.KeyValueResult, error) {
 	transaction := &v1.Transaction{
 		Header: &v1.TransactionHeader{
 			FromPubkey: sdk.GetPublicKey(),
@@ -63,10 +62,15 @@ func (sdk *MojaveSDK) SetKeyValue(ctx context.Context, key string, value string)
 
 	signedTransaction, err := sdk.SignTransaction(transaction)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return sdk.sendTransaction(ctx, signedTransaction)
+	result, err := sdk.sendTransaction(ctx, signedTransaction)
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Body.GetKeyValue(), nil
 }
 
 func (sdk *MojaveSDK) GetKeyValue(ctx context.Context, key string) (*v1.KeyValueState, error) {
@@ -99,7 +103,7 @@ func (sdk *MojaveSDK) GetAccount(ctx context.Context, pubkey []byte) (*v1.Accoun
 	return response.GetAccount(), nil
 }
 
-func (sdk *MojaveSDK) TransferTokens(ctx context.Context, fromPubkey []byte, toPubkey []byte, amount uint64) error {
+func (sdk *MojaveSDK) TransferTokens(ctx context.Context, fromPubkey []byte, toPubkey []byte, amount uint64) (*v1.TokenTransferResult, error) {
 	transaction := &v1.Transaction{
 		Header: &v1.TransactionHeader{
 			FromPubkey: sdk.GetPublicKey(),
@@ -118,30 +122,47 @@ func (sdk *MojaveSDK) TransferTokens(ctx context.Context, fromPubkey []byte, toP
 
 	signedTransaction, err := sdk.SignTransaction(transaction)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return sdk.sendTransaction(ctx, signedTransaction)
+	result, err := sdk.sendTransaction(ctx, signedTransaction)
+	if err != nil {
+		return nil, err
+	}
+
+	return result.Body.GetTokenTransfer(), nil
 }
 
 func (sdk *MojaveSDK) FaucetTokens(ctx context.Context, toPubkey []byte, amount uint64) error {
-	return sdk.TransferTokens(ctx, utils.ZeroAddress, toPubkey, amount)
+	_, err := sdk.TransferTokens(ctx, utils.ZeroAddress, toPubkey, amount)
+	return err
 }
 
-func (sdk *MojaveSDK) sendTransaction(ctx context.Context, transaction *v1.SignedTransaction) error {
+func (sdk *MojaveSDK) sendTransaction(ctx context.Context, transaction *v1.SignedTransaction) (*v1.TransactionResult, error) {
 	txBytes, err := proto.Marshal(transaction)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	response, err := sdk.HTTP.BroadcastTxCommit(ctx, txBytes)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	if response.CheckTx.Code != 0 {
-		return fmt.Errorf("transaction failed: %s", response.CheckTx.Log)
+
+	resultBytes := response.TxResult.Data
+
+	result := &v1.TransactionResult{}
+	if err := proto.Unmarshal(resultBytes, result); err != nil {
+		return nil, err
 	}
-	return nil
+
+	resultCode := response.TxResult.Code
+
+	if resultCode != 0 {
+		return result, errors.New(result.Error.Log)
+	}
+
+	return result, nil
 }
 
 func (sdk *MojaveSDK) sendQuery(ctx context.Context, query *v1.Query) (*v1.QueryResponse, error) {
