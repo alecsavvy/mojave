@@ -34,3 +34,7 @@ tasks:
   buf-lint:
     cmds:
       - buf lint
+
+  test:
+    cmds:
+      - go test ./...

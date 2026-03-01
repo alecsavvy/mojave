@@ -31,11 +31,9 @@ func StartTestApp(ctx context.Context, homeDir string) *TestApp {
 		panic(err)
 	}
 
-	go func() {
-		if err := a.Run(ctx); err != nil {
-			panic(err)
-		}
-	}()
+	if err := a.Start(); err != nil {
+		panic(err)
+	}
 
 	testApp := &TestApp{
 		config: cmtConfig,
@@ -64,11 +62,15 @@ func (node *TestApp) SDK() *sdk.MojaveSDK {
 	return sdk
 }
 
-func (node *TestApp) Run(ctx context.Context) error {
-	if err := node.app.Run(ctx); err != nil {
+func (node *TestApp) Start() error {
+	if err := node.app.Start(); err != nil {
 		return fmt.Errorf("failed to run app: %w", err)
 	}
 	return nil
+}
+
+func (node *TestApp) Stop() error {
+	return node.app.Stop()
 }
 
 func (node *TestApp) AwaitBlockHeight(ctx context.Context, height int64) error {

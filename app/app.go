@@ -75,8 +75,11 @@ func NewApp(cmtConfig *cfg.Config) (*App, error) {
 	}, nil
 }
 
-func (a *App) Run(ctx context.Context) error {
-	go func() { <-ctx.Done(); _ = a.node.Stop() }()
-	a.node.Wait()
+func (a *App) Start() error {
+	a.node.Start()
 	return nil
+}
+
+func (a *App) Stop() error {
+	return a.node.Stop()
 }
