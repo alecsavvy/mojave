@@ -56,8 +56,12 @@ var runCmd = &cli.Command{
 		if err != nil {
 			return fmt.Errorf("failed to create app: %w", err)
 		}
-		if err := a.Run(ctx); err != nil {
+		if err := a.Start(); err != nil {
 			return fmt.Errorf("failed to run app: %w", err)
+		}
+		<-ctx.Done()
+		if err := a.Stop(); err != nil {
+			return fmt.Errorf("failed to stop app: %w", err)
 		}
 		return nil
 	},
@@ -159,7 +163,11 @@ var testnetCmd = &cli.Command{
 				if err != nil {
 					log.Fatalf("failed to create app: %v", err)
 				}
-				_ = a.Run(ctx)
+				_ = a.Start()
+				<-ctx.Done()
+				if err := a.Stop(); err != nil {
+					log.Fatalf("failed to stop app: %v", err)
+				}
 			}()
 		}
 		wg.Wait()

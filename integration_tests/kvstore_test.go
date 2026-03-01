@@ -10,17 +10,16 @@ func TestKVStore(t *testing.T) {
 	ctx := t.Context()
 
 	app := StartTestApp(ctx, t.TempDir())
+	t.Cleanup(func() {
+		app.Stop()
+	})
 	sdk := app.SDK()
 
 	err := sdk.SetKeyValue(ctx, "cometbft", "rocks")
-	if err != nil {
-		t.Fatalf("Failed to set key-value: %v", err)
-	}
+	require.NoError(t, err)
 
 	kvState, err := sdk.GetKeyValue(ctx, "cometbft")
-	if err != nil {
-		t.Fatalf("Failed to get key-value: %v", err)
-	}
+	require.NoError(t, err)
 
 	require.Equal(t, "cometbft", kvState.Key)
 	require.Equal(t, "rocks", kvState.Value)
