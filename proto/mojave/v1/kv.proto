@@ -17,3 +17,5 @@ message KeyValueState {
 message KeyValueQuery {
     string key = 1;
 }
+
+message KeyValueResult {}

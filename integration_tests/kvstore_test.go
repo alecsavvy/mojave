@@ -15,7 +15,7 @@ func TestKVStore(t *testing.T) {
 	})
 	sdk := app.SDK()
 
-	err := sdk.SetKeyValue(ctx, "cometbft", "rocks")
+	_, err := sdk.SetKeyValue(ctx, "cometbft", "rocks")
 	require.NoError(t, err)
 
 	kvState, err := sdk.GetKeyValue(ctx, "cometbft")

@@ -21,6 +21,64 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type TransactionResultErrorCode int32
+
+const (
+	TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_UNSPECIFIED        TransactionResultErrorCode = 0
+	TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_INTERNAL           TransactionResultErrorCode = 1
+	TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_INVALID_REQUEST    TransactionResultErrorCode = 2
+	TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_INVALID_SIGNATURE  TransactionResultErrorCode = 3
+	TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_INVALID_NONCE      TransactionResultErrorCode = 4
+	TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_INVALID_WATT_LIMIT TransactionResultErrorCode = 5
+)
+
+// Enum value maps for TransactionResultErrorCode.
+var (
+	TransactionResultErrorCode_name = map[int32]string{
+		0: "TRANSACTION_RESULT_ERROR_CODE_UNSPECIFIED",
+		1: "TRANSACTION_RESULT_ERROR_CODE_INTERNAL",
+		2: "TRANSACTION_RESULT_ERROR_CODE_INVALID_REQUEST",
+		3: "TRANSACTION_RESULT_ERROR_CODE_INVALID_SIGNATURE",
+		4: "TRANSACTION_RESULT_ERROR_CODE_INVALID_NONCE",
+		5: "TRANSACTION_RESULT_ERROR_CODE_INVALID_WATT_LIMIT",
+	}
+	TransactionResultErrorCode_value = map[string]int32{
+		"TRANSACTION_RESULT_ERROR_CODE_UNSPECIFIED":        0,
+		"TRANSACTION_RESULT_ERROR_CODE_INTERNAL":           1,
+		"TRANSACTION_RESULT_ERROR_CODE_INVALID_REQUEST":    2,
+		"TRANSACTION_RESULT_ERROR_CODE_INVALID_SIGNATURE":  3,
+		"TRANSACTION_RESULT_ERROR_CODE_INVALID_NONCE":      4,
+		"TRANSACTION_RESULT_ERROR_CODE_INVALID_WATT_LIMIT": 5,
+	}
+)
+
+func (x TransactionResultErrorCode) Enum() *TransactionResultErrorCode {
+	p := new(TransactionResultErrorCode)
+	*p = x
+	return p
+}
+
+func (x TransactionResultErrorCode) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TransactionResultErrorCode) Descriptor() protoreflect.EnumDescriptor {
+	return file_mojave_v1_transaction_proto_enumTypes[0].Descriptor()
+}
+
+func (TransactionResultErrorCode) Type() protoreflect.EnumType {
+	return &file_mojave_v1_transaction_proto_enumTypes[0]
+}
+
+func (x TransactionResultErrorCode) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TransactionResultErrorCode.Descriptor instead.
+func (TransactionResultErrorCode) EnumDescriptor() ([]byte, []int) {
+	return file_mojave_v1_transaction_proto_rawDescGZIP(), []int{0}
+}
+
 type SignedTransaction struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Signature     []byte                 `protobuf:"bytes,1,opt,name=signature,proto3" json:"signature,omitempty"`
@@ -126,15 +184,14 @@ func (x *Transaction) GetBody() *TransactionBody {
 }
 
 type TransactionHeader struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	ChainId          string                 `protobuf:"bytes,1,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
-	Nonce            string                 `protobuf:"bytes,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
-	TimeoutHeight    uint64                 `protobuf:"varint,3,opt,name=timeout_height,json=timeoutHeight,proto3" json:"timeout_height,omitempty"`
-	TimeoutTimestamp uint64                 `protobuf:"varint,4,opt,name=timeout_timestamp,json=timeoutTimestamp,proto3" json:"timeout_timestamp,omitempty"`
-	ToPubkey         []byte                 `protobuf:"bytes,5,opt,name=to_pubkey,json=toPubkey,proto3" json:"to_pubkey,omitempty"`
-	FromPubkey       []byte                 `protobuf:"bytes,6,opt,name=from_pubkey,json=fromPubkey,proto3" json:"from_pubkey,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ChainId       string                 `protobuf:"bytes,1,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
+	Nonce         string                 `protobuf:"bytes,2,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	FromPubkey    []byte                 `protobuf:"bytes,3,opt,name=from_pubkey,json=fromPubkey,proto3" json:"from_pubkey,omitempty"`
+	ToPubkey      []byte                 `protobuf:"bytes,4,opt,name=to_pubkey,json=toPubkey,proto3" json:"to_pubkey,omitempty"`
+	WattLimit     uint64                 `protobuf:"varint,5,opt,name=watt_limit,json=wattLimit,proto3" json:"watt_limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TransactionHeader) Reset() {
@@ -181,18 +238,11 @@ func (x *TransactionHeader) GetNonce() string {
 	return ""
 }
 
-func (x *TransactionHeader) GetTimeoutHeight() uint64 {
+func (x *TransactionHeader) GetFromPubkey() []byte {
 	if x != nil {
-		return x.TimeoutHeight
+		return x.FromPubkey
 	}
-	return 0
-}
-
-func (x *TransactionHeader) GetTimeoutTimestamp() uint64 {
-	if x != nil {
-		return x.TimeoutTimestamp
-	}
-	return 0
+	return nil
 }
 
 func (x *TransactionHeader) GetToPubkey() []byte {
@@ -202,11 +252,11 @@ func (x *TransactionHeader) GetToPubkey() []byte {
 	return nil
 }
 
-func (x *TransactionHeader) GetFromPubkey() []byte {
+func (x *TransactionHeader) GetWattLimit() uint64 {
 	if x != nil {
-		return x.FromPubkey
+		return x.WattLimit
 	}
-	return nil
+	return 0
 }
 
 type TransactionBody struct {
@@ -291,28 +341,29 @@ func (*TransactionBody_KeyValue) isTransactionBody_Body() {}
 
 func (*TransactionBody_TokenTransfer) isTransactionBody_Body() {}
 
-type TransactionEvent struct {
-	state         protoimpl.MessageState  `protogen:"open.v1"`
-	Header        *TransactionEventHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
-	Body          *TransactionEventBody   `protobuf:"bytes,2,opt,name=body,proto3" json:"body,omitempty"`
+type TransactionResult struct {
+	state         protoimpl.MessageState   `protogen:"open.v1"`
+	Header        *TransactionResultHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Body          *TransactionResultBody   `protobuf:"bytes,2,opt,name=body,proto3" json:"body,omitempty"`
+	Error         *TransactionResultError  `protobuf:"bytes,3,opt,name=error,proto3" json:"error,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *TransactionEvent) Reset() {
-	*x = TransactionEvent{}
+func (x *TransactionResult) Reset() {
+	*x = TransactionResult{}
 	mi := &file_mojave_v1_transaction_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *TransactionEvent) String() string {
+func (x *TransactionResult) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TransactionEvent) ProtoMessage() {}
+func (*TransactionResult) ProtoMessage() {}
 
-func (x *TransactionEvent) ProtoReflect() protoreflect.Message {
+func (x *TransactionResult) ProtoReflect() protoreflect.Message {
 	mi := &file_mojave_v1_transaction_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -324,47 +375,57 @@ func (x *TransactionEvent) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use TransactionEvent.ProtoReflect.Descriptor instead.
-func (*TransactionEvent) Descriptor() ([]byte, []int) {
+// Deprecated: Use TransactionResult.ProtoReflect.Descriptor instead.
+func (*TransactionResult) Descriptor() ([]byte, []int) {
 	return file_mojave_v1_transaction_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *TransactionEvent) GetHeader() *TransactionEventHeader {
+func (x *TransactionResult) GetHeader() *TransactionResultHeader {
 	if x != nil {
 		return x.Header
 	}
 	return nil
 }
 
-func (x *TransactionEvent) GetBody() *TransactionEventBody {
+func (x *TransactionResult) GetBody() *TransactionResultBody {
 	if x != nil {
 		return x.Body
 	}
 	return nil
 }
 
-type TransactionEventHeader struct {
+func (x *TransactionResult) GetError() *TransactionResultError {
+	if x != nil {
+		return x.Error
+	}
+	return nil
+}
+
+type TransactionResultHeader struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	TxHash        string                 `protobuf:"bytes,1,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`
-	BlockHeight   string                 `protobuf:"bytes,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+	BlockHeight   uint64                 `protobuf:"varint,2,opt,name=block_height,json=blockHeight,proto3" json:"block_height,omitempty"`
+	ChainId       string                 `protobuf:"bytes,3,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
+	Nonce         string                 `protobuf:"bytes,4,opt,name=nonce,proto3" json:"nonce,omitempty"`
+	WattsUsed     uint64                 `protobuf:"varint,5,opt,name=watts_used,json=wattsUsed,proto3" json:"watts_used,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *TransactionEventHeader) Reset() {
-	*x = TransactionEventHeader{}
+func (x *TransactionResultHeader) Reset() {
+	*x = TransactionResultHeader{}
 	mi := &file_mojave_v1_transaction_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *TransactionEventHeader) String() string {
+func (x *TransactionResultHeader) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TransactionEventHeader) ProtoMessage() {}
+func (*TransactionResultHeader) ProtoMessage() {}
 
-func (x *TransactionEventHeader) ProtoReflect() protoreflect.Message {
+func (x *TransactionResultHeader) ProtoReflect() protoreflect.Message {
 	mi := &file_mojave_v1_transaction_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -376,49 +437,71 @@ func (x *TransactionEventHeader) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use TransactionEventHeader.ProtoReflect.Descriptor instead.
-func (*TransactionEventHeader) Descriptor() ([]byte, []int) {
+// Deprecated: Use TransactionResultHeader.ProtoReflect.Descriptor instead.
+func (*TransactionResultHeader) Descriptor() ([]byte, []int) {
 	return file_mojave_v1_transaction_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *TransactionEventHeader) GetTxHash() string {
+func (x *TransactionResultHeader) GetTxHash() string {
 	if x != nil {
 		return x.TxHash
 	}
 	return ""
 }
 
-func (x *TransactionEventHeader) GetBlockHeight() string {
+func (x *TransactionResultHeader) GetBlockHeight() uint64 {
 	if x != nil {
 		return x.BlockHeight
+	}
+	return 0
+}
+
+func (x *TransactionResultHeader) GetChainId() string {
+	if x != nil {
+		return x.ChainId
 	}
 	return ""
 }
 
-type TransactionEventBody struct {
+func (x *TransactionResultHeader) GetNonce() string {
+	if x != nil {
+		return x.Nonce
+	}
+	return ""
+}
+
+func (x *TransactionResultHeader) GetWattsUsed() uint64 {
+	if x != nil {
+		return x.WattsUsed
+	}
+	return 0
+}
+
+type TransactionResultBody struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Types that are valid to be assigned to Body:
 	//
-	//	*TransactionEventBody_AccountCreated
-	Body          isTransactionEventBody_Body `protobuf_oneof:"body"`
+	//	*TransactionResultBody_KeyValue
+	//	*TransactionResultBody_TokenTransfer
+	Body          isTransactionResultBody_Body `protobuf_oneof:"body"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *TransactionEventBody) Reset() {
-	*x = TransactionEventBody{}
+func (x *TransactionResultBody) Reset() {
+	*x = TransactionResultBody{}
 	mi := &file_mojave_v1_transaction_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *TransactionEventBody) String() string {
+func (x *TransactionResultBody) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*TransactionEventBody) ProtoMessage() {}
+func (*TransactionResultBody) ProtoMessage() {}
 
-func (x *TransactionEventBody) ProtoReflect() protoreflect.Message {
+func (x *TransactionResultBody) ProtoReflect() protoreflect.Message {
 	mi := &file_mojave_v1_transaction_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -430,69 +513,152 @@ func (x *TransactionEventBody) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use TransactionEventBody.ProtoReflect.Descriptor instead.
-func (*TransactionEventBody) Descriptor() ([]byte, []int) {
+// Deprecated: Use TransactionResultBody.ProtoReflect.Descriptor instead.
+func (*TransactionResultBody) Descriptor() ([]byte, []int) {
 	return file_mojave_v1_transaction_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *TransactionEventBody) GetBody() isTransactionEventBody_Body {
+func (x *TransactionResultBody) GetBody() isTransactionResultBody_Body {
 	if x != nil {
 		return x.Body
 	}
 	return nil
 }
 
-func (x *TransactionEventBody) GetAccountCreated() *AccountCreatedEvent {
+func (x *TransactionResultBody) GetKeyValue() *KeyValueResult {
 	if x != nil {
-		if x, ok := x.Body.(*TransactionEventBody_AccountCreated); ok {
-			return x.AccountCreated
+		if x, ok := x.Body.(*TransactionResultBody_KeyValue); ok {
+			return x.KeyValue
 		}
 	}
 	return nil
 }
 
-type isTransactionEventBody_Body interface {
-	isTransactionEventBody_Body()
+func (x *TransactionResultBody) GetTokenTransfer() *TokenTransferResult {
+	if x != nil {
+		if x, ok := x.Body.(*TransactionResultBody_TokenTransfer); ok {
+			return x.TokenTransfer
+		}
+	}
+	return nil
 }
 
-type TransactionEventBody_AccountCreated struct {
-	AccountCreated *AccountCreatedEvent `protobuf:"bytes,1,opt,name=account_created,json=accountCreated,proto3,oneof"`
+type isTransactionResultBody_Body interface {
+	isTransactionResultBody_Body()
 }
 
-func (*TransactionEventBody_AccountCreated) isTransactionEventBody_Body() {}
+type TransactionResultBody_KeyValue struct {
+	KeyValue *KeyValueResult `protobuf:"bytes,1,opt,name=key_value,json=keyValue,proto3,oneof"`
+}
+
+type TransactionResultBody_TokenTransfer struct {
+	TokenTransfer *TokenTransferResult `protobuf:"bytes,2,opt,name=token_transfer,json=tokenTransfer,proto3,oneof"`
+}
+
+func (*TransactionResultBody_KeyValue) isTransactionResultBody_Body() {}
+
+func (*TransactionResultBody_TokenTransfer) isTransactionResultBody_Body() {}
+
+type TransactionResultError struct {
+	state         protoimpl.MessageState     `protogen:"open.v1"`
+	Code          TransactionResultErrorCode `protobuf:"varint,1,opt,name=code,proto3,enum=mojave.v1.TransactionResultErrorCode" json:"code,omitempty"`
+	Log           string                     `protobuf:"bytes,2,opt,name=log,proto3" json:"log,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TransactionResultError) Reset() {
+	*x = TransactionResultError{}
+	mi := &file_mojave_v1_transaction_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransactionResultError) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransactionResultError) ProtoMessage() {}
+
+func (x *TransactionResultError) ProtoReflect() protoreflect.Message {
+	mi := &file_mojave_v1_transaction_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransactionResultError.ProtoReflect.Descriptor instead.
+func (*TransactionResultError) Descriptor() ([]byte, []int) {
+	return file_mojave_v1_transaction_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *TransactionResultError) GetCode() TransactionResultErrorCode {
+	if x != nil {
+		return x.Code
+	}
+	return TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_UNSPECIFIED
+}
+
+func (x *TransactionResultError) GetLog() string {
+	if x != nil {
+		return x.Log
+	}
+	return ""
+}
 
 var File_mojave_v1_transaction_proto protoreflect.FileDescriptor
 
 const file_mojave_v1_transaction_proto_rawDesc = "" +
 	"\n" +
-	"\x1bmojave/v1/transaction.proto\x12\tmojave.v1\x1a\x17mojave/v1/account.proto\x1a\x12mojave/v1/kv.proto\x1a\x15mojave/v1/token.proto\"S\n" +
+	"\x1bmojave/v1/transaction.proto\x12\tmojave.v1\x1a\x12mojave/v1/kv.proto\x1a\x15mojave/v1/token.proto\"S\n" +
 	"\x11SignedTransaction\x12\x1c\n" +
 	"\tsignature\x18\x01 \x01(\fR\tsignature\x12 \n" +
 	"\vtransaction\x18\x02 \x01(\fR\vtransaction\"s\n" +
 	"\vTransaction\x124\n" +
 	"\x06header\x18\x01 \x01(\v2\x1c.mojave.v1.TransactionHeaderR\x06header\x12.\n" +
-	"\x04body\x18\x02 \x01(\v2\x1a.mojave.v1.TransactionBodyR\x04body\"\xd6\x01\n" +
+	"\x04body\x18\x02 \x01(\v2\x1a.mojave.v1.TransactionBodyR\x04body\"\xa1\x01\n" +
 	"\x11TransactionHeader\x12\x19\n" +
 	"\bchain_id\x18\x01 \x01(\tR\achainId\x12\x14\n" +
-	"\x05nonce\x18\x02 \x01(\tR\x05nonce\x12%\n" +
-	"\x0etimeout_height\x18\x03 \x01(\x04R\rtimeoutHeight\x12+\n" +
-	"\x11timeout_timestamp\x18\x04 \x01(\x04R\x10timeoutTimestamp\x12\x1b\n" +
-	"\tto_pubkey\x18\x05 \x01(\fR\btoPubkey\x12\x1f\n" +
-	"\vfrom_pubkey\x18\x06 \x01(\fR\n" +
-	"fromPubkey\"\xa6\x01\n" +
+	"\x05nonce\x18\x02 \x01(\tR\x05nonce\x12\x1f\n" +
+	"\vfrom_pubkey\x18\x03 \x01(\fR\n" +
+	"fromPubkey\x12\x1b\n" +
+	"\tto_pubkey\x18\x04 \x01(\fR\btoPubkey\x12\x1d\n" +
+	"\n" +
+	"watt_limit\x18\x05 \x01(\x04R\twattLimit\"\xa6\x01\n" +
 	"\x0fTransactionBody\x12=\n" +
 	"\tkey_value\x18\x01 \x01(\v2\x1e.mojave.v1.KeyValueTransactionH\x00R\bkeyValue\x12L\n" +
 	"\x0etoken_transfer\x18\x02 \x01(\v2#.mojave.v1.TokenTransferTransactionH\x00R\rtokenTransferB\x06\n" +
-	"\x04body\"\x82\x01\n" +
-	"\x10TransactionEvent\x129\n" +
-	"\x06header\x18\x01 \x01(\v2!.mojave.v1.TransactionEventHeaderR\x06header\x123\n" +
-	"\x04body\x18\x02 \x01(\v2\x1f.mojave.v1.TransactionEventBodyR\x04body\"T\n" +
-	"\x16TransactionEventHeader\x12\x17\n" +
+	"\x04body\"\xbe\x01\n" +
+	"\x11TransactionResult\x12:\n" +
+	"\x06header\x18\x01 \x01(\v2\".mojave.v1.TransactionResultHeaderR\x06header\x124\n" +
+	"\x04body\x18\x02 \x01(\v2 .mojave.v1.TransactionResultBodyR\x04body\x127\n" +
+	"\x05error\x18\x03 \x01(\v2!.mojave.v1.TransactionResultErrorR\x05error\"\xa5\x01\n" +
+	"\x17TransactionResultHeader\x12\x17\n" +
 	"\atx_hash\x18\x01 \x01(\tR\x06txHash\x12!\n" +
-	"\fblock_height\x18\x02 \x01(\tR\vblockHeight\"i\n" +
-	"\x14TransactionEventBody\x12I\n" +
-	"\x0faccount_created\x18\x01 \x01(\v2\x1e.mojave.v1.AccountCreatedEventH\x00R\x0eaccountCreatedB\x06\n" +
-	"\x04bodyB+Z)github.com/alecsavvy/mojave/gen/mojave/v1b\x06proto3"
+	"\fblock_height\x18\x02 \x01(\x04R\vblockHeight\x12\x19\n" +
+	"\bchain_id\x18\x03 \x01(\tR\achainId\x12\x14\n" +
+	"\x05nonce\x18\x04 \x01(\tR\x05nonce\x12\x1d\n" +
+	"\n" +
+	"watts_used\x18\x05 \x01(\x04R\twattsUsed\"\xa2\x01\n" +
+	"\x15TransactionResultBody\x128\n" +
+	"\tkey_value\x18\x01 \x01(\v2\x19.mojave.v1.KeyValueResultH\x00R\bkeyValue\x12G\n" +
+	"\x0etoken_transfer\x18\x02 \x01(\v2\x1e.mojave.v1.TokenTransferResultH\x00R\rtokenTransferB\x06\n" +
+	"\x04body\"e\n" +
+	"\x16TransactionResultError\x129\n" +
+	"\x04code\x18\x01 \x01(\x0e2%.mojave.v1.TransactionResultErrorCodeR\x04code\x12\x10\n" +
+	"\x03log\x18\x02 \x01(\tR\x03log*\xc6\x02\n" +
+	"\x1aTransactionResultErrorCode\x12-\n" +
+	")TRANSACTION_RESULT_ERROR_CODE_UNSPECIFIED\x10\x00\x12*\n" +
+	"&TRANSACTION_RESULT_ERROR_CODE_INTERNAL\x10\x01\x121\n" +
+	"-TRANSACTION_RESULT_ERROR_CODE_INVALID_REQUEST\x10\x02\x123\n" +
+	"/TRANSACTION_RESULT_ERROR_CODE_INVALID_SIGNATURE\x10\x03\x12/\n" +
+	"+TRANSACTION_RESULT_ERROR_CODE_INVALID_NONCE\x10\x04\x124\n" +
+	"0TRANSACTION_RESULT_ERROR_CODE_INVALID_WATT_LIMIT\x10\x05B+Z)github.com/alecsavvy/mojave/gen/mojave/v1b\x06proto3"
 
 var (
 	file_mojave_v1_transaction_proto_rawDescOnce sync.Once
@@ -506,32 +672,39 @@ func file_mojave_v1_transaction_proto_rawDescGZIP() []byte {
 	return file_mojave_v1_transaction_proto_rawDescData
 }
 
-var file_mojave_v1_transaction_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_mojave_v1_transaction_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_mojave_v1_transaction_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_mojave_v1_transaction_proto_goTypes = []any{
-	(*SignedTransaction)(nil),        // 0: mojave.v1.SignedTransaction
-	(*Transaction)(nil),              // 1: mojave.v1.Transaction
-	(*TransactionHeader)(nil),        // 2: mojave.v1.TransactionHeader
-	(*TransactionBody)(nil),          // 3: mojave.v1.TransactionBody
-	(*TransactionEvent)(nil),         // 4: mojave.v1.TransactionEvent
-	(*TransactionEventHeader)(nil),   // 5: mojave.v1.TransactionEventHeader
-	(*TransactionEventBody)(nil),     // 6: mojave.v1.TransactionEventBody
-	(*KeyValueTransaction)(nil),      // 7: mojave.v1.KeyValueTransaction
-	(*TokenTransferTransaction)(nil), // 8: mojave.v1.TokenTransferTransaction
-	(*AccountCreatedEvent)(nil),      // 9: mojave.v1.AccountCreatedEvent
+	(TransactionResultErrorCode)(0),  // 0: mojave.v1.TransactionResultErrorCode
+	(*SignedTransaction)(nil),        // 1: mojave.v1.SignedTransaction
+	(*Transaction)(nil),              // 2: mojave.v1.Transaction
+	(*TransactionHeader)(nil),        // 3: mojave.v1.TransactionHeader
+	(*TransactionBody)(nil),          // 4: mojave.v1.TransactionBody
+	(*TransactionResult)(nil),        // 5: mojave.v1.TransactionResult
+	(*TransactionResultHeader)(nil),  // 6: mojave.v1.TransactionResultHeader
+	(*TransactionResultBody)(nil),    // 7: mojave.v1.TransactionResultBody
+	(*TransactionResultError)(nil),   // 8: mojave.v1.TransactionResultError
+	(*KeyValueTransaction)(nil),      // 9: mojave.v1.KeyValueTransaction
+	(*TokenTransferTransaction)(nil), // 10: mojave.v1.TokenTransferTransaction
+	(*KeyValueResult)(nil),           // 11: mojave.v1.KeyValueResult
+	(*TokenTransferResult)(nil),      // 12: mojave.v1.TokenTransferResult
 }
 var file_mojave_v1_transaction_proto_depIdxs = []int32{
-	2, // 0: mojave.v1.Transaction.header:type_name -> mojave.v1.TransactionHeader
-	3, // 1: mojave.v1.Transaction.body:type_name -> mojave.v1.TransactionBody
-	7, // 2: mojave.v1.TransactionBody.key_value:type_name -> mojave.v1.KeyValueTransaction
-	8, // 3: mojave.v1.TransactionBody.token_transfer:type_name -> mojave.v1.TokenTransferTransaction
-	5, // 4: mojave.v1.TransactionEvent.header:type_name -> mojave.v1.TransactionEventHeader
-	6, // 5: mojave.v1.TransactionEvent.body:type_name -> mojave.v1.TransactionEventBody
-	9, // 6: mojave.v1.TransactionEventBody.account_created:type_name -> mojave.v1.AccountCreatedEvent
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	3,  // 0: mojave.v1.Transaction.header:type_name -> mojave.v1.TransactionHeader
+	4,  // 1: mojave.v1.Transaction.body:type_name -> mojave.v1.TransactionBody
+	9,  // 2: mojave.v1.TransactionBody.key_value:type_name -> mojave.v1.KeyValueTransaction
+	10, // 3: mojave.v1.TransactionBody.token_transfer:type_name -> mojave.v1.TokenTransferTransaction
+	6,  // 4: mojave.v1.TransactionResult.header:type_name -> mojave.v1.TransactionResultHeader
+	7,  // 5: mojave.v1.TransactionResult.body:type_name -> mojave.v1.TransactionResultBody
+	8,  // 6: mojave.v1.TransactionResult.error:type_name -> mojave.v1.TransactionResultError
+	11, // 7: mojave.v1.TransactionResultBody.key_value:type_name -> mojave.v1.KeyValueResult
+	12, // 8: mojave.v1.TransactionResultBody.token_transfer:type_name -> mojave.v1.TokenTransferResult
+	0,  // 9: mojave.v1.TransactionResultError.code:type_name -> mojave.v1.TransactionResultErrorCode
+	10, // [10:10] is the sub-list for method output_type
+	10, // [10:10] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_mojave_v1_transaction_proto_init() }
@@ -539,7 +712,6 @@ func file_mojave_v1_transaction_proto_init() {
 	if File_mojave_v1_transaction_proto != nil {
 		return
 	}
-	file_mojave_v1_account_proto_init()
 	file_mojave_v1_kv_proto_init()
 	file_mojave_v1_token_proto_init()
 	file_mojave_v1_transaction_proto_msgTypes[3].OneofWrappers = []any{
@@ -547,20 +719,22 @@ func file_mojave_v1_transaction_proto_init() {
 		(*TransactionBody_TokenTransfer)(nil),
 	}
 	file_mojave_v1_transaction_proto_msgTypes[6].OneofWrappers = []any{
-		(*TransactionEventBody_AccountCreated)(nil),
+		(*TransactionResultBody_KeyValue)(nil),
+		(*TransactionResultBody_TokenTransfer)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mojave_v1_transaction_proto_rawDesc), len(file_mojave_v1_transaction_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   7,
+			NumEnums:      1,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_mojave_v1_transaction_proto_goTypes,
 		DependencyIndexes: file_mojave_v1_transaction_proto_depIdxs,
+		EnumInfos:         file_mojave_v1_transaction_proto_enumTypes,
 		MessageInfos:      file_mojave_v1_transaction_proto_msgTypes,
 	}.Build()
 	File_mojave_v1_transaction_proto = out.File

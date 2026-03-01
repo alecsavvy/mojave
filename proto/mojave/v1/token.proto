@@ -9,3 +9,5 @@ message TokenTransferTransaction {
   bytes to_pubkey = 2;
   uint64 amount = 3;
 }
+
+message TokenTransferResult {}
