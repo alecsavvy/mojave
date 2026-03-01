@@ -10,11 +10,11 @@ import (
 )
 
 func accountKey(address string) []byte {
-	return []byte(fmt.Sprintf("account:%s", address))
+	return fmt.Appendf(nil, "account:%s", address)
 }
 
 func (s *Store) CreateAccount(ctx context.Context, batch *pebble.Batch, tx *v1.AccountState) error {
-	key := accountKey(tx.Address)
+	key := accountKey(tx.Pubkey)
 
 	value, err := proto.Marshal(tx)
 	if err != nil {

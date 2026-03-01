@@ -22,15 +22,14 @@ message TransactionHeader {
   string nonce = 2;
   uint64 timeout_height = 3;
   uint64 timeout_timestamp = 4;
-  string to_address = 5;
-  string from_address = 6;
+  bytes to_pubkey = 5;
+  bytes from_pubkey = 6;
 }
 
 message TransactionBody {
   oneof body {
     CreateAccountTransaction create_account = 1;
-    AssociatePubkeyTransaction associate_pubkey = 2;
-    KeyValueTransaction key_value = 3;
+    KeyValueTransaction key_value = 2;
   }
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	mcrypto "github.com/alecsavvy/mojave/crypto"
 	v1 "github.com/alecsavvy/mojave/gen/mojave/v1"
 	"github.com/alecsavvy/mojave/store"
 	"github.com/cockroachdb/pebble"
@@ -62,6 +63,16 @@ func (app *KVStoreApplication) Query(ctx context.Context, req *abcitypes.QueryRe
 }
 
 func (app *KVStoreApplication) CheckTx(_ context.Context, check *abcitypes.CheckTxRequest) (*abcitypes.CheckTxResponse, error) {
+	var signedTransaction v1.SignedTransaction
+	if err := proto.Unmarshal(check.Tx, &signedTransaction); err != nil {
+		return nil, err
+	}
+
+	_, err := mcrypto.VerifyTransaction(&signedTransaction)
+	if err != nil {
+		return &abcitypes.CheckTxResponse{Code: 1, Log: err.Error()}, nil
+	}
+
 	return &abcitypes.CheckTxResponse{Code: 0}, nil
 }
 
@@ -98,7 +109,7 @@ func (app *KVStoreApplication) FinalizeBlock(_ context.Context, req *abcitypes.F
 			case *v1.TransactionBody_CreateAccount:
 				createAccountTx := transaction.Body.GetCreateAccount()
 				account := &v1.AccountState{
-					Address: createAccountTx.Pubkey,
+					Pubkey: createAccountTx.Pubkey,
 				}
 				if err := app.store.CreateAccount(context.Background(), app.onGoingBlock, account); err != nil {
 					return nil, err

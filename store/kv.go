@@ -10,7 +10,7 @@ import (
 )
 
 func keyValueKey(key string) []byte {
-	return []byte(fmt.Sprintf("kv:%s", key))
+	return fmt.Appendf(nil, "kv:%s", key)
 }
 
 func (s *Store) SetKeyValue(ctx context.Context, batch *pebble.Batch, tx *v1.KeyValueState) error {
