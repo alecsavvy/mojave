@@ -99,22 +99,12 @@ func (app *KVStoreApplication) FinalizeBlock(_ context.Context, req *abcitypes.F
 				return nil, err
 			}
 
-			// TODO: Verify signature
-			var transaction v1.Transaction
-			if err := proto.Unmarshal(signedTransaction.Transaction, &transaction); err != nil {
+			transaction, err := mcrypto.VerifyTransaction(&signedTransaction)
+			if err != nil {
 				return nil, err
 			}
 
 			switch transaction.Body.Body.(type) {
-			case *v1.TransactionBody_CreateAccount:
-				createAccountTx := transaction.Body.GetCreateAccount()
-				account := &v1.AccountState{
-					Pubkey: createAccountTx.Pubkey,
-				}
-				if err := app.store.CreateAccount(context.Background(), app.onGoingBlock, account); err != nil {
-					return nil, err
-				}
-				return []abcitypes.Event{}, nil
 			case *v1.TransactionBody_KeyValue:
 				kvTx := transaction.Body.GetKeyValue()
 				kv := &v1.KeyValueState{
