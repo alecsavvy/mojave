@@ -15,7 +15,7 @@ import (
 
 type MojaveSDK struct {
 	privateKey ed25519.PrivateKey
-	rpcClient  *http.HTTP
+	*http.HTTP
 }
 
 func NewMojaveSDK(rpcURL string) (*MojaveSDK, error) {
@@ -24,7 +24,7 @@ func NewMojaveSDK(rpcURL string) (*MojaveSDK, error) {
 		return nil, err
 	}
 	return &MojaveSDK{
-		rpcClient: rpcClient,
+		HTTP: rpcClient,
 	}, nil
 }
 
@@ -89,7 +89,7 @@ func (sdk *MojaveSDK) sendTransaction(ctx context.Context, transaction *v1.Signe
 		return err
 	}
 
-	response, err := sdk.rpcClient.BroadcastTxCommit(ctx, txBytes)
+	response, err := sdk.HTTP.BroadcastTxCommit(ctx, txBytes)
 	if err != nil {
 		return err
 	}
@@ -104,7 +104,7 @@ func (sdk *MojaveSDK) sendQuery(ctx context.Context, query *v1.Query) (*v1.Query
 	if err != nil {
 		return nil, err
 	}
-	response, err := sdk.rpcClient.ABCIQuery(ctx, "", queryBytes)
+	response, err := sdk.HTTP.ABCIQuery(ctx, "", queryBytes)
 	if err != nil {
 		return nil, err
 	}
