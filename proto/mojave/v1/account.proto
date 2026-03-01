@@ -9,18 +9,13 @@ message CreateAccountTransaction {
 }
 
 message CreateAccountEvent {
-    string address = 1;
-}
-
-message AssociatePubkeyTransaction {
     string pubkey = 1;
 }
 
 message AccountState {
-    string address = 1;
-    repeated string pubkeys = 2;
+    string pubkey = 1;
 }
 
 message AccountStateQuery {
-    string address = 1;
+    string pubkey = 1;
 }

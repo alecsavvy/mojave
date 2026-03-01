@@ -67,7 +67,7 @@ func (x *CreateAccountTransaction) GetPubkey() string {
 
 type CreateAccountEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Address       string                 `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	Pubkey        string                 `protobuf:"bytes,1,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -102,51 +102,7 @@ func (*CreateAccountEvent) Descriptor() ([]byte, []int) {
 	return file_mojave_v1_account_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *CreateAccountEvent) GetAddress() string {
-	if x != nil {
-		return x.Address
-	}
-	return ""
-}
-
-type AssociatePubkeyTransaction struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Pubkey        string                 `protobuf:"bytes,1,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *AssociatePubkeyTransaction) Reset() {
-	*x = AssociatePubkeyTransaction{}
-	mi := &file_mojave_v1_account_proto_msgTypes[2]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *AssociatePubkeyTransaction) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*AssociatePubkeyTransaction) ProtoMessage() {}
-
-func (x *AssociatePubkeyTransaction) ProtoReflect() protoreflect.Message {
-	mi := &file_mojave_v1_account_proto_msgTypes[2]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use AssociatePubkeyTransaction.ProtoReflect.Descriptor instead.
-func (*AssociatePubkeyTransaction) Descriptor() ([]byte, []int) {
-	return file_mojave_v1_account_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *AssociatePubkeyTransaction) GetPubkey() string {
+func (x *CreateAccountEvent) GetPubkey() string {
 	if x != nil {
 		return x.Pubkey
 	}
@@ -155,15 +111,14 @@ func (x *AssociatePubkeyTransaction) GetPubkey() string {
 
 type AccountState struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Address       string                 `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
-	Pubkeys       []string               `protobuf:"bytes,2,rep,name=pubkeys,proto3" json:"pubkeys,omitempty"`
+	Pubkey        string                 `protobuf:"bytes,1,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *AccountState) Reset() {
 	*x = AccountState{}
-	mi := &file_mojave_v1_account_proto_msgTypes[3]
+	mi := &file_mojave_v1_account_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -175,7 +130,7 @@ func (x *AccountState) String() string {
 func (*AccountState) ProtoMessage() {}
 
 func (x *AccountState) ProtoReflect() protoreflect.Message {
-	mi := &file_mojave_v1_account_proto_msgTypes[3]
+	mi := &file_mojave_v1_account_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -188,33 +143,26 @@ func (x *AccountState) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccountState.ProtoReflect.Descriptor instead.
 func (*AccountState) Descriptor() ([]byte, []int) {
-	return file_mojave_v1_account_proto_rawDescGZIP(), []int{3}
+	return file_mojave_v1_account_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *AccountState) GetAddress() string {
+func (x *AccountState) GetPubkey() string {
 	if x != nil {
-		return x.Address
+		return x.Pubkey
 	}
 	return ""
 }
 
-func (x *AccountState) GetPubkeys() []string {
-	if x != nil {
-		return x.Pubkeys
-	}
-	return nil
-}
-
 type AccountStateQuery struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Address       string                 `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	Pubkey        string                 `protobuf:"bytes,1,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *AccountStateQuery) Reset() {
 	*x = AccountStateQuery{}
-	mi := &file_mojave_v1_account_proto_msgTypes[4]
+	mi := &file_mojave_v1_account_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -226,7 +174,7 @@ func (x *AccountStateQuery) String() string {
 func (*AccountStateQuery) ProtoMessage() {}
 
 func (x *AccountStateQuery) ProtoReflect() protoreflect.Message {
-	mi := &file_mojave_v1_account_proto_msgTypes[4]
+	mi := &file_mojave_v1_account_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -239,12 +187,12 @@ func (x *AccountStateQuery) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AccountStateQuery.ProtoReflect.Descriptor instead.
 func (*AccountStateQuery) Descriptor() ([]byte, []int) {
-	return file_mojave_v1_account_proto_rawDescGZIP(), []int{4}
+	return file_mojave_v1_account_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *AccountStateQuery) GetAddress() string {
+func (x *AccountStateQuery) GetPubkey() string {
 	if x != nil {
-		return x.Address
+		return x.Pubkey
 	}
 	return ""
 }
@@ -255,16 +203,13 @@ const file_mojave_v1_account_proto_rawDesc = "" +
 	"\n" +
 	"\x17mojave/v1/account.proto\x12\tmojave.v1\"2\n" +
 	"\x18CreateAccountTransaction\x12\x16\n" +
-	"\x06pubkey\x18\x01 \x01(\tR\x06pubkey\".\n" +
-	"\x12CreateAccountEvent\x12\x18\n" +
-	"\aaddress\x18\x01 \x01(\tR\aaddress\"4\n" +
-	"\x1aAssociatePubkeyTransaction\x12\x16\n" +
-	"\x06pubkey\x18\x01 \x01(\tR\x06pubkey\"B\n" +
-	"\fAccountState\x12\x18\n" +
-	"\aaddress\x18\x01 \x01(\tR\aaddress\x12\x18\n" +
-	"\apubkeys\x18\x02 \x03(\tR\apubkeys\"-\n" +
-	"\x11AccountStateQuery\x12\x18\n" +
-	"\aaddress\x18\x01 \x01(\tR\aaddressB+Z)github.com/alecsavvy/mojave/gen/mojave/v1b\x06proto3"
+	"\x06pubkey\x18\x01 \x01(\tR\x06pubkey\",\n" +
+	"\x12CreateAccountEvent\x12\x16\n" +
+	"\x06pubkey\x18\x01 \x01(\tR\x06pubkey\"&\n" +
+	"\fAccountState\x12\x16\n" +
+	"\x06pubkey\x18\x01 \x01(\tR\x06pubkey\"+\n" +
+	"\x11AccountStateQuery\x12\x16\n" +
+	"\x06pubkey\x18\x01 \x01(\tR\x06pubkeyB+Z)github.com/alecsavvy/mojave/gen/mojave/v1b\x06proto3"
 
 var (
 	file_mojave_v1_account_proto_rawDescOnce sync.Once
@@ -278,13 +223,12 @@ func file_mojave_v1_account_proto_rawDescGZIP() []byte {
 	return file_mojave_v1_account_proto_rawDescData
 }
 
-var file_mojave_v1_account_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_mojave_v1_account_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_mojave_v1_account_proto_goTypes = []any{
-	(*CreateAccountTransaction)(nil),   // 0: mojave.v1.CreateAccountTransaction
-	(*CreateAccountEvent)(nil),         // 1: mojave.v1.CreateAccountEvent
-	(*AssociatePubkeyTransaction)(nil), // 2: mojave.v1.AssociatePubkeyTransaction
-	(*AccountState)(nil),               // 3: mojave.v1.AccountState
-	(*AccountStateQuery)(nil),          // 4: mojave.v1.AccountStateQuery
+	(*CreateAccountTransaction)(nil), // 0: mojave.v1.CreateAccountTransaction
+	(*CreateAccountEvent)(nil),       // 1: mojave.v1.CreateAccountEvent
+	(*AccountState)(nil),             // 2: mojave.v1.AccountState
+	(*AccountStateQuery)(nil),        // 3: mojave.v1.AccountStateQuery
 }
 var file_mojave_v1_account_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -305,7 +249,7 @@ func file_mojave_v1_account_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mojave_v1_account_proto_rawDesc), len(file_mojave_v1_account_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
