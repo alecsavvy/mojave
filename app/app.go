@@ -83,7 +83,12 @@ func NewApp(cmtConfig *cfg.Config) (*App, error) {
 }
 
 func (a *App) Start() error {
-	a.node.Start()
+	if a.node.IsRunning() {
+		return nil
+	}
+	if err := a.node.Start(); err != nil {
+		return err
+	}
 	return nil
 }
 
