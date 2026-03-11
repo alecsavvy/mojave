@@ -19,6 +19,9 @@ import (
 type App struct {
 	logger *zap.SugaredLogger
 	node   *nm.Node
+
+	store        *store.Store
+	onGoingBlock *pebble.Batch
 }
 
 // NewApp starts a node from an already-initialized config. The caller must have
@@ -49,14 +52,18 @@ func NewApp(cmtConfig *cfg.Config) (*App, error) {
 	logger = logger.With("addr", addr)
 
 	appStore := store.NewStore(db)
-	abci := NewKVStoreApplication(logger, appStore)
+	app := &App{
+		logger:       logger,
+		store:        appStore,
+		onGoingBlock: nil,
+	}
 
 	node, err := nm.NewNode(
 		context.Background(),
 		cmtConfig,
 		pv,
 		nodeKey,
-		proxy.NewLocalClientCreator(abci),
+		proxy.NewLocalClientCreator(app),
 		nm.DefaultGenesisDocProviderFunc(cmtConfig),
 		cfg.DefaultDBProvider,
 		nm.DefaultMetricsProvider(cmtConfig.Instrumentation),
@@ -65,14 +72,14 @@ func NewApp(cmtConfig *cfg.Config) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	app.node = node
+
 	if err := node.Start(); err != nil {
 		return nil, err
 	}
 
-	return &App{
-		logger: logger,
-		node:   node,
-	}, nil
+	return app, nil
 }
 
 func (a *App) Start() error {
