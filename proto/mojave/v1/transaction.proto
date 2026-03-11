@@ -12,6 +12,16 @@ message SignedTransaction {
   bytes transaction = 2;
 }
 
+message SignedTransactionResult {
+  bytes signature = 1;
+  bytes transaction_result = 2;
+}
+
+message TransactionState {
+  bytes signed_transaction = 1;
+  bytes signed_transaction_result = 2;
+}
+
 message Transaction {
   TransactionHeader header = 1;
   TransactionBody body = 2;
@@ -44,6 +54,7 @@ message TransactionResultHeader {
   string chain_id = 3;
   string nonce = 4;
   uint64 watts_used = 5;
+  bytes proposer = 6;
 }
 
 message TransactionResultBody {
