@@ -75,10 +75,6 @@ func NewApp(cmtConfig *cfg.Config) (*App, error) {
 
 	app.node = node
 
-	if err := node.Start(); err != nil {
-		return nil, err
-	}
-
 	return app, nil
 }
 
