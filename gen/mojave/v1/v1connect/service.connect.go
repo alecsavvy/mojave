@@ -41,14 +41,21 @@ const (
 	ServiceGetKeyValueProcedure = "/mojave.v1.Service/GetKeyValue"
 	// ServiceGetAccountProcedure is the fully-qualified name of the Service's GetAccount RPC.
 	ServiceGetAccountProcedure = "/mojave.v1.Service/GetAccount"
+	// ServiceUploadFileProcedure is the fully-qualified name of the Service's UploadFile RPC.
+	ServiceUploadFileProcedure = "/mojave.v1.Service/UploadFile"
+	// ServiceGetFileProcedure is the fully-qualified name of the Service's GetFile RPC.
+	ServiceGetFileProcedure = "/mojave.v1.Service/GetFile"
 )
 
 // ServiceClient is a client for the mojave.v1.Service service.
 type ServiceClient interface {
 	SendTransaction(context.Context, *connect.Request[v1.SendTransactionRequest]) (*connect.Response[v1.SendTransactionResponse], error)
 	GetTransaction(context.Context, *connect.Request[v1.GetTransactionRequest]) (*connect.Response[v1.GetTransactionResponse], error)
+	// queries
 	GetKeyValue(context.Context, *connect.Request[v1.GetKeyValueRequest]) (*connect.Response[v1.GetKeyValueResponse], error)
 	GetAccount(context.Context, *connect.Request[v1.GetAccountRequest]) (*connect.Response[v1.GetAccountResponse], error)
+	UploadFile(context.Context, *connect.Request[v1.UploadFileRequest]) (*connect.Response[v1.UploadFileResponse], error)
+	GetFile(context.Context, *connect.Request[v1.GetFileRequest]) (*connect.Response[v1.GetFileResponse], error)
 }
 
 // NewServiceClient constructs a client for the mojave.v1.Service service. By default, it uses the
@@ -86,6 +93,18 @@ func NewServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...con
 			connect.WithSchema(serviceMethods.ByName("GetAccount")),
 			connect.WithClientOptions(opts...),
 		),
+		uploadFile: connect.NewClient[v1.UploadFileRequest, v1.UploadFileResponse](
+			httpClient,
+			baseURL+ServiceUploadFileProcedure,
+			connect.WithSchema(serviceMethods.ByName("UploadFile")),
+			connect.WithClientOptions(opts...),
+		),
+		getFile: connect.NewClient[v1.GetFileRequest, v1.GetFileResponse](
+			httpClient,
+			baseURL+ServiceGetFileProcedure,
+			connect.WithSchema(serviceMethods.ByName("GetFile")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -95,6 +114,8 @@ type serviceClient struct {
 	getTransaction  *connect.Client[v1.GetTransactionRequest, v1.GetTransactionResponse]
 	getKeyValue     *connect.Client[v1.GetKeyValueRequest, v1.GetKeyValueResponse]
 	getAccount      *connect.Client[v1.GetAccountRequest, v1.GetAccountResponse]
+	uploadFile      *connect.Client[v1.UploadFileRequest, v1.UploadFileResponse]
+	getFile         *connect.Client[v1.GetFileRequest, v1.GetFileResponse]
 }
 
 // SendTransaction calls mojave.v1.Service.SendTransaction.
@@ -117,12 +138,25 @@ func (c *serviceClient) GetAccount(ctx context.Context, req *connect.Request[v1.
 	return c.getAccount.CallUnary(ctx, req)
 }
 
+// UploadFile calls mojave.v1.Service.UploadFile.
+func (c *serviceClient) UploadFile(ctx context.Context, req *connect.Request[v1.UploadFileRequest]) (*connect.Response[v1.UploadFileResponse], error) {
+	return c.uploadFile.CallUnary(ctx, req)
+}
+
+// GetFile calls mojave.v1.Service.GetFile.
+func (c *serviceClient) GetFile(ctx context.Context, req *connect.Request[v1.GetFileRequest]) (*connect.Response[v1.GetFileResponse], error) {
+	return c.getFile.CallUnary(ctx, req)
+}
+
 // ServiceHandler is an implementation of the mojave.v1.Service service.
 type ServiceHandler interface {
 	SendTransaction(context.Context, *connect.Request[v1.SendTransactionRequest]) (*connect.Response[v1.SendTransactionResponse], error)
 	GetTransaction(context.Context, *connect.Request[v1.GetTransactionRequest]) (*connect.Response[v1.GetTransactionResponse], error)
+	// queries
 	GetKeyValue(context.Context, *connect.Request[v1.GetKeyValueRequest]) (*connect.Response[v1.GetKeyValueResponse], error)
 	GetAccount(context.Context, *connect.Request[v1.GetAccountRequest]) (*connect.Response[v1.GetAccountResponse], error)
+	UploadFile(context.Context, *connect.Request[v1.UploadFileRequest]) (*connect.Response[v1.UploadFileResponse], error)
+	GetFile(context.Context, *connect.Request[v1.GetFileRequest]) (*connect.Response[v1.GetFileResponse], error)
 }
 
 // NewServiceHandler builds an HTTP handler from the service implementation. It returns the path on
@@ -156,6 +190,18 @@ func NewServiceHandler(svc ServiceHandler, opts ...connect.HandlerOption) (strin
 		connect.WithSchema(serviceMethods.ByName("GetAccount")),
 		connect.WithHandlerOptions(opts...),
 	)
+	serviceUploadFileHandler := connect.NewUnaryHandler(
+		ServiceUploadFileProcedure,
+		svc.UploadFile,
+		connect.WithSchema(serviceMethods.ByName("UploadFile")),
+		connect.WithHandlerOptions(opts...),
+	)
+	serviceGetFileHandler := connect.NewUnaryHandler(
+		ServiceGetFileProcedure,
+		svc.GetFile,
+		connect.WithSchema(serviceMethods.ByName("GetFile")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/mojave.v1.Service/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case ServiceSendTransactionProcedure:
@@ -166,6 +212,10 @@ func NewServiceHandler(svc ServiceHandler, opts ...connect.HandlerOption) (strin
 			serviceGetKeyValueHandler.ServeHTTP(w, r)
 		case ServiceGetAccountProcedure:
 			serviceGetAccountHandler.ServeHTTP(w, r)
+		case ServiceUploadFileProcedure:
+			serviceUploadFileHandler.ServeHTTP(w, r)
+		case ServiceGetFileProcedure:
+			serviceGetFileHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -189,4 +239,12 @@ func (UnimplementedServiceHandler) GetKeyValue(context.Context, *connect.Request
 
 func (UnimplementedServiceHandler) GetAccount(context.Context, *connect.Request[v1.GetAccountRequest]) (*connect.Response[v1.GetAccountResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mojave.v1.Service.GetAccount is not implemented"))
+}
+
+func (UnimplementedServiceHandler) UploadFile(context.Context, *connect.Request[v1.UploadFileRequest]) (*connect.Response[v1.UploadFileResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mojave.v1.Service.UploadFile is not implemented"))
+}
+
+func (UnimplementedServiceHandler) GetFile(context.Context, *connect.Request[v1.GetFileRequest]) (*connect.Response[v1.GetFileResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("mojave.v1.Service.GetFile is not implemented"))
 }

@@ -389,11 +389,203 @@ func (x *GetAccountResponse) GetAccount() *AccountState {
 	return nil
 }
 
+type UploadFileRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	UploaderPubkey []byte                 `protobuf:"bytes,1,opt,name=uploader_pubkey,json=uploaderPubkey,proto3" json:"uploader_pubkey,omitempty"`
+	Signature      []byte                 `protobuf:"bytes,2,opt,name=signature,proto3" json:"signature,omitempty"`
+	FileData       []byte                 `protobuf:"bytes,3,opt,name=file_data,json=fileData,proto3" json:"file_data,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *UploadFileRequest) Reset() {
+	*x = UploadFileRequest{}
+	mi := &file_mojave_v1_service_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadFileRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadFileRequest) ProtoMessage() {}
+
+func (x *UploadFileRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_mojave_v1_service_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadFileRequest.ProtoReflect.Descriptor instead.
+func (*UploadFileRequest) Descriptor() ([]byte, []int) {
+	return file_mojave_v1_service_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *UploadFileRequest) GetUploaderPubkey() []byte {
+	if x != nil {
+		return x.UploaderPubkey
+	}
+	return nil
+}
+
+func (x *UploadFileRequest) GetSignature() []byte {
+	if x != nil {
+		return x.Signature
+	}
+	return nil
+}
+
+func (x *UploadFileRequest) GetFileData() []byte {
+	if x != nil {
+		return x.FileData
+	}
+	return nil
+}
+
+type UploadFileResponse struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	FileUploadResult *FileUploadResult      `protobuf:"bytes,1,opt,name=file_upload_result,json=fileUploadResult,proto3" json:"file_upload_result,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *UploadFileResponse) Reset() {
+	*x = UploadFileResponse{}
+	mi := &file_mojave_v1_service_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UploadFileResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UploadFileResponse) ProtoMessage() {}
+
+func (x *UploadFileResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_mojave_v1_service_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UploadFileResponse.ProtoReflect.Descriptor instead.
+func (*UploadFileResponse) Descriptor() ([]byte, []int) {
+	return file_mojave_v1_service_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *UploadFileResponse) GetFileUploadResult() *FileUploadResult {
+	if x != nil {
+		return x.FileUploadResult
+	}
+	return nil
+}
+
+type GetFileRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Infohash      string                 `protobuf:"bytes,1,opt,name=infohash,proto3" json:"infohash,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetFileRequest) Reset() {
+	*x = GetFileRequest{}
+	mi := &file_mojave_v1_service_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetFileRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetFileRequest) ProtoMessage() {}
+
+func (x *GetFileRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_mojave_v1_service_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetFileRequest.ProtoReflect.Descriptor instead.
+func (*GetFileRequest) Descriptor() ([]byte, []int) {
+	return file_mojave_v1_service_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *GetFileRequest) GetInfohash() string {
+	if x != nil {
+		return x.Infohash
+	}
+	return ""
+}
+
+type GetFileResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	File          *FileUploadTransaction `protobuf:"bytes,1,opt,name=file,proto3" json:"file,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetFileResponse) Reset() {
+	*x = GetFileResponse{}
+	mi := &file_mojave_v1_service_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetFileResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetFileResponse) ProtoMessage() {}
+
+func (x *GetFileResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_mojave_v1_service_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetFileResponse.ProtoReflect.Descriptor instead.
+func (*GetFileResponse) Descriptor() ([]byte, []int) {
+	return file_mojave_v1_service_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetFileResponse) GetFile() *FileUploadTransaction {
+	if x != nil {
+		return x.File
+	}
+	return nil
+}
+
 var File_mojave_v1_service_proto protoreflect.FileDescriptor
 
 const file_mojave_v1_service_proto_rawDesc = "" +
 	"\n" +
-	"\x17mojave/v1/service.proto\x12\tmojave.v1\x1a\x1bmojave/v1/transaction.proto\x1a\x12mojave/v1/kv.proto\x1a\x17mojave/v1/account.proto\"e\n" +
+	"\x17mojave/v1/service.proto\x12\tmojave.v1\x1a\x17mojave/v1/account.proto\x1a\x15mojave/v1/files.proto\x1a\x12mojave/v1/kv.proto\x1a\x1bmojave/v1/transaction.proto\"e\n" +
 	"\x16SendTransactionRequest\x12K\n" +
 	"\x12signed_transaction\x18\x01 \x01(\v2\x1c.mojave.v1.SignedTransactionR\x11signedTransaction\"\x7f\n" +
 	"\x17SendTransactionResponse\x12\x17\n" +
@@ -411,13 +603,26 @@ const file_mojave_v1_service_proto_rawDesc = "" +
 	"\x11GetAccountRequest\x12\x16\n" +
 	"\x06pubkey\x18\x01 \x01(\fR\x06pubkey\"G\n" +
 	"\x12GetAccountResponse\x121\n" +
-	"\aaccount\x18\x01 \x01(\v2\x17.mojave.v1.AccountStateR\aaccount2\xd3\x02\n" +
+	"\aaccount\x18\x01 \x01(\v2\x17.mojave.v1.AccountStateR\aaccount\"w\n" +
+	"\x11UploadFileRequest\x12'\n" +
+	"\x0fuploader_pubkey\x18\x01 \x01(\fR\x0euploaderPubkey\x12\x1c\n" +
+	"\tsignature\x18\x02 \x01(\fR\tsignature\x12\x1b\n" +
+	"\tfile_data\x18\x03 \x01(\fR\bfileData\"_\n" +
+	"\x12UploadFileResponse\x12I\n" +
+	"\x12file_upload_result\x18\x01 \x01(\v2\x1b.mojave.v1.FileUploadResultR\x10fileUploadResult\",\n" +
+	"\x0eGetFileRequest\x12\x1a\n" +
+	"\binfohash\x18\x01 \x01(\tR\binfohash\"G\n" +
+	"\x0fGetFileResponse\x124\n" +
+	"\x04file\x18\x01 \x01(\v2 .mojave.v1.FileUploadTransactionR\x04file2\xe0\x03\n" +
 	"\aService\x12X\n" +
 	"\x0fSendTransaction\x12!.mojave.v1.SendTransactionRequest\x1a\".mojave.v1.SendTransactionResponse\x12U\n" +
 	"\x0eGetTransaction\x12 .mojave.v1.GetTransactionRequest\x1a!.mojave.v1.GetTransactionResponse\x12L\n" +
 	"\vGetKeyValue\x12\x1d.mojave.v1.GetKeyValueRequest\x1a\x1e.mojave.v1.GetKeyValueResponse\x12I\n" +
 	"\n" +
-	"GetAccount\x12\x1c.mojave.v1.GetAccountRequest\x1a\x1d.mojave.v1.GetAccountResponseB+Z)github.com/alecsavvy/mojave/gen/mojave/v1b\x06proto3"
+	"GetAccount\x12\x1c.mojave.v1.GetAccountRequest\x1a\x1d.mojave.v1.GetAccountResponse\x12I\n" +
+	"\n" +
+	"UploadFile\x12\x1c.mojave.v1.UploadFileRequest\x1a\x1d.mojave.v1.UploadFileResponse\x12@\n" +
+	"\aGetFile\x12\x19.mojave.v1.GetFileRequest\x1a\x1a.mojave.v1.GetFileResponseB+Z)github.com/alecsavvy/mojave/gen/mojave/v1b\x06proto3"
 
 var (
 	file_mojave_v1_service_proto_rawDescOnce sync.Once
@@ -431,7 +636,7 @@ func file_mojave_v1_service_proto_rawDescGZIP() []byte {
 	return file_mojave_v1_service_proto_rawDescData
 }
 
-var file_mojave_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_mojave_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_mojave_v1_service_proto_goTypes = []any{
 	(*SendTransactionRequest)(nil),  // 0: mojave.v1.SendTransactionRequest
 	(*SendTransactionResponse)(nil), // 1: mojave.v1.SendTransactionResponse
@@ -441,32 +646,44 @@ var file_mojave_v1_service_proto_goTypes = []any{
 	(*GetKeyValueResponse)(nil),     // 5: mojave.v1.GetKeyValueResponse
 	(*GetAccountRequest)(nil),       // 6: mojave.v1.GetAccountRequest
 	(*GetAccountResponse)(nil),      // 7: mojave.v1.GetAccountResponse
-	(*SignedTransaction)(nil),       // 8: mojave.v1.SignedTransaction
-	(*TransactionResult)(nil),       // 9: mojave.v1.TransactionResult
-	(*Transaction)(nil),             // 10: mojave.v1.Transaction
-	(*KeyValueState)(nil),           // 11: mojave.v1.KeyValueState
-	(*AccountState)(nil),            // 12: mojave.v1.AccountState
+	(*UploadFileRequest)(nil),       // 8: mojave.v1.UploadFileRequest
+	(*UploadFileResponse)(nil),      // 9: mojave.v1.UploadFileResponse
+	(*GetFileRequest)(nil),          // 10: mojave.v1.GetFileRequest
+	(*GetFileResponse)(nil),         // 11: mojave.v1.GetFileResponse
+	(*SignedTransaction)(nil),       // 12: mojave.v1.SignedTransaction
+	(*TransactionResult)(nil),       // 13: mojave.v1.TransactionResult
+	(*Transaction)(nil),             // 14: mojave.v1.Transaction
+	(*KeyValueState)(nil),           // 15: mojave.v1.KeyValueState
+	(*AccountState)(nil),            // 16: mojave.v1.AccountState
+	(*FileUploadResult)(nil),        // 17: mojave.v1.FileUploadResult
+	(*FileUploadTransaction)(nil),   // 18: mojave.v1.FileUploadTransaction
 }
 var file_mojave_v1_service_proto_depIdxs = []int32{
-	8,  // 0: mojave.v1.SendTransactionRequest.signed_transaction:type_name -> mojave.v1.SignedTransaction
-	9,  // 1: mojave.v1.SendTransactionResponse.transaction_result:type_name -> mojave.v1.TransactionResult
-	10, // 2: mojave.v1.GetTransactionResponse.transaction:type_name -> mojave.v1.Transaction
-	9,  // 3: mojave.v1.GetTransactionResponse.transaction_result:type_name -> mojave.v1.TransactionResult
-	11, // 4: mojave.v1.GetKeyValueResponse.key_value:type_name -> mojave.v1.KeyValueState
-	12, // 5: mojave.v1.GetAccountResponse.account:type_name -> mojave.v1.AccountState
-	0,  // 6: mojave.v1.Service.SendTransaction:input_type -> mojave.v1.SendTransactionRequest
-	2,  // 7: mojave.v1.Service.GetTransaction:input_type -> mojave.v1.GetTransactionRequest
-	4,  // 8: mojave.v1.Service.GetKeyValue:input_type -> mojave.v1.GetKeyValueRequest
-	6,  // 9: mojave.v1.Service.GetAccount:input_type -> mojave.v1.GetAccountRequest
-	1,  // 10: mojave.v1.Service.SendTransaction:output_type -> mojave.v1.SendTransactionResponse
-	3,  // 11: mojave.v1.Service.GetTransaction:output_type -> mojave.v1.GetTransactionResponse
-	5,  // 12: mojave.v1.Service.GetKeyValue:output_type -> mojave.v1.GetKeyValueResponse
-	7,  // 13: mojave.v1.Service.GetAccount:output_type -> mojave.v1.GetAccountResponse
-	10, // [10:14] is the sub-list for method output_type
-	6,  // [6:10] is the sub-list for method input_type
-	6,  // [6:6] is the sub-list for extension type_name
-	6,  // [6:6] is the sub-list for extension extendee
-	0,  // [0:6] is the sub-list for field type_name
+	12, // 0: mojave.v1.SendTransactionRequest.signed_transaction:type_name -> mojave.v1.SignedTransaction
+	13, // 1: mojave.v1.SendTransactionResponse.transaction_result:type_name -> mojave.v1.TransactionResult
+	14, // 2: mojave.v1.GetTransactionResponse.transaction:type_name -> mojave.v1.Transaction
+	13, // 3: mojave.v1.GetTransactionResponse.transaction_result:type_name -> mojave.v1.TransactionResult
+	15, // 4: mojave.v1.GetKeyValueResponse.key_value:type_name -> mojave.v1.KeyValueState
+	16, // 5: mojave.v1.GetAccountResponse.account:type_name -> mojave.v1.AccountState
+	17, // 6: mojave.v1.UploadFileResponse.file_upload_result:type_name -> mojave.v1.FileUploadResult
+	18, // 7: mojave.v1.GetFileResponse.file:type_name -> mojave.v1.FileUploadTransaction
+	0,  // 8: mojave.v1.Service.SendTransaction:input_type -> mojave.v1.SendTransactionRequest
+	2,  // 9: mojave.v1.Service.GetTransaction:input_type -> mojave.v1.GetTransactionRequest
+	4,  // 10: mojave.v1.Service.GetKeyValue:input_type -> mojave.v1.GetKeyValueRequest
+	6,  // 11: mojave.v1.Service.GetAccount:input_type -> mojave.v1.GetAccountRequest
+	8,  // 12: mojave.v1.Service.UploadFile:input_type -> mojave.v1.UploadFileRequest
+	10, // 13: mojave.v1.Service.GetFile:input_type -> mojave.v1.GetFileRequest
+	1,  // 14: mojave.v1.Service.SendTransaction:output_type -> mojave.v1.SendTransactionResponse
+	3,  // 15: mojave.v1.Service.GetTransaction:output_type -> mojave.v1.GetTransactionResponse
+	5,  // 16: mojave.v1.Service.GetKeyValue:output_type -> mojave.v1.GetKeyValueResponse
+	7,  // 17: mojave.v1.Service.GetAccount:output_type -> mojave.v1.GetAccountResponse
+	9,  // 18: mojave.v1.Service.UploadFile:output_type -> mojave.v1.UploadFileResponse
+	11, // 19: mojave.v1.Service.GetFile:output_type -> mojave.v1.GetFileResponse
+	14, // [14:20] is the sub-list for method output_type
+	8,  // [8:14] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_mojave_v1_service_proto_init() }
@@ -474,16 +691,17 @@ func file_mojave_v1_service_proto_init() {
 	if File_mojave_v1_service_proto != nil {
 		return
 	}
-	file_mojave_v1_transaction_proto_init()
-	file_mojave_v1_kv_proto_init()
 	file_mojave_v1_account_proto_init()
+	file_mojave_v1_files_proto_init()
+	file_mojave_v1_kv_proto_init()
+	file_mojave_v1_transaction_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mojave_v1_service_proto_rawDesc), len(file_mojave_v1_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

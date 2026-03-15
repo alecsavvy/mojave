@@ -43,11 +43,14 @@ func VerifyTransaction(signedTransaction *v1.SignedTransaction) (*v1.Transaction
 	}
 
 	publicKey := ed25519.PublicKey(transaction.Header.FromPubkey)
-	hash := sha256.Sum256(signedTransaction.Transaction)
-	if !ed25519.Verify(publicKey, hash[:], signedTransaction.Signature) {
+	if !VerifySignature(publicKey, signedTransaction.Signature, signedTransaction.Transaction) {
 		return nil, errors.New("signature verification failed")
 	}
 
 	return &transaction, nil
 }
 
+func VerifySignature(publicKey ed25519.PublicKey, signature []byte, data []byte) bool {
+	hash := sha256.Sum256(data)
+	return ed25519.Verify(publicKey, hash[:], signature)
+}

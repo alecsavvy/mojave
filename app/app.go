@@ -29,6 +29,7 @@ type App struct {
 	rpc    *local.Local
 
 	store         *store.Store
+	localStore    *store.LocalStore
 	onGoingBlock  *pebble.Batch
 	connectServer *http.Server
 }
@@ -57,15 +58,23 @@ func NewApp(mojaveCfg *config.MojaveConfig) (*App, error) {
 		return nil, err
 	}
 
+	localDBPath := path.Join(cmtConfig.RootDir, "local-pebble")
+	localDB, err := pebble.Open(localDBPath, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	cmtLogger := cmtlog.NewNopLogger()
 
 	addr := pv.GetAddress().String()
 	logger = logger.With("addr", addr)
 
 	appStore := store.NewStore(db)
+	localStore := store.NewLocalStore(localDB)
 	app := &App{
 		logger:       logger,
 		store:        appStore,
+		localStore:   localStore,
 		onGoingBlock: nil,
 	}
 
