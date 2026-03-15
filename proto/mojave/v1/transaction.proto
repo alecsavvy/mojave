@@ -12,14 +12,9 @@ message SignedTransaction {
   bytes transaction = 2;
 }
 
-message SignedTransactionResult {
-  bytes signature = 1;
-  bytes transaction_result = 2;
-}
-
 message TransactionState {
   bytes signed_transaction = 1;
-  bytes signed_transaction_result = 2;
+  bytes transaction_result = 2;
 }
 
 message Transaction {
@@ -65,6 +60,7 @@ message TransactionResultBody {
 }
 
 enum TransactionResultErrorCode {
+  // No Error, Unspecified
   TRANSACTION_RESULT_ERROR_CODE_UNSPECIFIED = 0;
   TRANSACTION_RESULT_ERROR_CODE_INTERNAL = 1;
   TRANSACTION_RESULT_ERROR_CODE_INVALID_REQUEST = 2;

@@ -66,11 +66,11 @@ func (x *SendTransactionRequest) GetSignedTransaction() *SignedTransaction {
 }
 
 type SendTransactionResponse struct {
-	state                   protoimpl.MessageState   `protogen:"open.v1"`
-	TxHash                  string                   `protobuf:"bytes,1,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`
-	SignedTransactionResult *SignedTransactionResult `protobuf:"bytes,2,opt,name=signed_transaction_result,json=signedTransactionResult,proto3" json:"signed_transaction_result,omitempty"`
-	unknownFields           protoimpl.UnknownFields
-	sizeCache               protoimpl.SizeCache
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	TxHash            string                 `protobuf:"bytes,1,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`
+	TransactionResult *TransactionResult     `protobuf:"bytes,2,opt,name=transaction_result,json=transactionResult,proto3" json:"transaction_result,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
 }
 
 func (x *SendTransactionResponse) Reset() {
@@ -110,9 +110,9 @@ func (x *SendTransactionResponse) GetTxHash() string {
 	return ""
 }
 
-func (x *SendTransactionResponse) GetSignedTransactionResult() *SignedTransactionResult {
+func (x *SendTransactionResponse) GetTransactionResult() *TransactionResult {
 	if x != nil {
-		return x.SignedTransactionResult
+		return x.TransactionResult
 	}
 	return nil
 }
@@ -213,27 +213,27 @@ func (x *GetTransactionResponse) GetTransactionResult() *TransactionResult {
 	return nil
 }
 
-type GetTransactionStateRequest struct {
+type GetKeyValueRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	TxHash        string                 `protobuf:"bytes,1,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`
+	Key           string                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetTransactionStateRequest) Reset() {
-	*x = GetTransactionStateRequest{}
+func (x *GetKeyValueRequest) Reset() {
+	*x = GetKeyValueRequest{}
 	mi := &file_mojave_v1_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetTransactionStateRequest) String() string {
+func (x *GetKeyValueRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetTransactionStateRequest) ProtoMessage() {}
+func (*GetKeyValueRequest) ProtoMessage() {}
 
-func (x *GetTransactionStateRequest) ProtoReflect() protoreflect.Message {
+func (x *GetKeyValueRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_mojave_v1_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -245,39 +245,39 @@ func (x *GetTransactionStateRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetTransactionStateRequest.ProtoReflect.Descriptor instead.
-func (*GetTransactionStateRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetKeyValueRequest.ProtoReflect.Descriptor instead.
+func (*GetKeyValueRequest) Descriptor() ([]byte, []int) {
 	return file_mojave_v1_service_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *GetTransactionStateRequest) GetTxHash() string {
+func (x *GetKeyValueRequest) GetKey() string {
 	if x != nil {
-		return x.TxHash
+		return x.Key
 	}
 	return ""
 }
 
-type GetTransactionStateResponse struct {
-	state            protoimpl.MessageState `protogen:"open.v1"`
-	TransactionState *TransactionState      `protobuf:"bytes,1,opt,name=transaction_state,json=transactionState,proto3" json:"transaction_state,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+type GetKeyValueResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	KeyValue      *KeyValueState         `protobuf:"bytes,1,opt,name=key_value,json=keyValue,proto3" json:"key_value,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
-func (x *GetTransactionStateResponse) Reset() {
-	*x = GetTransactionStateResponse{}
+func (x *GetKeyValueResponse) Reset() {
+	*x = GetKeyValueResponse{}
 	mi := &file_mojave_v1_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *GetTransactionStateResponse) String() string {
+func (x *GetKeyValueResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*GetTransactionStateResponse) ProtoMessage() {}
+func (*GetKeyValueResponse) ProtoMessage() {}
 
-func (x *GetTransactionStateResponse) ProtoReflect() protoreflect.Message {
+func (x *GetKeyValueResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_mojave_v1_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -289,14 +289,102 @@ func (x *GetTransactionStateResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use GetTransactionStateResponse.ProtoReflect.Descriptor instead.
-func (*GetTransactionStateResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use GetKeyValueResponse.ProtoReflect.Descriptor instead.
+func (*GetKeyValueResponse) Descriptor() ([]byte, []int) {
 	return file_mojave_v1_service_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *GetTransactionStateResponse) GetTransactionState() *TransactionState {
+func (x *GetKeyValueResponse) GetKeyValue() *KeyValueState {
 	if x != nil {
-		return x.TransactionState
+		return x.KeyValue
+	}
+	return nil
+}
+
+type GetAccountRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Pubkey        []byte                 `protobuf:"bytes,1,opt,name=pubkey,proto3" json:"pubkey,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetAccountRequest) Reset() {
+	*x = GetAccountRequest{}
+	mi := &file_mojave_v1_service_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAccountRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAccountRequest) ProtoMessage() {}
+
+func (x *GetAccountRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_mojave_v1_service_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAccountRequest.ProtoReflect.Descriptor instead.
+func (*GetAccountRequest) Descriptor() ([]byte, []int) {
+	return file_mojave_v1_service_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetAccountRequest) GetPubkey() []byte {
+	if x != nil {
+		return x.Pubkey
+	}
+	return nil
+}
+
+type GetAccountResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Account       *AccountState          `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetAccountResponse) Reset() {
+	*x = GetAccountResponse{}
+	mi := &file_mojave_v1_service_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAccountResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAccountResponse) ProtoMessage() {}
+
+func (x *GetAccountResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_mojave_v1_service_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAccountResponse.ProtoReflect.Descriptor instead.
+func (*GetAccountResponse) Descriptor() ([]byte, []int) {
+	return file_mojave_v1_service_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *GetAccountResponse) GetAccount() *AccountState {
+	if x != nil {
+		return x.Account
 	}
 	return nil
 }
@@ -305,25 +393,31 @@ var File_mojave_v1_service_proto protoreflect.FileDescriptor
 
 const file_mojave_v1_service_proto_rawDesc = "" +
 	"\n" +
-	"\x17mojave/v1/service.proto\x12\tmojave.v1\x1a\x1bmojave/v1/transaction.proto\"e\n" +
+	"\x17mojave/v1/service.proto\x12\tmojave.v1\x1a\x1bmojave/v1/transaction.proto\x1a\x12mojave/v1/kv.proto\x1a\x17mojave/v1/account.proto\"e\n" +
 	"\x16SendTransactionRequest\x12K\n" +
-	"\x12signed_transaction\x18\x01 \x01(\v2\x1c.mojave.v1.SignedTransactionR\x11signedTransaction\"\x92\x01\n" +
+	"\x12signed_transaction\x18\x01 \x01(\v2\x1c.mojave.v1.SignedTransactionR\x11signedTransaction\"\x7f\n" +
 	"\x17SendTransactionResponse\x12\x17\n" +
-	"\atx_hash\x18\x01 \x01(\tR\x06txHash\x12^\n" +
-	"\x19signed_transaction_result\x18\x02 \x01(\v2\".mojave.v1.SignedTransactionResultR\x17signedTransactionResult\"0\n" +
+	"\atx_hash\x18\x01 \x01(\tR\x06txHash\x12K\n" +
+	"\x12transaction_result\x18\x02 \x01(\v2\x1c.mojave.v1.TransactionResultR\x11transactionResult\"0\n" +
 	"\x15GetTransactionRequest\x12\x17\n" +
 	"\atx_hash\x18\x01 \x01(\tR\x06txHash\"\x9f\x01\n" +
 	"\x16GetTransactionResponse\x128\n" +
 	"\vtransaction\x18\x01 \x01(\v2\x16.mojave.v1.TransactionR\vtransaction\x12K\n" +
-	"\x12transaction_result\x18\x02 \x01(\v2\x1c.mojave.v1.TransactionResultR\x11transactionResult\"5\n" +
-	"\x1aGetTransactionStateRequest\x12\x17\n" +
-	"\atx_hash\x18\x01 \x01(\tR\x06txHash\"g\n" +
-	"\x1bGetTransactionStateResponse\x12H\n" +
-	"\x11transaction_state\x18\x01 \x01(\v2\x1b.mojave.v1.TransactionStateR\x10transactionState2\xa0\x02\n" +
+	"\x12transaction_result\x18\x02 \x01(\v2\x1c.mojave.v1.TransactionResultR\x11transactionResult\"&\n" +
+	"\x12GetKeyValueRequest\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\"L\n" +
+	"\x13GetKeyValueResponse\x125\n" +
+	"\tkey_value\x18\x01 \x01(\v2\x18.mojave.v1.KeyValueStateR\bkeyValue\"+\n" +
+	"\x11GetAccountRequest\x12\x16\n" +
+	"\x06pubkey\x18\x01 \x01(\fR\x06pubkey\"G\n" +
+	"\x12GetAccountResponse\x121\n" +
+	"\aaccount\x18\x01 \x01(\v2\x17.mojave.v1.AccountStateR\aaccount2\xd3\x02\n" +
 	"\aService\x12X\n" +
 	"\x0fSendTransaction\x12!.mojave.v1.SendTransactionRequest\x1a\".mojave.v1.SendTransactionResponse\x12U\n" +
-	"\x0eGetTransaction\x12 .mojave.v1.GetTransactionRequest\x1a!.mojave.v1.GetTransactionResponse\x12d\n" +
-	"\x13GetTransactionState\x12%.mojave.v1.GetTransactionStateRequest\x1a&.mojave.v1.GetTransactionStateResponseB+Z)github.com/alecsavvy/mojave/gen/mojave/v1b\x06proto3"
+	"\x0eGetTransaction\x12 .mojave.v1.GetTransactionRequest\x1a!.mojave.v1.GetTransactionResponse\x12L\n" +
+	"\vGetKeyValue\x12\x1d.mojave.v1.GetKeyValueRequest\x1a\x1e.mojave.v1.GetKeyValueResponse\x12I\n" +
+	"\n" +
+	"GetAccount\x12\x1c.mojave.v1.GetAccountRequest\x1a\x1d.mojave.v1.GetAccountResponseB+Z)github.com/alecsavvy/mojave/gen/mojave/v1b\x06proto3"
 
 var (
 	file_mojave_v1_service_proto_rawDescOnce sync.Once
@@ -337,37 +431,42 @@ func file_mojave_v1_service_proto_rawDescGZIP() []byte {
 	return file_mojave_v1_service_proto_rawDescData
 }
 
-var file_mojave_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_mojave_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
 var file_mojave_v1_service_proto_goTypes = []any{
-	(*SendTransactionRequest)(nil),      // 0: mojave.v1.SendTransactionRequest
-	(*SendTransactionResponse)(nil),     // 1: mojave.v1.SendTransactionResponse
-	(*GetTransactionRequest)(nil),       // 2: mojave.v1.GetTransactionRequest
-	(*GetTransactionResponse)(nil),      // 3: mojave.v1.GetTransactionResponse
-	(*GetTransactionStateRequest)(nil),  // 4: mojave.v1.GetTransactionStateRequest
-	(*GetTransactionStateResponse)(nil), // 5: mojave.v1.GetTransactionStateResponse
-	(*SignedTransaction)(nil),           // 6: mojave.v1.SignedTransaction
-	(*SignedTransactionResult)(nil),     // 7: mojave.v1.SignedTransactionResult
-	(*Transaction)(nil),                 // 8: mojave.v1.Transaction
-	(*TransactionResult)(nil),           // 9: mojave.v1.TransactionResult
-	(*TransactionState)(nil),            // 10: mojave.v1.TransactionState
+	(*SendTransactionRequest)(nil),  // 0: mojave.v1.SendTransactionRequest
+	(*SendTransactionResponse)(nil), // 1: mojave.v1.SendTransactionResponse
+	(*GetTransactionRequest)(nil),   // 2: mojave.v1.GetTransactionRequest
+	(*GetTransactionResponse)(nil),  // 3: mojave.v1.GetTransactionResponse
+	(*GetKeyValueRequest)(nil),      // 4: mojave.v1.GetKeyValueRequest
+	(*GetKeyValueResponse)(nil),     // 5: mojave.v1.GetKeyValueResponse
+	(*GetAccountRequest)(nil),       // 6: mojave.v1.GetAccountRequest
+	(*GetAccountResponse)(nil),      // 7: mojave.v1.GetAccountResponse
+	(*SignedTransaction)(nil),       // 8: mojave.v1.SignedTransaction
+	(*TransactionResult)(nil),       // 9: mojave.v1.TransactionResult
+	(*Transaction)(nil),             // 10: mojave.v1.Transaction
+	(*KeyValueState)(nil),           // 11: mojave.v1.KeyValueState
+	(*AccountState)(nil),            // 12: mojave.v1.AccountState
 }
 var file_mojave_v1_service_proto_depIdxs = []int32{
-	6,  // 0: mojave.v1.SendTransactionRequest.signed_transaction:type_name -> mojave.v1.SignedTransaction
-	7,  // 1: mojave.v1.SendTransactionResponse.signed_transaction_result:type_name -> mojave.v1.SignedTransactionResult
-	8,  // 2: mojave.v1.GetTransactionResponse.transaction:type_name -> mojave.v1.Transaction
+	8,  // 0: mojave.v1.SendTransactionRequest.signed_transaction:type_name -> mojave.v1.SignedTransaction
+	9,  // 1: mojave.v1.SendTransactionResponse.transaction_result:type_name -> mojave.v1.TransactionResult
+	10, // 2: mojave.v1.GetTransactionResponse.transaction:type_name -> mojave.v1.Transaction
 	9,  // 3: mojave.v1.GetTransactionResponse.transaction_result:type_name -> mojave.v1.TransactionResult
-	10, // 4: mojave.v1.GetTransactionStateResponse.transaction_state:type_name -> mojave.v1.TransactionState
-	0,  // 5: mojave.v1.Service.SendTransaction:input_type -> mojave.v1.SendTransactionRequest
-	2,  // 6: mojave.v1.Service.GetTransaction:input_type -> mojave.v1.GetTransactionRequest
-	4,  // 7: mojave.v1.Service.GetTransactionState:input_type -> mojave.v1.GetTransactionStateRequest
-	1,  // 8: mojave.v1.Service.SendTransaction:output_type -> mojave.v1.SendTransactionResponse
-	3,  // 9: mojave.v1.Service.GetTransaction:output_type -> mojave.v1.GetTransactionResponse
-	5,  // 10: mojave.v1.Service.GetTransactionState:output_type -> mojave.v1.GetTransactionStateResponse
-	8,  // [8:11] is the sub-list for method output_type
-	5,  // [5:8] is the sub-list for method input_type
-	5,  // [5:5] is the sub-list for extension type_name
-	5,  // [5:5] is the sub-list for extension extendee
-	0,  // [0:5] is the sub-list for field type_name
+	11, // 4: mojave.v1.GetKeyValueResponse.key_value:type_name -> mojave.v1.KeyValueState
+	12, // 5: mojave.v1.GetAccountResponse.account:type_name -> mojave.v1.AccountState
+	0,  // 6: mojave.v1.Service.SendTransaction:input_type -> mojave.v1.SendTransactionRequest
+	2,  // 7: mojave.v1.Service.GetTransaction:input_type -> mojave.v1.GetTransactionRequest
+	4,  // 8: mojave.v1.Service.GetKeyValue:input_type -> mojave.v1.GetKeyValueRequest
+	6,  // 9: mojave.v1.Service.GetAccount:input_type -> mojave.v1.GetAccountRequest
+	1,  // 10: mojave.v1.Service.SendTransaction:output_type -> mojave.v1.SendTransactionResponse
+	3,  // 11: mojave.v1.Service.GetTransaction:output_type -> mojave.v1.GetTransactionResponse
+	5,  // 12: mojave.v1.Service.GetKeyValue:output_type -> mojave.v1.GetKeyValueResponse
+	7,  // 13: mojave.v1.Service.GetAccount:output_type -> mojave.v1.GetAccountResponse
+	10, // [10:14] is the sub-list for method output_type
+	6,  // [6:10] is the sub-list for method input_type
+	6,  // [6:6] is the sub-list for extension type_name
+	6,  // [6:6] is the sub-list for extension extendee
+	0,  // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_mojave_v1_service_proto_init() }
@@ -376,13 +475,15 @@ func file_mojave_v1_service_proto_init() {
 		return
 	}
 	file_mojave_v1_transaction_proto_init()
+	file_mojave_v1_kv_proto_init()
+	file_mojave_v1_account_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_mojave_v1_service_proto_rawDesc), len(file_mojave_v1_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   8,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

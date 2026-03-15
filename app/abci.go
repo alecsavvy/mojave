@@ -7,19 +7,10 @@ import (
 
 	mcrypto "github.com/alecsavvy/mojave/crypto"
 	v1 "github.com/alecsavvy/mojave/gen/mojave/v1"
-	"github.com/alecsavvy/mojave/store"
 	"github.com/alecsavvy/mojave/utils"
-	"github.com/cockroachdb/pebble"
 	abcitypes "github.com/cometbft/cometbft/abci/types"
-	"go.uber.org/zap"
 	"google.golang.org/protobuf/proto"
 )
-
-type MojaveABCI struct {
-	logger       *zap.SugaredLogger
-	store        *store.Store
-	onGoingBlock *pebble.Batch
-}
 
 var _ abcitypes.Application = (*App)(nil)
 
@@ -111,7 +102,7 @@ func (app *App) FinalizeBlock(_ context.Context, req *abcitypes.FinalizeBlockReq
 	var txs = make([]*abcitypes.ExecTxResult, len(req.Txs))
 	app.onGoingBlock = app.store.NewBatch()
 	for i, tx := range req.Txs {
-		txHash := utils.Hash(tx)
+		txHash := utils.HashHex(tx)
 		txResult := func(tx []byte) *v1.TransactionResult {
 			var signedTransaction v1.SignedTransaction
 			if err := proto.Unmarshal(tx, &signedTransaction); err != nil {
@@ -227,7 +218,7 @@ func (app *App) FinalizeBlock(_ context.Context, req *abcitypes.FinalizeBlockReq
 			}
 		}(tx)
 
-		txResultBytes, err := proto.Marshal(txResult)
+		txResultBytes, err := proto.MarshalOptions{Deterministic: true}.Marshal(txResult)
 		if err != nil {
 			return nil, err
 		}

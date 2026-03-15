@@ -14,8 +14,8 @@ import (
 )
 
 type TestApp struct {
-	config *cfg.Config
-	app    *app.App
+	connectAddr string
+	app         *app.App
 }
 
 func StartTestApp(ctx context.Context, homeDir string) *TestApp {
@@ -26,7 +26,11 @@ func StartTestApp(ctx context.Context, homeDir string) *TestApp {
 		panic(err)
 	}
 
-	a, err := app.NewApp(cmtConfig)
+	mojaveConfig := &config.MojaveConfig{
+		CometConfig:    cmtConfig,
+		ConnectRPCAddr: "127.0.0.1:9090",
+	}
+	a, err := app.NewApp(mojaveConfig)
 	if err != nil {
 		panic(err)
 	}
@@ -36,8 +40,8 @@ func StartTestApp(ctx context.Context, homeDir string) *TestApp {
 	}
 
 	testApp := &TestApp{
-		config: cmtConfig,
-		app:    a,
+		connectAddr: "http://127.0.0.1:9090",
+		app:         a,
 	}
 
 	if err := testApp.AwaitBlockHeight(ctx, 1); err != nil {
@@ -53,13 +57,13 @@ func (node *TestApp) SDK() *sdk.MojaveSDK {
 	if err != nil {
 		panic(err)
 	}
-	sdk, err := sdk.NewMojaveSDK(node.config.RPC.ListenAddress)
+	s, err := sdk.NewMojaveSDK(node.connectAddr)
 	if err != nil {
 		panic(err)
 	}
 
-	sdk.SetPrivateKey(privKey)
-	return sdk
+	s.SetPrivateKey(privKey)
+	return s
 }
 
 func (node *TestApp) Start() error {
@@ -74,18 +78,17 @@ func (node *TestApp) Stop() error {
 }
 
 func (node *TestApp) AwaitBlockHeight(ctx context.Context, height int64) error {
-	sdk := node.SDK()
 	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		case <-time.After(100 * time.Millisecond):
 		}
-		res, err := sdk.Status(ctx)
+		latest, err := node.app.LatestBlockHeight(ctx)
 		if err != nil {
-			return err
+			continue
 		}
-		if res.SyncInfo.LatestBlockHeight >= height {
+		if latest >= height {
 			return nil
 		}
 	}

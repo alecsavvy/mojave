@@ -52,7 +52,11 @@ var runCmd = &cli.Command{
 			return err
 		}
 
-		a, err := app.NewApp(cmtConfig)
+		mojaveConfig := &config.MojaveConfig{
+			CometConfig:    cmtConfig,
+			ConnectRPCAddr: "0.0.0.0:9090",
+		}
+		a, err := app.NewApp(mojaveConfig)
 		if err != nil {
 			return fmt.Errorf("failed to create app: %w", err)
 		}
@@ -120,6 +124,13 @@ var testnetCmd = &cli.Command{
 			}
 		}
 
+		// connectPorts are assigned separately since they live in a different range
+		// from the CometBFT ports: node0=9090, node1=9094, ...
+		connectPorts := make([]int, n)
+		for i := range n {
+			connectPorts[i] = 9090 + i*4
+		}
+
 		// 2) Set persistent_peers on each config
 		for i := range n {
 			var peers []string
@@ -156,10 +167,13 @@ var testnetCmd = &cli.Command{
 		var wg sync.WaitGroup
 		for i := range n {
 			wg.Add(1)
-			nodeConfig := nodes[i].config
+			mojaveConfig := &config.MojaveConfig{
+				CometConfig:    nodes[i].config,
+				ConnectRPCAddr: fmt.Sprintf("0.0.0.0:%d", connectPorts[i]),
+			}
 			go func() {
 				defer wg.Done()
-				a, err := app.NewApp(nodeConfig)
+				a, err := app.NewApp(mojaveConfig)
 				if err != nil {
 					log.Fatalf("failed to create app: %v", err)
 				}
