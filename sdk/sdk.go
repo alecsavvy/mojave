@@ -4,28 +4,23 @@ import (
 	"context"
 	"crypto/ed25519"
 	"errors"
+	"net/http"
 
-	"github.com/cometbft/cometbft/rpc/client/http"
-	"google.golang.org/protobuf/proto"
-
+	"connectrpc.com/connect"
 	mcrypto "github.com/alecsavvy/mojave/crypto"
 	v1 "github.com/alecsavvy/mojave/gen/mojave/v1"
+	"github.com/alecsavvy/mojave/gen/mojave/v1/v1connect"
 	"github.com/alecsavvy/mojave/utils"
 )
 
 type MojaveSDK struct {
 	privateKey ed25519.PrivateKey
-	*http.HTTP
+	client     v1connect.ServiceClient
 }
 
-func NewMojaveSDK(rpcURL string) (*MojaveSDK, error) {
-	rpcClient, err := http.New(rpcURL)
-	if err != nil {
-		return nil, err
-	}
-	return &MojaveSDK{
-		HTTP: rpcClient,
-	}, nil
+func NewMojaveSDK(connectURL string) (*MojaveSDK, error) {
+	client := v1connect.NewServiceClient(http.DefaultClient, connectURL)
+	return &MojaveSDK{client: client}, nil
 }
 
 func (sdk *MojaveSDK) SetPrivateKey(privateKey ed25519.PrivateKey) {
@@ -74,33 +69,19 @@ func (sdk *MojaveSDK) SetKeyValue(ctx context.Context, key string, value string)
 }
 
 func (sdk *MojaveSDK) GetKeyValue(ctx context.Context, key string) (*v1.KeyValueState, error) {
-	query := &v1.Query{
-		Query: &v1.Query_KeyValue{
-			KeyValue: &v1.KeyValueQuery{Key: key},
-		},
-	}
-
-	response, err := sdk.sendQuery(ctx, query)
+	res, err := sdk.client.GetKeyValue(ctx, connect.NewRequest(&v1.GetKeyValueRequest{Key: key}))
 	if err != nil {
 		return nil, err
 	}
-
-	return response.GetKeyValue(), nil
+	return res.Msg.KeyValue, nil
 }
 
 func (sdk *MojaveSDK) GetAccount(ctx context.Context, pubkey []byte) (*v1.AccountState, error) {
-	query := &v1.Query{
-		Query: &v1.Query_Account{
-			Account: &v1.AccountStateQuery{Pubkey: pubkey},
-		},
-	}
-
-	response, err := sdk.sendQuery(ctx, query)
+	res, err := sdk.client.GetAccount(ctx, connect.NewRequest(&v1.GetAccountRequest{Pubkey: pubkey}))
 	if err != nil {
 		return nil, err
 	}
-
-	return response.GetAccount(), nil
+	return res.Msg.Account, nil
 }
 
 func (sdk *MojaveSDK) TransferTokens(ctx context.Context, fromPubkey []byte, toPubkey []byte, amount uint64) (*v1.TokenTransferResult, error) {
@@ -139,45 +120,17 @@ func (sdk *MojaveSDK) FaucetTokens(ctx context.Context, toPubkey []byte, amount 
 }
 
 func (sdk *MojaveSDK) sendTransaction(ctx context.Context, transaction *v1.SignedTransaction) (*v1.TransactionResult, error) {
-	txBytes, err := proto.Marshal(transaction)
+	res, err := sdk.client.SendTransaction(ctx, connect.NewRequest(&v1.SendTransactionRequest{
+		SignedTransaction: transaction,
+	}))
 	if err != nil {
 		return nil, err
 	}
 
-	response, err := sdk.HTTP.BroadcastTxCommit(ctx, txBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	resultBytes := response.TxResult.Data
-
-	result := &v1.TransactionResult{}
-	if err := proto.Unmarshal(resultBytes, result); err != nil {
-		return nil, err
-	}
-
-	resultCode := response.TxResult.Code
-
-	if resultCode != 0 {
+	result := res.Msg.TransactionResult
+	if result.Error != nil && result.Error.Code != v1.TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_UNSPECIFIED {
 		return result, errors.New(result.Error.Log)
 	}
 
 	return result, nil
-}
-
-func (sdk *MojaveSDK) sendQuery(ctx context.Context, query *v1.Query) (*v1.QueryResponse, error) {
-	queryBytes, err := proto.Marshal(query)
-	if err != nil {
-		return nil, err
-	}
-	response, err := sdk.HTTP.ABCIQuery(ctx, "", queryBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	queryResponse := &v1.QueryResponse{}
-	if err := proto.Unmarshal(response.Response.Value, queryResponse); err != nil {
-		return nil, err
-	}
-	return queryResponse, nil
 }

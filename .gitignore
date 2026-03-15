@@ -1,5 +1,6 @@
 .task
 tmp
+mojave
 
 **/.DS_Store
 **/node_modules

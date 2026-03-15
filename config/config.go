@@ -15,6 +15,12 @@ import (
 	cmttime "github.com/cometbft/cometbft/types/time"
 )
 
+// MojaveConfig wraps the CometBFT node config and adds Mojave-specific settings.
+type MojaveConfig struct {
+	CometConfig    *cfg.Config
+	ConnectRPCAddr string // e.g. "0.0.0.0:9090"
+}
+
 // GenValidatorKeys creates config/data dirs and generates priv val + node key only.
 // It does not write config.toml or genesis. Used by testnet to get node IDs before setting persistent_peers.
 func GenValidatorKeys(config *cfg.Config) (*privval.FilePV, *p2p.NodeKey, crypto.PubKey, error) {

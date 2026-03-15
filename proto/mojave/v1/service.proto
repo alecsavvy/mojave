@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package mojave.v1;
+
+import "mojave/v1/transaction.proto";
+import "mojave/v1/kv.proto";
+import "mojave/v1/account.proto";
+
+option go_package = "github.com/alecsavvy/mojave/gen/mojave/v1";
+
+service Service {
+  rpc SendTransaction(SendTransactionRequest) returns (SendTransactionResponse);
+  rpc GetTransaction(GetTransactionRequest) returns (GetTransactionResponse);
+  rpc GetKeyValue(GetKeyValueRequest) returns (GetKeyValueResponse);
+  rpc GetAccount(GetAccountRequest) returns (GetAccountResponse);
+}
+
+message SendTransactionRequest {
+  SignedTransaction signed_transaction = 1;
+}
+
+message SendTransactionResponse {
+  string tx_hash = 1;
+  TransactionResult transaction_result = 2;
+}
+
+message GetTransactionRequest {
+  string tx_hash = 1;
+}
+
+message GetTransactionResponse {
+  Transaction transaction = 1;
+  TransactionResult transaction_result = 2;
+}
+
+message GetKeyValueRequest {
+  string key = 1;
+}
+
+message GetKeyValueResponse {
+  KeyValueState key_value = 1;
+}
+
+message GetAccountRequest {
+  bytes pubkey = 1;
+}
+
+message GetAccountResponse {
+  AccountState account = 1;
+}

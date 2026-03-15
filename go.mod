@@ -3,13 +3,15 @@ module github.com/alecsavvy/mojave
 go 1.25.4
 
 require (
+	connectrpc.com/connect v1.19.1
 	github.com/cockroachdb/pebble v1.1.4
 	github.com/cometbft/cometbft v1.0.1
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/stretchr/testify v1.11.1
 	github.com/urfave/cli/v3 v3.6.2
 	go.uber.org/zap v1.27.1
-	google.golang.org/protobuf v1.36.7
+	golang.org/x/net v0.43.0
+	google.golang.org/protobuf v1.36.9
 )
 
 require (
@@ -75,7 +77,6 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.41.0 // indirect
 	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8 // indirect
-	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/sys v0.35.0 // indirect
 	golang.org/x/text v0.28.0 // indirect
