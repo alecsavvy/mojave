@@ -17,8 +17,10 @@ import (
 
 // MojaveConfig wraps the CometBFT node config and adds Mojave-specific settings.
 type MojaveConfig struct {
-	CometConfig    *cfg.Config
-	ConnectRPCAddr string // e.g. "0.0.0.0:9090"
+	CometConfig     *cfg.Config
+	ConnectRPCAddr  string // e.g. "0.0.0.0:9090"
+	FilesTmpDir     string // e.g. "/mojave/tmp"
+	FilesStorageDir string // e.g. "/mojave/storage"
 }
 
 // GenValidatorKeys creates config/data dirs and generates priv val + node key only.

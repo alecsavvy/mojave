@@ -208,6 +208,32 @@ func (app *App) FinalizeBlock(_ context.Context, req *abcitypes.FinalizeBlockReq
 						},
 					},
 				}
+			case *v1.TransactionBody_FileUpload:
+				uploadTx := transaction.Body.GetFileUpload()
+				if err := app.store.SetFileUpload(context.Background(), app.onGoingBlock, uploadTx); err != nil {
+					return &v1.TransactionResult{
+						Error: &v1.TransactionResultError{
+							Code: v1.TransactionResultErrorCode_TRANSACTION_RESULT_ERROR_CODE_INTERNAL,
+							Log:  err.Error(),
+						},
+					}
+				}
+				return &v1.TransactionResult{
+					Header: &v1.TransactionResultHeader{
+						TxHash:      txHash,
+						BlockHeight: uint64(req.Height),
+						ChainId:     transaction.Header.ChainId,
+						Nonce:       transaction.Header.Nonce,
+					},
+					Body: &v1.TransactionResultBody{
+						Body: &v1.TransactionResultBody_FileUpload{
+							FileUpload: &v1.FileUploadResult{
+								Infohash: uploadTx.Infohash,
+								FileSize: uploadTx.FileSize,
+							},
+						},
+					},
+				}
 			default:
 				return &v1.TransactionResult{
 					Error: &v1.TransactionResultError{

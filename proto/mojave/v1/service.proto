@@ -2,17 +2,23 @@ syntax = "proto3";
 
 package mojave.v1;
 
-import "mojave/v1/transaction.proto";
-import "mojave/v1/kv.proto";
 import "mojave/v1/account.proto";
+import "mojave/v1/kv.proto";
+import "mojave/v1/transaction.proto";
+import "mojave/v1/upload.proto";
 
 option go_package = "github.com/alecsavvy/mojave/gen/mojave/v1";
 
 service Service {
   rpc SendTransaction(SendTransactionRequest) returns (SendTransactionResponse);
   rpc GetTransaction(GetTransactionRequest) returns (GetTransactionResponse);
+
+  // queries
   rpc GetKeyValue(GetKeyValueRequest) returns (GetKeyValueResponse);
   rpc GetAccount(GetAccountRequest) returns (GetAccountResponse);
+
+  rpc UploadFile(UploadFileRequest) returns (UploadFileResponse);
+  rpc GetFile(GetFileRequest) returns (GetFileResponse);
 }
 
 message SendTransactionRequest {
@@ -47,4 +53,24 @@ message GetAccountRequest {
 
 message GetAccountResponse {
   AccountState account = 1;
+}
+
+message UploadFileRequest {
+  bytes uploader_pubkey = 1;
+  bytes signature = 2;
+  bytes file_hash = 3;
+  bytes file_data = 4;
+}
+
+message UploadFileResponse {
+  FileUploadResult file_upload_result = 1;
+}
+
+message GetFileRequest {
+  string infohash = 1;
+}
+
+message GetFileResponse {
+  FileUploadTransaction file = 1;
+  string magnet_uri = 2;  // deterministic: magnet:?xt=urn:btih:<infohash>
 }

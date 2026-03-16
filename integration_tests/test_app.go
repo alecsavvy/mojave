@@ -5,6 +5,8 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"fmt"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/alecsavvy/mojave/app"
@@ -26,9 +28,23 @@ func StartTestApp(ctx context.Context, homeDir string) *TestApp {
 		panic(err)
 	}
 
+	// Blob buckets: upload writes final TDF to storageBucket; temp file goes to RootDir/upload-tmp.
+	dataTmp := filepath.Join(homeDir, "data", "tmp")
+	dataStorage := filepath.Join(homeDir, "data", "audio")
+	if err := os.MkdirAll(dataTmp, 0755); err != nil {
+		panic(err)
+	}
+	if err := os.MkdirAll(dataStorage, 0755); err != nil {
+		panic(err)
+	}
+	absTmp, _ := filepath.Abs(dataTmp)
+	absStorage, _ := filepath.Abs(dataStorage)
+
 	mojaveConfig := &config.MojaveConfig{
-		CometConfig:    cmtConfig,
-		ConnectRPCAddr: "127.0.0.1:9090",
+		CometConfig:     cmtConfig,
+		ConnectRPCAddr:  "127.0.0.1:9090",
+		FilesTmpDir:     "file://" + absTmp,
+		FilesStorageDir: "file://" + absStorage,
 	}
 	a, err := app.NewApp(mojaveConfig)
 	if err != nil {

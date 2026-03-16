@@ -318,6 +318,7 @@ type TransactionBody struct {
 	//
 	//	*TransactionBody_KeyValue
 	//	*TransactionBody_TokenTransfer
+	//	*TransactionBody_FileUpload
 	Body          isTransactionBody_Body `protobuf_oneof:"body"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -378,6 +379,15 @@ func (x *TransactionBody) GetTokenTransfer() *TokenTransferTransaction {
 	return nil
 }
 
+func (x *TransactionBody) GetFileUpload() *FileUploadTransaction {
+	if x != nil {
+		if x, ok := x.Body.(*TransactionBody_FileUpload); ok {
+			return x.FileUpload
+		}
+	}
+	return nil
+}
+
 type isTransactionBody_Body interface {
 	isTransactionBody_Body()
 }
@@ -390,9 +400,15 @@ type TransactionBody_TokenTransfer struct {
 	TokenTransfer *TokenTransferTransaction `protobuf:"bytes,2,opt,name=token_transfer,json=tokenTransfer,proto3,oneof"`
 }
 
+type TransactionBody_FileUpload struct {
+	FileUpload *FileUploadTransaction `protobuf:"bytes,3,opt,name=file_upload,json=fileUpload,proto3,oneof"`
+}
+
 func (*TransactionBody_KeyValue) isTransactionBody_Body() {}
 
 func (*TransactionBody_TokenTransfer) isTransactionBody_Body() {}
+
+func (*TransactionBody_FileUpload) isTransactionBody_Body() {}
 
 type TransactionResult struct {
 	state         protoimpl.MessageState   `protogen:"open.v1"`
@@ -544,6 +560,7 @@ type TransactionResultBody struct {
 	//
 	//	*TransactionResultBody_KeyValue
 	//	*TransactionResultBody_TokenTransfer
+	//	*TransactionResultBody_FileUpload
 	Body          isTransactionResultBody_Body `protobuf_oneof:"body"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -604,6 +621,15 @@ func (x *TransactionResultBody) GetTokenTransfer() *TokenTransferResult {
 	return nil
 }
 
+func (x *TransactionResultBody) GetFileUpload() *FileUploadResult {
+	if x != nil {
+		if x, ok := x.Body.(*TransactionResultBody_FileUpload); ok {
+			return x.FileUpload
+		}
+	}
+	return nil
+}
+
 type isTransactionResultBody_Body interface {
 	isTransactionResultBody_Body()
 }
@@ -616,9 +642,15 @@ type TransactionResultBody_TokenTransfer struct {
 	TokenTransfer *TokenTransferResult `protobuf:"bytes,2,opt,name=token_transfer,json=tokenTransfer,proto3,oneof"`
 }
 
+type TransactionResultBody_FileUpload struct {
+	FileUpload *FileUploadResult `protobuf:"bytes,3,opt,name=file_upload,json=fileUpload,proto3,oneof"`
+}
+
 func (*TransactionResultBody_KeyValue) isTransactionResultBody_Body() {}
 
 func (*TransactionResultBody_TokenTransfer) isTransactionResultBody_Body() {}
+
+func (*TransactionResultBody_FileUpload) isTransactionResultBody_Body() {}
 
 type TransactionResultError struct {
 	state         protoimpl.MessageState     `protogen:"open.v1"`
@@ -676,7 +708,7 @@ var File_mojave_v1_transaction_proto protoreflect.FileDescriptor
 
 const file_mojave_v1_transaction_proto_rawDesc = "" +
 	"\n" +
-	"\x1bmojave/v1/transaction.proto\x12\tmojave.v1\x1a\x12mojave/v1/kv.proto\x1a\x15mojave/v1/token.proto\"S\n" +
+	"\x1bmojave/v1/transaction.proto\x12\tmojave.v1\x1a\x12mojave/v1/kv.proto\x1a\x15mojave/v1/token.proto\x1a\x16mojave/v1/upload.proto\"S\n" +
 	"\x11SignedTransaction\x12\x1c\n" +
 	"\tsignature\x18\x01 \x01(\fR\tsignature\x12 \n" +
 	"\vtransaction\x18\x02 \x01(\fR\vtransaction\"p\n" +
@@ -693,10 +725,12 @@ const file_mojave_v1_transaction_proto_rawDesc = "" +
 	"fromPubkey\x12\x1b\n" +
 	"\tto_pubkey\x18\x04 \x01(\fR\btoPubkey\x12\x1d\n" +
 	"\n" +
-	"watt_limit\x18\x05 \x01(\x04R\twattLimit\"\xa6\x01\n" +
+	"watt_limit\x18\x05 \x01(\x04R\twattLimit\"\xeb\x01\n" +
 	"\x0fTransactionBody\x12=\n" +
 	"\tkey_value\x18\x01 \x01(\v2\x1e.mojave.v1.KeyValueTransactionH\x00R\bkeyValue\x12L\n" +
-	"\x0etoken_transfer\x18\x02 \x01(\v2#.mojave.v1.TokenTransferTransactionH\x00R\rtokenTransferB\x06\n" +
+	"\x0etoken_transfer\x18\x02 \x01(\v2#.mojave.v1.TokenTransferTransactionH\x00R\rtokenTransfer\x12C\n" +
+	"\vfile_upload\x18\x03 \x01(\v2 .mojave.v1.FileUploadTransactionH\x00R\n" +
+	"fileUploadB\x06\n" +
 	"\x04body\"\xbe\x01\n" +
 	"\x11TransactionResult\x12:\n" +
 	"\x06header\x18\x01 \x01(\v2\".mojave.v1.TransactionResultHeaderR\x06header\x124\n" +
@@ -709,10 +743,12 @@ const file_mojave_v1_transaction_proto_rawDesc = "" +
 	"\x05nonce\x18\x04 \x01(\tR\x05nonce\x12\x1d\n" +
 	"\n" +
 	"watts_used\x18\x05 \x01(\x04R\twattsUsed\x12\x1a\n" +
-	"\bproposer\x18\x06 \x01(\fR\bproposer\"\xa2\x01\n" +
+	"\bproposer\x18\x06 \x01(\fR\bproposer\"\xe2\x01\n" +
 	"\x15TransactionResultBody\x128\n" +
 	"\tkey_value\x18\x01 \x01(\v2\x19.mojave.v1.KeyValueResultH\x00R\bkeyValue\x12G\n" +
-	"\x0etoken_transfer\x18\x02 \x01(\v2\x1e.mojave.v1.TokenTransferResultH\x00R\rtokenTransferB\x06\n" +
+	"\x0etoken_transfer\x18\x02 \x01(\v2\x1e.mojave.v1.TokenTransferResultH\x00R\rtokenTransfer\x12>\n" +
+	"\vfile_upload\x18\x03 \x01(\v2\x1b.mojave.v1.FileUploadResultH\x00R\n" +
+	"fileUploadB\x06\n" +
 	"\x04body\"e\n" +
 	"\x16TransactionResultError\x129\n" +
 	"\x04code\x18\x01 \x01(\x0e2%.mojave.v1.TransactionResultErrorCodeR\x04code\x12\x10\n" +
@@ -752,25 +788,29 @@ var file_mojave_v1_transaction_proto_goTypes = []any{
 	(*TransactionResultError)(nil),   // 9: mojave.v1.TransactionResultError
 	(*KeyValueTransaction)(nil),      // 10: mojave.v1.KeyValueTransaction
 	(*TokenTransferTransaction)(nil), // 11: mojave.v1.TokenTransferTransaction
-	(*KeyValueResult)(nil),           // 12: mojave.v1.KeyValueResult
-	(*TokenTransferResult)(nil),      // 13: mojave.v1.TokenTransferResult
+	(*FileUploadTransaction)(nil),    // 12: mojave.v1.FileUploadTransaction
+	(*KeyValueResult)(nil),           // 13: mojave.v1.KeyValueResult
+	(*TokenTransferResult)(nil),      // 14: mojave.v1.TokenTransferResult
+	(*FileUploadResult)(nil),         // 15: mojave.v1.FileUploadResult
 }
 var file_mojave_v1_transaction_proto_depIdxs = []int32{
 	4,  // 0: mojave.v1.Transaction.header:type_name -> mojave.v1.TransactionHeader
 	5,  // 1: mojave.v1.Transaction.body:type_name -> mojave.v1.TransactionBody
 	10, // 2: mojave.v1.TransactionBody.key_value:type_name -> mojave.v1.KeyValueTransaction
 	11, // 3: mojave.v1.TransactionBody.token_transfer:type_name -> mojave.v1.TokenTransferTransaction
-	7,  // 4: mojave.v1.TransactionResult.header:type_name -> mojave.v1.TransactionResultHeader
-	8,  // 5: mojave.v1.TransactionResult.body:type_name -> mojave.v1.TransactionResultBody
-	9,  // 6: mojave.v1.TransactionResult.error:type_name -> mojave.v1.TransactionResultError
-	12, // 7: mojave.v1.TransactionResultBody.key_value:type_name -> mojave.v1.KeyValueResult
-	13, // 8: mojave.v1.TransactionResultBody.token_transfer:type_name -> mojave.v1.TokenTransferResult
-	0,  // 9: mojave.v1.TransactionResultError.code:type_name -> mojave.v1.TransactionResultErrorCode
-	10, // [10:10] is the sub-list for method output_type
-	10, // [10:10] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	12, // 4: mojave.v1.TransactionBody.file_upload:type_name -> mojave.v1.FileUploadTransaction
+	7,  // 5: mojave.v1.TransactionResult.header:type_name -> mojave.v1.TransactionResultHeader
+	8,  // 6: mojave.v1.TransactionResult.body:type_name -> mojave.v1.TransactionResultBody
+	9,  // 7: mojave.v1.TransactionResult.error:type_name -> mojave.v1.TransactionResultError
+	13, // 8: mojave.v1.TransactionResultBody.key_value:type_name -> mojave.v1.KeyValueResult
+	14, // 9: mojave.v1.TransactionResultBody.token_transfer:type_name -> mojave.v1.TokenTransferResult
+	15, // 10: mojave.v1.TransactionResultBody.file_upload:type_name -> mojave.v1.FileUploadResult
+	0,  // 11: mojave.v1.TransactionResultError.code:type_name -> mojave.v1.TransactionResultErrorCode
+	12, // [12:12] is the sub-list for method output_type
+	12, // [12:12] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_mojave_v1_transaction_proto_init() }
@@ -780,13 +820,16 @@ func file_mojave_v1_transaction_proto_init() {
 	}
 	file_mojave_v1_kv_proto_init()
 	file_mojave_v1_token_proto_init()
+	file_mojave_v1_upload_proto_init()
 	file_mojave_v1_transaction_proto_msgTypes[4].OneofWrappers = []any{
 		(*TransactionBody_KeyValue)(nil),
 		(*TransactionBody_TokenTransfer)(nil),
+		(*TransactionBody_FileUpload)(nil),
 	}
 	file_mojave_v1_transaction_proto_msgTypes[7].OneofWrappers = []any{
 		(*TransactionResultBody_KeyValue)(nil),
 		(*TransactionResultBody_TokenTransfer)(nil),
+		(*TransactionResultBody_FileUpload)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{

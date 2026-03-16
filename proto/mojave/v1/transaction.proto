@@ -4,6 +4,7 @@ package mojave.v1;
 
 import "mojave/v1/kv.proto";
 import "mojave/v1/token.proto";
+import "mojave/v1/upload.proto";
 
 option go_package = "github.com/alecsavvy/mojave/gen/mojave/v1";
 
@@ -34,6 +35,7 @@ message TransactionBody {
   oneof body {
     KeyValueTransaction key_value = 1;
     TokenTransferTransaction token_transfer = 2;
+    FileUploadTransaction file_upload = 3;
   }
 }
 
@@ -56,6 +58,7 @@ message TransactionResultBody {
   oneof body {
     KeyValueResult key_value = 1;
     TokenTransferResult token_transfer = 2;
+    FileUploadResult file_upload = 3;
   }
 }
 

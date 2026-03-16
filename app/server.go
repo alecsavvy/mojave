@@ -85,3 +85,15 @@ func (app *App) SendTransaction(ctx context.Context, req *connect.Request[v1.Sen
 		TransactionResult: txResult,
 	}), nil
 }
+
+func (app *App) GetFile(ctx context.Context, req *connect.Request[v1.GetFileRequest]) (*connect.Response[v1.GetFileResponse], error) {
+	record, err := app.store.GetFileUpload(ctx, req.Msg.Infohash)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeNotFound, err)
+	}
+	magnetURI := "magnet:?xt=urn:btih:" + req.Msg.Infohash
+	return connect.NewResponse(&v1.GetFileResponse{
+		File:      record,
+		MagnetUri: magnetURI,
+	}), nil
+}
