@@ -2,6 +2,12 @@ package app
 
 import (
 	"context"
+	"crypto/ed25519"
+	"crypto/rsa"
+	"crypto/sha256"
+	"encoding/binary"
+	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"path"
@@ -11,16 +17,21 @@ import (
 	"github.com/alecsavvy/mojave/store"
 	"github.com/cockroachdb/pebble"
 	cfg "github.com/cometbft/cometbft/config"
+	cmted25519 "github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cometbft/cometbft/p2p"
 	"github.com/cometbft/cometbft/privval"
 	"github.com/cometbft/cometbft/proxy"
 	"github.com/cometbft/cometbft/rpc/client/local"
+	"github.com/anacrolix/torrent"
 	"go.uber.org/zap"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 
 	cmtlog "github.com/cometbft/cometbft/libs/log"
 	nm "github.com/cometbft/cometbft/node"
+
+	"gocloud.dev/blob"
+	_ "gocloud.dev/blob/fileblob"
 )
 
 type App struct {
@@ -32,6 +43,15 @@ type App struct {
 	localStore    *store.LocalStore
 	onGoingBlock  *pebble.Batch
 	connectServer *http.Server
+
+	tmpBucket     *blob.Bucket
+	storageBucket *blob.Bucket
+
+	torrentClient *torrent.Client
+
+	validatorPrivKey ed25519.PrivateKey
+	validatorPubKey  ed25519.PublicKey
+	encryptionKey    *rsa.PrivateKey
 }
 
 // NewApp starts a node from an already-initialized config. The caller must have
@@ -64,6 +84,16 @@ func NewApp(mojaveCfg *config.MojaveConfig) (*App, error) {
 		return nil, err
 	}
 
+	tmpBucket, err := blob.OpenBucket(context.Background(), mojaveCfg.FilesTmpDir)
+	if err != nil {
+		return nil, err
+	}
+
+	storageBucket, err := blob.OpenBucket(context.Background(), mojaveCfg.FilesStorageDir)
+	if err != nil {
+		return nil, err
+	}
+
 	cmtLogger := cmtlog.NewNopLogger()
 
 	addr := pv.GetAddress().String()
@@ -71,11 +101,48 @@ func NewApp(mojaveCfg *config.MojaveConfig) (*App, error) {
 
 	appStore := store.NewStore(db)
 	localStore := store.NewLocalStore(localDB)
+
+	// Extract validator signing key from FilePV
+	cmtPrivKey, ok := pv.Key.PrivKey.(cmted25519.PrivKey)
+	if !ok {
+		return nil, fmt.Errorf("validator key is not ed25519")
+	}
+	validatorPrivKey := ed25519.PrivateKey(cmtPrivKey)
+	validatorPubKey := validatorPrivKey.Public().(ed25519.PublicKey)
+
+	// Derive RSA encryption key deterministically from validator seed (for TDF / KAS).
+	// RSA.GenerateKey needs many random bytes; use a deterministic stream from the seed.
+	seed := validatorPrivKey.Seed()
+	encryptionKey, err := rsa.GenerateKey(&deterministicReader{seed: seed, salt: []byte("mojave-encryption-key")}, 2048)
+	if err != nil {
+		return nil, fmt.Errorf("derive encryption key: %w", err)
+	}
+
+	if err := localStore.SetSigningKey(validatorPubKey, validatorPrivKey); err != nil {
+		return nil, fmt.Errorf("persist signing key: %w", err)
+	}
+
+	torrentDataDir := path.Join(cmtConfig.RootDir, "upload-tmp")
+	torrentCfg := torrent.NewDefaultClientConfig()
+	torrentCfg.DataDir = torrentDataDir
+	torrentCfg.NoDHT = true
+
+	torrentClient, err := torrent.NewClient(torrentCfg)
+	if err != nil {
+		return nil, fmt.Errorf("start torrent client: %w", err)
+	}
+
 	app := &App{
-		logger:       logger,
-		store:        appStore,
-		localStore:   localStore,
-		onGoingBlock: nil,
+		logger:           logger,
+		store:            appStore,
+		localStore:       localStore,
+		onGoingBlock:     nil,
+		tmpBucket:        tmpBucket,
+		storageBucket:    storageBucket,
+		torrentClient:    torrentClient,
+		validatorPrivKey: validatorPrivKey,
+		validatorPubKey:  validatorPubKey,
+		encryptionKey:    encryptionKey,
 	}
 
 	node, err := nm.NewNode(
@@ -129,6 +196,12 @@ func (a *App) Start() error {
 	return nil
 }
 
+// configureTorrentPeersFromValidators configures torrent peers based on the current CometBFT validator set.
+func (a *App) configureTorrentPeersFromValidators(ctx context.Context) error {
+	// TODO: Query the validator set from the node and map it to torrent peers.
+	return nil
+}
+
 func (a *App) LatestBlockHeight(ctx context.Context) (int64, error) {
 	status, err := a.rpc.Status(ctx)
 	if err != nil {
@@ -141,5 +214,45 @@ func (a *App) Stop() error {
 	if err := a.connectServer.Shutdown(context.Background()); err != nil {
 		a.logger.Warnw("ConnectRPC server shutdown error", "err", err)
 	}
+
+	if a.torrentClient != nil {
+		a.torrentClient.Close()
+	}
+
+	if err := a.tmpBucket.Close(); err != nil {
+		a.logger.Warnw("Tmp bucket close error", "err", err)
+	}
+	if err := a.storageBucket.Close(); err != nil {
+		a.logger.Warnw("Storage bucket close error", "err", err)
+	}
+
 	return a.node.Stop()
 }
+
+// deterministicReader produces a deterministic stream of bytes from a seed for RSA key generation.
+type deterministicReader struct {
+	seed   []byte
+	salt   []byte
+	counter uint64
+	buf    []byte
+}
+
+func (r *deterministicReader) Read(p []byte) (n int, err error) {
+	for len(p) > 0 {
+		if len(r.buf) == 0 {
+			h := sha256.New()
+			h.Write(r.seed)
+			h.Write(r.salt)
+			_ = binary.Write(h, binary.LittleEndian, r.counter)
+			r.counter++
+			r.buf = h.Sum(nil)
+		}
+		copied := copy(p, r.buf)
+		r.buf = r.buf[copied:]
+		p = p[copied:]
+		n += copied
+	}
+	return n, nil
+}
+
+var _ io.Reader = (*deterministicReader)(nil)

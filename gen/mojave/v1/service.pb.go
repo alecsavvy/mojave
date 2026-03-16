@@ -393,7 +393,8 @@ type UploadFileRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	UploaderPubkey []byte                 `protobuf:"bytes,1,opt,name=uploader_pubkey,json=uploaderPubkey,proto3" json:"uploader_pubkey,omitempty"`
 	Signature      []byte                 `protobuf:"bytes,2,opt,name=signature,proto3" json:"signature,omitempty"`
-	FileData       []byte                 `protobuf:"bytes,3,opt,name=file_data,json=fileData,proto3" json:"file_data,omitempty"`
+	FileHash       []byte                 `protobuf:"bytes,3,opt,name=file_hash,json=fileHash,proto3" json:"file_hash,omitempty"`
+	FileData       []byte                 `protobuf:"bytes,4,opt,name=file_data,json=fileData,proto3" json:"file_data,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -438,6 +439,13 @@ func (x *UploadFileRequest) GetUploaderPubkey() []byte {
 func (x *UploadFileRequest) GetSignature() []byte {
 	if x != nil {
 		return x.Signature
+	}
+	return nil
+}
+
+func (x *UploadFileRequest) GetFileHash() []byte {
+	if x != nil {
+		return x.FileHash
 	}
 	return nil
 }
@@ -540,6 +548,7 @@ func (x *GetFileRequest) GetInfohash() string {
 type GetFileResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	File          *FileUploadTransaction `protobuf:"bytes,1,opt,name=file,proto3" json:"file,omitempty"`
+	MagnetUri     string                 `protobuf:"bytes,2,opt,name=magnet_uri,json=magnetUri,proto3" json:"magnet_uri,omitempty"` // deterministic: magnet:?xt=urn:btih:<infohash>
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -581,11 +590,18 @@ func (x *GetFileResponse) GetFile() *FileUploadTransaction {
 	return nil
 }
 
+func (x *GetFileResponse) GetMagnetUri() string {
+	if x != nil {
+		return x.MagnetUri
+	}
+	return ""
+}
+
 var File_mojave_v1_service_proto protoreflect.FileDescriptor
 
 const file_mojave_v1_service_proto_rawDesc = "" +
 	"\n" +
-	"\x17mojave/v1/service.proto\x12\tmojave.v1\x1a\x17mojave/v1/account.proto\x1a\x15mojave/v1/files.proto\x1a\x12mojave/v1/kv.proto\x1a\x1bmojave/v1/transaction.proto\"e\n" +
+	"\x17mojave/v1/service.proto\x12\tmojave.v1\x1a\x17mojave/v1/account.proto\x1a\x12mojave/v1/kv.proto\x1a\x1bmojave/v1/transaction.proto\x1a\x16mojave/v1/upload.proto\"e\n" +
 	"\x16SendTransactionRequest\x12K\n" +
 	"\x12signed_transaction\x18\x01 \x01(\v2\x1c.mojave.v1.SignedTransactionR\x11signedTransaction\"\x7f\n" +
 	"\x17SendTransactionResponse\x12\x17\n" +
@@ -603,17 +619,20 @@ const file_mojave_v1_service_proto_rawDesc = "" +
 	"\x11GetAccountRequest\x12\x16\n" +
 	"\x06pubkey\x18\x01 \x01(\fR\x06pubkey\"G\n" +
 	"\x12GetAccountResponse\x121\n" +
-	"\aaccount\x18\x01 \x01(\v2\x17.mojave.v1.AccountStateR\aaccount\"w\n" +
+	"\aaccount\x18\x01 \x01(\v2\x17.mojave.v1.AccountStateR\aaccount\"\x94\x01\n" +
 	"\x11UploadFileRequest\x12'\n" +
 	"\x0fuploader_pubkey\x18\x01 \x01(\fR\x0euploaderPubkey\x12\x1c\n" +
 	"\tsignature\x18\x02 \x01(\fR\tsignature\x12\x1b\n" +
-	"\tfile_data\x18\x03 \x01(\fR\bfileData\"_\n" +
+	"\tfile_hash\x18\x03 \x01(\fR\bfileHash\x12\x1b\n" +
+	"\tfile_data\x18\x04 \x01(\fR\bfileData\"_\n" +
 	"\x12UploadFileResponse\x12I\n" +
 	"\x12file_upload_result\x18\x01 \x01(\v2\x1b.mojave.v1.FileUploadResultR\x10fileUploadResult\",\n" +
 	"\x0eGetFileRequest\x12\x1a\n" +
-	"\binfohash\x18\x01 \x01(\tR\binfohash\"G\n" +
+	"\binfohash\x18\x01 \x01(\tR\binfohash\"f\n" +
 	"\x0fGetFileResponse\x124\n" +
-	"\x04file\x18\x01 \x01(\v2 .mojave.v1.FileUploadTransactionR\x04file2\xe0\x03\n" +
+	"\x04file\x18\x01 \x01(\v2 .mojave.v1.FileUploadTransactionR\x04file\x12\x1d\n" +
+	"\n" +
+	"magnet_uri\x18\x02 \x01(\tR\tmagnetUri2\xe0\x03\n" +
 	"\aService\x12X\n" +
 	"\x0fSendTransaction\x12!.mojave.v1.SendTransactionRequest\x1a\".mojave.v1.SendTransactionResponse\x12U\n" +
 	"\x0eGetTransaction\x12 .mojave.v1.GetTransactionRequest\x1a!.mojave.v1.GetTransactionResponse\x12L\n" +
@@ -692,9 +711,9 @@ func file_mojave_v1_service_proto_init() {
 		return
 	}
 	file_mojave_v1_account_proto_init()
-	file_mojave_v1_files_proto_init()
 	file_mojave_v1_kv_proto_init()
 	file_mojave_v1_transaction_proto_init()
+	file_mojave_v1_upload_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

@@ -1,6 +1,8 @@
 package store
 
-import "github.com/cockroachdb/pebble"
+import (
+	"github.com/cockroachdb/pebble"
+)
 
 // used to store local data that is not part of the blockchain
 // stores the DEKs for files, keys, and stuff not meant to be replicated

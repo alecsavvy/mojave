@@ -119,6 +119,22 @@ func (sdk *MojaveSDK) FaucetTokens(ctx context.Context, toPubkey []byte, amount 
 	return err
 }
 
+func (sdk *MojaveSDK) UploadFile(ctx context.Context, req *v1.UploadFileRequest) (*v1.FileUploadResult, error) {
+	res, err := sdk.client.UploadFile(ctx, connect.NewRequest(req))
+	if err != nil {
+		return nil, err
+	}
+	return res.Msg.FileUploadResult, nil
+}
+
+func (sdk *MojaveSDK) GetFile(ctx context.Context, infohash string) (*v1.GetFileResponse, error) {
+	res, err := sdk.client.GetFile(ctx, connect.NewRequest(&v1.GetFileRequest{Infohash: infohash}))
+	if err != nil {
+		return nil, err
+	}
+	return res.Msg, nil
+}
+
 func (sdk *MojaveSDK) sendTransaction(ctx context.Context, transaction *v1.SignedTransaction) (*v1.TransactionResult, error) {
 	res, err := sdk.client.SendTransaction(ctx, connect.NewRequest(&v1.SendTransactionRequest{
 		SignedTransaction: transaction,

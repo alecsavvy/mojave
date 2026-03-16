@@ -3,9 +3,9 @@ syntax = "proto3";
 package mojave.v1;
 
 import "mojave/v1/account.proto";
-import "mojave/v1/files.proto";
 import "mojave/v1/kv.proto";
 import "mojave/v1/transaction.proto";
+import "mojave/v1/upload.proto";
 
 option go_package = "github.com/alecsavvy/mojave/gen/mojave/v1";
 
@@ -58,7 +58,8 @@ message GetAccountResponse {
 message UploadFileRequest {
   bytes uploader_pubkey = 1;
   bytes signature = 2;
-  bytes file_data = 3;
+  bytes file_hash = 3;
+  bytes file_data = 4;
 }
 
 message UploadFileResponse {
@@ -71,4 +72,5 @@ message GetFileRequest {
 
 message GetFileResponse {
   FileUploadTransaction file = 1;
+  string magnet_uri = 2;  // deterministic: magnet:?xt=urn:btih:<infohash>
 }
