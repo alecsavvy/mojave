@@ -18,6 +18,14 @@ import (
 	"github.com/anacrolix/torrent/metainfo"
 )
 
+func (app *App) CheckFileUploadTx(ctx context.Context, tx *v1.FileUploadTransaction) error {
+	return nil
+}
+
+func (app *App) FinalizeFileUploadTx(ctx context.Context, tx *v1.FileUploadTransaction) error {
+	return nil
+}
+
 // UploadFile handles an upload request by transcoding, encrypting, storing, seeding, and recording it on-chain.
 func (app *App) UploadFile(ctx context.Context, req *connect.Request[v1.UploadFileRequest]) (*connect.Response[v1.UploadFileResponse], error) {
 	uploadTmpDir := filepath.Join(app.node.Config().RootDir, "upload-tmp")
