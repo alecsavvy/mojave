@@ -4,6 +4,7 @@ go 1.25.4
 
 require (
 	connectrpc.com/connect v1.19.1
+	github.com/alecsavvy/ddex-proto v0.1.0
 	github.com/anacrolix/torrent v1.61.0
 	github.com/cockroachdb/pebble v1.1.4
 	github.com/cometbft/cometbft v1.0.1

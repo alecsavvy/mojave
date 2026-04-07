@@ -2,6 +2,8 @@ version: v2
 modules:
   - path: proto
     name: buf.build/mojave/mojave
+deps:
+  - buf.build/mojave/ddex
 lint:
   use:
     - STANDARD

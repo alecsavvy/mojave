@@ -48,6 +48,8 @@ github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWX
 github.com/Shopify/toxiproxy v2.1.4+incompatible/go.mod h1:OXgGpZ6Cli1/URJOF1DMxUHB2q5Ap20/P/eIdh4G0pI=
 github.com/adlio/schema v1.3.6 h1:k1/zc2jNfeiZBA5aFTRy37jlBIuCkXCm0XmvpzCKI9I=
 github.com/adlio/schema v1.3.6/go.mod h1:qkxwLgPBd1FgLRHYVCmQT/rrBr3JH38J9LjmVzWNudg=
+github.com/alecsavvy/ddex-proto v0.1.0 h1:1wIWEYoG3UJL6H2Ta1zpaa64H6Xog/MUVd0YuL7kV1Q=
+github.com/alecsavvy/ddex-proto v0.1.0/go.mod h1:Z4BYWfVJEJiZJcTgi/3dxFdQjG9GsJVUzQR0nFt6AxA=
 github.com/alecsavvy/opentdf v0.2.0 h1:3L9qWiAAOX5ir4Hnxogek4YnYnMiI+fnQLnyRoASKlo=
 github.com/alecsavvy/opentdf v0.2.0/go.mod h1:7el3dQh+dw1gu+ZzTiG2QzCcf0bY8tjYsCPXl22hQpk=
 github.com/alecthomas/assert/v2 v2.0.0-alpha3 h1:pcHeMvQ3OMstAWgaeaXIAL8uzB9xMm2zlxt+/4ml8lk=
